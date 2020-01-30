@@ -1,0 +1,20 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    //
+    // ctrl - shift - P  is the speed key for the command palette
+    //
+    //  put this file in the project folder .vscode subfolder
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build RPi Vision",
+            "type": "shell",
+            "windows": {
+                "command": ".\\RPiVisionCompile.cmd"
+            },
+            "presentation": {"focus": true},
+            "problemMatcher": []
+        }
+    ]
+}
