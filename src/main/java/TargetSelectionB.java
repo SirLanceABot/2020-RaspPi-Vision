@@ -74,7 +74,7 @@ public class TargetSelectionB
     private static final String pId = new String("[TargetSelectionB]");
 
 	// This object is used to run the GripPipeline
-    private WhiteLineVision gripPipelineWhiteTape = new WhiteLineVision();
+    private PowerPortVisionPipeline gripPipelineWhiteTape = new PowerPortVisionPipeline();
 
 	// This field is used to determine if debugging information should be displayed.
     private boolean debuggingEnabled = false;

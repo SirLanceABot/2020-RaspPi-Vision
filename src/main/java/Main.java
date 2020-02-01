@@ -255,9 +255,9 @@ public final class Main {
 
 // Settable parameters for some outputs listed below
 
-    static String version = "rkt  1/6/2020";
+    static String version = "Annika and Darren were here 2/1/20";
     static boolean runTestUDPreceiver = false;
-    static String UDPreceiverName = "rkt-laptop.local";
+    static String UDPreceiverName = "TEAM4237-1.local";
     //static String UDPreceiverName = "0.0.0.0";
     // "0.0.0.0" should be any computer but doesn't work for other computers - they don't see any packets
     // "roborio-4237-frc.local"
