@@ -4,36 +4,13 @@ To get rid of "errors" in the VS Code source presentation, change the .classpath
 
 Note there are some settable parameters located at the SKULL in the right wide scroller.
 
-A couple of changes to the FRCVision standard example project:
-
-The changes from the standard example project are:
-
-The inclusion of the GSON in build.gradle
+The change from the standard FRCVISION example project is:
 
 Changes to and creation of the compile the project cmd file:
 
 RPiVisionCompile.cmd
-====
-Easiest resolution to including gson is:
- in build.gradle add to dependencies {
-   compile name 'gson-2.8.5'
- and add gson.jar or gson-2.8.5.jar to the project root folder since that path ('.') is
- already in build.gradle.
 
- There are alternative essentially identical syntaxes.  Here's one of them:
-   compile 'com.google.code.gson:gson:2.8.5'
-
- Another way to resolve the dependency in the build.gradle for:
- 
-Add those files to your maven repository.  If you don't and are connected to the Internet
-they will automatically be included from the Maven respository.
-
-They are included in this project so just copy the folder 2.8.5 in this project to your maven probably located at:
-
-C:\Users\Public\frc2019\maven\com\google\code\gson\gson\
-
-You should then have a 2.2.4 folder and a 2.8.5 folder under gson
-
+A tasks.json task is added to VS Code to run that command file
 ====
 
 RaspBerry Pi setup:
@@ -65,8 +42,8 @@ Program starts execution in Main.java - main.java
 
 Threads are spawned (optionally) for
     UdpReceive (test receive data if no roboRIO)
-    CameraProcessB (bumper camera)
-    CameraProcessE (elevator camera)
+    CameraProcessB (IntakeB camera)
+    CameraProcessE (TurretE camera)
     ImageMerge (show picture in picture from the 2 cameras)
 --
 
@@ -255,7 +232,7 @@ public final class Main {
 
 // Settable parameters for some outputs listed below
 
-    static String version = "Annika and Darren were here 2/1/20";
+    static String version = "2020 RPi Vision 2/1/20";
     static boolean runTestUDPreceiver = false;
     static String UDPreceiverName = "TEAM4237-1.local";
     //static String UDPreceiverName = "0.0.0.0";
@@ -590,9 +567,12 @@ public final class Main {
 
         // start cameras
         for (CameraConfig config : cameraConfigs) {
-            if (config.name.equalsIgnoreCase("Bumper"))
+        // assume each camera name appears only once in the list - that is a requirement
+
+	    System.out.println(pId + " Checking for IntakeB camera");
+            if (config.name.equalsIgnoreCase("IntakeB"))
             {
-                System.out.println(pId + " Starting Bumper camera");
+                System.out.println(pId + " Starting IntakeB camera");
                 VideoSource Bcamera = startCamera(config);
                 ///////////////////
                 // Widget in Shuffleboard Tab
@@ -602,7 +582,7 @@ public final class Main {
                    
                 synchronized(Main.obj.tabLock)
                 {
-                Main.obj.cameraTab.add("Bumper Camera", Bcamera)
+                Main.obj.cameraTab.add("IntakeB Camera", Bcamera)
                     .withWidget(BuiltInWidgets.kCameraStream)
                     .withPosition(20, 0)
                     .withSize(13, 13)
@@ -611,15 +591,18 @@ public final class Main {
                 }
                 //////////////////
                 cpB = new CameraProcessB(Bcamera);
-                visionThreadB = new Thread(cpB, "4237BumperCamera");
+                visionThreadB = new Thread(cpB, "4237IntakeB Camera");
                 visionThreadB.start(); // start thread using the class' run() method (just saying run() won't start a
                 // thread - that just runs run() once)
+		continue;
             }
-            else if (config.name.equalsIgnoreCase("Elevator"))
+
+	    System.out.println(pId + " Checking for TurretE camera");
+            if (config.name.equalsIgnoreCase("TurretE"))
             {
-                System.out.println(pId + " Starting Elevator camera");
+                System.out.println(pId + " Starting TurretE camera");
                 VideoSource Ecamera = startCamera(config);
-                 ///////////////////
+                ///////////////////
                 // Widget in Shuffleboard Tab
                 Map<String, Object> mapElevatorCamera = new HashMap<String, Object>();
                 mapElevatorCamera.put("Show crosshair", false);
@@ -627,7 +610,7 @@ public final class Main {
           
                 synchronized(Main.obj.tabLock)
                 {
-                Main.obj.cameraTab.add("Elevator Camera", Ecamera)
+                Main.obj.cameraTab.add("TurretE Camera", Ecamera)
                     .withWidget(BuiltInWidgets.kCameraStream)
                     .withPosition(0, 0)
                     .withSize(20, 17)
@@ -636,11 +619,12 @@ public final class Main {
                 }
                 //////////////////
                 cpE = new CameraProcessE(Ecamera);
-                visionThreadE = new Thread(cpE, "4237ElevatorCamera");
+                visionThreadE = new Thread(cpE, "4237TurretECamera");
                 visionThreadE.start();
-            }
-            else
-                System.out.println(pId + " Unknown camera in cameraConfigs " + config.name);
+                continue;
+	    }
+
+            System.out.println(pId + " Unknown camera in cameraConfigs " + config.name);
         }
         
         Shuffleboard.update();
