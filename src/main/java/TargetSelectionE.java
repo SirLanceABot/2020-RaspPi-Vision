@@ -25,7 +25,7 @@ public class TargetSelectionE
 	private static final String pId = new String("[TargetSelectionE]");
 
 	// This object is used to run the GripPipeline
-	private PowerCellIntakeVisionPipeline gripPipeline = new PowerCellVisionPipeline();
+	private PowerCellIntakeVisionPipeline gripPipeline = new PowerCellIntakeVisionPipeline();
 
 	// This field is used to determine if debugging information should be displayed.
 	private boolean debuggingEnabled = false;
@@ -56,7 +56,10 @@ public class TargetSelectionE
 	 */
 	public void process(Mat mat, TargetDataE nextTargetData)
 	{
-		if(true) return; // bailout now without running anything
+        detectPowerCells(mat);
+
+        if(false)
+        {
 		
 		double centerTarget = 5;
 		int distanceTarget = Integer.MIN_VALUE;
@@ -224,7 +227,8 @@ public class TargetSelectionE
 
 		Main.obj.tapeDistance.set(distanceTarget);
 		nextTargetData.isFreshData = true;
-		nextTargetData.isTargetFound = isTargetFoundLocal;
+        nextTargetData.isTargetFound = isTargetFoundLocal;
+        }
 	}
 	
 	 public void detectPowerCells(Mat input) 
@@ -232,8 +236,9 @@ public class TargetSelectionE
         desaturate(input, input);
         Mat circles = new Mat();
         Imgproc.blur(input, input, new Size(7, 7), new Point(2, 2));
-        Imgproc.HoughCircles(input, circles, Imgproc.CV_HOUGH_GRADIENT, 2, 100, 100, 90, 0, 1000);
-
+        //Imgproc.HoughCircles(input, circles, Imgproc.CV_HOUGH_GRADIENT, 2, 100, 100, 90, 0, 1000);
+        Imgproc.HoughCircles(input, circles, Imgproc.CV_HOUGH_GRADIENT, 1, input.rows()/8, 50, 30, 0, 0);
+        
         System.out.println(String.valueOf("size: " + circles.cols()) + ", " + String.valueOf(circles.rows()));
 
         if (circles.cols() > 0) 
@@ -252,11 +257,13 @@ public class TargetSelectionE
 
                 Imgproc.circle(input, center, 3, new Scalar(255, 255, 255), 5);
                 Imgproc.circle(input, center, radius, new Scalar(255, 255, 255), 2);
-            }
+             }
         }
 
+        Imgproc.putText(input, "HoughCircles", new Point(20, 20), Core.FONT_HERSHEY_SIMPLEX, 0.25, new Scalar(0, 0, 0), 1);
+
         circles.release();
-        input.release();
+        //input.release();
         
     }
 
