@@ -452,9 +452,19 @@ public class TargetSelectionB
             for (MatOfPoint contour : filteredContours)
             {
                 contourIndex++;
+                
+                // Print all the contours
+                // TODO: Work here
+                System.out.println("Contour Index = " + contourIndex);
 
+                MatOfPoint2f  NewMtx = new MatOfPoint2f(contour.toArray());
+
+                for(int idx = 0; idx < contour.toArray().length; idx++)
+                {
+                    System.out.println("(" + contour.toArray()[idx].x + ", " + contour.toArray()[idx].y + ")");
+                }
+                
                 // Create a bounding upright rectangle for the contour's points
-                MatOfPoint2f  NewMtx = new MatOfPoint2f(contour.toArray() );
                 boundRect = Imgproc.minAreaRect(NewMtx);
 
                 // Draw a rotatedRect, using lines, that represents the minAreaRect
