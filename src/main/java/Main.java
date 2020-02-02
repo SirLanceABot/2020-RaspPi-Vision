@@ -42,8 +42,8 @@ Program starts execution in Main.java - main.java
 
 Threads are spawned (optionally) for
     UdpReceive (test receive data if no roboRIO)
-    CameraProcessB (IntakeB camera)
-    CameraProcessE (TurretE camera)
+    CameraProcessB (TurretB camera)
+    CameraProcessE (IntakeE camera)
     ImageMerge (show picture in picture from the 2 cameras)
 --
 
@@ -239,7 +239,7 @@ public final class Main {
     // "0.0.0.0" should be any computer but doesn't work for other computers - they don't see any packets
     // "roborio-4237-frc.local"
     static boolean runImageMerge = false;
-    static boolean debug = false;
+    static boolean debug = true;
     static boolean displayBumperContours = true;
     static boolean displayElevatorContours = true;
 
@@ -569,10 +569,10 @@ public final class Main {
         for (CameraConfig config : cameraConfigs) {
         // assume each camera name appears only once in the list - that is a requirement
 
-	    System.out.println(pId + " Checking for IntakeB camera");
-            if (config.name.equalsIgnoreCase("IntakeB"))
+	    System.out.println(pId + " Checking for TurretB camera");
+            if (config.name.equalsIgnoreCase("TurretB"))
             {
-                System.out.println(pId + " Starting IntakeB camera");
+                System.out.println(pId + " Starting TurretB camera");
                 VideoSource Bcamera = startCamera(config);
                 ///////////////////
                 // Widget in Shuffleboard Tab
@@ -582,7 +582,7 @@ public final class Main {
                    
                 synchronized(Main.obj.tabLock)
                 {
-                Main.obj.cameraTab.add("IntakeB Camera", Bcamera)
+                Main.obj.cameraTab.add("TurretB Camera", Bcamera)
                     .withWidget(BuiltInWidgets.kCameraStream)
                     .withPosition(20, 0)
                     .withSize(13, 13)
@@ -591,16 +591,16 @@ public final class Main {
                 }
                 //////////////////
                 cpB = new CameraProcessB(Bcamera);
-                visionThreadB = new Thread(cpB, "4237IntakeB Camera");
+                visionThreadB = new Thread(cpB, "4237TurretB Camera");
                 visionThreadB.start(); // start thread using the class' run() method (just saying run() won't start a
                 // thread - that just runs run() once)
 		continue;
             }
 
-	    System.out.println(pId + " Checking for TurretE camera");
-            if (config.name.equalsIgnoreCase("TurretE"))
+	    System.out.println(pId + " Checking for IntakeE camera");
+            if (config.name.equalsIgnoreCase("IntakeE"))
             {
-                System.out.println(pId + " Starting TurretE camera");
+                System.out.println(pId + " Starting IntakeE camera");
                 VideoSource Ecamera = startCamera(config);
                 ///////////////////
                 // Widget in Shuffleboard Tab
@@ -610,7 +610,7 @@ public final class Main {
           
                 synchronized(Main.obj.tabLock)
                 {
-                Main.obj.cameraTab.add("TurretE Camera", Ecamera)
+                Main.obj.cameraTab.add("IntakeE Camera", Ecamera)
                     .withWidget(BuiltInWidgets.kCameraStream)
                     .withPosition(0, 0)
                     .withSize(20, 17)
@@ -619,7 +619,7 @@ public final class Main {
                 }
                 //////////////////
                 cpE = new CameraProcessE(Ecamera);
-                visionThreadE = new Thread(cpE, "4237TurretECamera");
+                visionThreadE = new Thread(cpE, "4237IntakeECamera");
                 visionThreadE.start();
                 continue;
 	    }
