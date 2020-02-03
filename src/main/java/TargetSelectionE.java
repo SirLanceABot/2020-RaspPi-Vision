@@ -14,7 +14,7 @@ import org.opencv.core.CvType;
 
 /**
  * This class is used to select the target from the camera frame. The user MUST
- * MODIFY the process() method. The user must create a new GripPipeline class
+ * MODIFY the process() method. The user must create a new gripPowerCellIntakeVisionPipeline class
  * using GRIP, modify the TargetData class, and modify this class.
  * 
  * @author FRC Team 4237
@@ -24,8 +24,8 @@ public class TargetSelectionE
 {
 	private static final String pId = new String("[TargetSelectionE]");
 
-	// This object is used to run the GripPipeline
-	private PowerCellIntakeVisionPipeline gripPipeline = new PowerCellIntakeVisionPipeline();
+	// This object is used to run the gripPowerCellIntakeVisionPipeline
+	private GRIPPowerCellIntakeVisionPipeline gripPowerCellIntakeVisionPipeline = new GRIPPowerCellIntakeVisionPipeline();
 
 	// This field is used to determine if debugging information should be displayed.
 	private boolean debuggingEnabled = false;
@@ -64,8 +64,8 @@ public class TargetSelectionE
 		double centerTarget = 5;
 		int distanceTarget = Integer.MIN_VALUE;
 		boolean isTargetFoundLocal = true;
-		// Let the GripPipeline filter through the camera frame
-		gripPipeline.process(mat);
+		// Let the gripPowerCellIntakeVisionPipeline filter through the camera frame
+		gripPowerCellIntakeVisionPipeline.process(mat);
 
 		MatOfPoint2f contour1;
 		MatOfPoint2f contour2;
@@ -75,10 +75,10 @@ public class TargetSelectionE
         RotatedRect rBox = new RotatedRect(new Point (0,0) ,new Size(0,0), 0);
 		double angle;
 		
-		// The GripPipeline creates an array of contours that must be searched to find
+		// The gripPowerCellIntakeVisionPipeline creates an array of contours that must be searched to find
 		// the target.
 		ArrayList<MatOfPoint> filteredContours;
-		filteredContours = new ArrayList<MatOfPoint>(gripPipeline.filterContoursOutput());
+		filteredContours = new ArrayList<MatOfPoint>(gripPowerCellIntakeVisionPipeline.filterContoursOutput());
 
 	// Check if no contours were found in the camera frame.
 		if (filteredContours.isEmpty())
@@ -233,16 +233,25 @@ public class TargetSelectionE
 	
 	 public void detectPowerCells(Mat input) 
     {
-        desaturate(input, input);
+        double[] hsvThresholdHue = {8,50};//{43.70503597122302, 92.45733788395906};
+		double[] hsvThresholdSaturation = {50,240};//{119.24460431654677, 239.76962457337885};
+        double[] hsvThresholdValue = {50,255};//{100.89928057553956, 255};
+        
+        Imgproc.cvtColor(input, input, Imgproc.COLOR_BGR2HSV);
+		Core.inRange(input, new Scalar(hsvThresholdHue[0], hsvThresholdSaturation[0], hsvThresholdValue[0]),
+			new Scalar(hsvThresholdHue[1], hsvThresholdSaturation[1], hsvThresholdValue[1]), input);
+        //desaturate(input, input);
         Mat circles = new Mat();
         Imgproc.blur(input, input, new Size(7, 7), new Point(2, 2));
         //Imgproc.HoughCircles(input, circles, Imgproc.CV_HOUGH_GRADIENT, 2, 100, 100, 90, 0, 1000);
-        Imgproc.HoughCircles(input, circles, Imgproc.CV_HOUGH_GRADIENT, 1, input.rows()/8, 50, 30, 0, 0);
+        Imgproc.HoughCircles(input, circles, Imgproc.CV_HOUGH_GRADIENT, 1, input.rows()/8, 50, 30, 30, 100);
         
-        System.out.println(String.valueOf("size: " + circles.cols()) + ", " + String.valueOf(circles.rows()));
+        //System.out.println(String.valueOf("size: " + circles.cols()) + ", " + String.valueOf(circles.rows()));
+        System.out.println("size: " + circles.cols() + ", " + circles.rows());
 
         if (circles.cols() > 0) 
         {
+            System.out.println(circles.dump());
             for (int x=0; x < Math.min(circles.cols(), 5); x++ ) 
             {
                 double circleVec[] = circles.get(0, x);
@@ -254,13 +263,16 @@ public class TargetSelectionE
 
                 Point center = new Point((int) circleVec[0], (int) circleVec[1]);
                 int radius = (int) circleVec[2];
-
+System.out.println(" x, y, r " + (circleVec[0]) + " " + (circleVec[1]) + " " + (circleVec[2]));
+                //if(x == 0)
+                {
                 Imgproc.circle(input, center, 3, new Scalar(255, 255, 255), 5);
                 Imgproc.circle(input, center, radius, new Scalar(255, 255, 255), 2);
              }
         }
+        }
 
-        Imgproc.putText(input, "HoughCircles", new Point(20, 20), Core.FONT_HERSHEY_SIMPLEX, 0.25, new Scalar(0, 0, 0), 1);
+        Imgproc.putText(input, "HoughCircles", new Point(20, 20), Core.FONT_HERSHEY_SIMPLEX, 0.25, new Scalar(190, 190, 190), 1);
 
         circles.release();
         //input.release();
