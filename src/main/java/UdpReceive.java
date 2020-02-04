@@ -70,20 +70,20 @@ public class UdpReceive implements Runnable
                 lastDataReceived = new String(data, 0, packet.getLength());
                 System.out.println(pId + " >" + lastDataReceived + "<");
 
-                if (lastDataReceived.startsWith("Bumper "))
+                if (lastDataReceived.startsWith("Turret "))
                 {
-                    String message = new String(lastDataReceived.substring("Bumper ".length()));
+                    String message = new String(lastDataReceived.substring("Turret ".length()));
                     TargetDataB receivedTargetB = new TargetDataB();
                     receivedTargetB.fromJson(message);
-                    System.out.println(pId + " Bumper " + receivedTargetB);   
+                    System.out.println(pId + " Turret " + receivedTargetB);   
                 }
 
-                else if (lastDataReceived.startsWith("Elevator "))
+                else if (lastDataReceived.startsWith("Intake "))
                 {
-                    String message = new String(lastDataReceived.substring("Elevator ".length()));
+                    String message = new String(lastDataReceived.substring("Intake ".length()));
                     TargetDataE receivedTargetE = new TargetDataE();
                     receivedTargetE.fromJson(message);
-                    System.out.println(pId + " Elevator " + receivedTargetE);   
+                    System.out.println(pId + " Intake " + receivedTargetE);   
                 }
 
                 else

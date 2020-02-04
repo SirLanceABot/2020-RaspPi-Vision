@@ -36,7 +36,6 @@ Directories for the camera images on the flash drive are automatically made if t
 
 Configure cameras [browser frcvision.local/]
 The configuration file is then saved in /boot/frc.json
-Copy of frc.json included in this project can be used for the Genius camera from ELevator and Microsoft HD-3000 camera for the bumper.
 
 Program starts execution in Main.java - main.java
 
@@ -200,10 +199,10 @@ public final class Main
     private static UdpReceive testUDPreceive; // test UDP receiver in place of a roboRIO
     private static Thread UDPreceiveThread; // remove these or at least don't start this thread if using the roboRIO
 
-    static Images bumperCamera;
-    static Images bumperPipeline;
-    static Images elevatorCamera;
-    static Images elevatorPipeline;
+    static Images turretCamera;
+    static Images turretPipeline;
+    static Images intakeCamera;
+    static Images intakePipeline;
     static AtomicInteger tapeDistance;
     static ShuffleboardTab cameraTab;
     static Object tabLock;
@@ -240,10 +239,10 @@ public final class Main
 
 // Settable parameters for some outputs listed below
 
-    static String version = "2020 RPi Vision 2/3/20";
+    static String version = "2020 RPi Vision 2/4/20";
     static boolean runTestUDPreceiver = false;
-    static String UDPreceiverName = "jwoodard-hp16.local";
-    // static String UDPreceiverName = "TEAM4237-1.local";
+    //static String UDPreceiverName = "jwoodard-hp16.local";
+    static String UDPreceiverName = "TEAM4237-1.local";
     //static String UDPreceiverName = "RKT-LapTop.local";
     
     //static String UDPreceiverName = "0.0.0.0";
@@ -251,8 +250,8 @@ public final class Main
     // "roborio-4237-frc.local"
     static boolean runImageMerge = false;
     static boolean debug = false;
-    static boolean displayBumperContours = true;
-    static boolean displayElevatorContours = true;
+    static boolean displayTurretContours = true;
+    static boolean displayIntakeContours = true;
 
 // Shuffleboard display video streams commented out for contour images and merged images
 // No settable variables here for that
@@ -516,10 +515,10 @@ public final class Main
             return;
         }
 
-        bumperCamera = new Images();
-        bumperPipeline = new Images();
-        elevatorCamera = new Images();
-        elevatorPipeline = new Images();
+        turretCamera = new Images();
+        turretPipeline = new Images();
+        intakeCamera = new Images();
+        intakePipeline = new Images();
         tabLock = new Object();
         tapeDistance = new AtomicInteger();
 
@@ -632,9 +631,9 @@ public final class Main
                 VideoSource Bcamera = startCamera(config);
                 ///////////////////
                 // Widget in Shuffleboard Tab
-                Map<String, Object> mapBumperCamera = new HashMap<String, Object>();
-                mapBumperCamera.put("Show crosshair", false);
-                mapBumperCamera.put("Show controls", false);
+                Map<String, Object> mapTurretCamera = new HashMap<String, Object>();
+                mapTurretCamera.put("Show crosshair", false);
+                mapTurretCamera.put("Show controls", false);
                    
                 synchronized(tabLock)
                 {
@@ -642,7 +641,7 @@ public final class Main
                         .withWidget(BuiltInWidgets.kCameraStream)
                         .withPosition(20, 0)
                         .withSize(13, 13)
-                        .withProperties(mapBumperCamera);
+                        .withProperties(mapTurretCamera);
                 }
                 //////////////////
                 cpB = new CameraProcessB(Bcamera);
@@ -659,9 +658,9 @@ public final class Main
                 VideoSource Ecamera = startCamera(config);
                 ///////////////////
                 // Widget in Shuffleboard Tab
-                Map<String, Object> mapElevatorCamera = new HashMap<String, Object>();
-                mapElevatorCamera.put("Show crosshair", false);
-                mapElevatorCamera.put("Show controls", false);
+                Map<String, Object> mapIntakeCamera = new HashMap<String, Object>();
+                mapIntakeCamera.put("Show crosshair", false);
+                mapIntakeCamera.put("Show controls", false);
           
                 synchronized(tabLock)
                 {
@@ -669,7 +668,7 @@ public final class Main
                         .withWidget(BuiltInWidgets.kCameraStream)
                         .withPosition(0, 0)
                         .withSize(20, 17)
-                        .withProperties(mapElevatorCamera);
+                        .withProperties(mapIntakeCamera);
                 }
                 //////////////////
                 cpE = new CameraProcessE(Ecamera);

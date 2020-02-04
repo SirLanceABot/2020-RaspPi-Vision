@@ -42,12 +42,12 @@ public class ImageMerge implements Runnable
 
         this.setDebuggingEnabled(Main.debug);
         
-        Mat ImageOverlay = new Mat(); // main image from elevator
-        Mat ImageOutput = new Mat(); // main image from elevator + small bumper image inserted then weighted merge
+        Mat ImageOverlay = new Mat(); // main image from intake
+        Mat ImageOutput = new Mat(); // main image from intake + small turret image inserted then weighted merge
                                      // and saved
-        Mat subMat = new Mat(); // place for small bumper image inserted into main elevator image
-        Mat insert = new Mat(); // bumper image
-        Mat insertSmall = new Mat(); // bumper image shrunk
+        Mat subMat = new Mat(); // place for small turret image inserted into main intake image
+        Mat insert = new Mat(); // turret image
+        Mat insertSmall = new Mat(); // turret image shrunk
 
         outputStream = CameraServer.getInstance().putVideo("MergedImages", 320, 240);
 
@@ -86,26 +86,26 @@ public class ImageMerge implements Runnable
             {
                 // only get these images from Main once because they will wait for FRESH and the
                 // second get would be STALE
-                Main.elevatorPipeline.getImage(ImageOverlay); // get the primary elevator image
-                Main.bumperPipeline.getImage(insert); // get the insert bumper image
+                Main.intakePipeline.getImage(ImageOverlay); // get the primary intake image
+                Main.turretPipeline.getImage(insert); // get the insert turret image
 
                 if (ImageOverlay.dims() <= 1)
                 {
-                    System.out.println(pId + " elevator too few dimensions");
+                    System.out.println(pId + " intake too few dimensions");
                     insert.copyTo(ImageOutput);
-                    Imgproc.putText(ImageOutput, "Bumper Contours Only", new Point(25, 30), Core.FONT_HERSHEY_SIMPLEX,
+                    Imgproc.putText(ImageOutput, "Turret Contours Only", new Point(25, 30), Core.FONT_HERSHEY_SIMPLEX,
                             0.5, new Scalar(100, 100, 255), 1);
                 }
                 else if (insert.dims() <= 1)
                 {
-                    System.out.println(pId + " bumper too few dimensions");
+                    System.out.println(pId + " turret too few dimensions");
                     ImageOverlay.copyTo(ImageOutput);
-                    Imgproc.putText(ImageOutput, "Elevator Contours Only", new Point(25, 30), Core.FONT_HERSHEY_SIMPLEX,
+                    Imgproc.putText(ImageOutput, "Intake Contours Only", new Point(25, 30), Core.FONT_HERSHEY_SIMPLEX,
                             0.5, new Scalar(100, 100, 255), 1);
                 }
                 else
                 {
-                    // start with output image the elevator
+                    // start with output image the intake
                     ImageOverlay.copyTo(ImageOutput);
 
                     // Scaling the insert smaller
@@ -135,7 +135,7 @@ public class ImageMerge implements Runnable
                     insertSmall.copyTo(subMat); // copy the insert to the overlay's insert area
                     double alpha = 0.85f;
                     double beta = 0.25f;
-                    // merge the original elevator image with the bumper insert overlaid elevator
+                    // merge the original intake image with the turret insert overlaid intake
                     // image (input+output=new output)
                     // alpha+beta = 1 usually; gamma is added to image; = 0 for no gamma adjustment
                     Core.addWeighted(ImageOverlay, alpha, ImageOutput, beta, 0, ImageOutput);

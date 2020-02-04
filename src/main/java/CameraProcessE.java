@@ -18,7 +18,7 @@ public class CameraProcessE implements Runnable
 {
 	private static final String pId = new String("[ECameraProcess]");
 
-	private String cameraName = "Elevator Camera";
+	private String cameraName = "Intake Camera";
 	private int cameraWidth = 320;
 	private int cameraHeight = 240;
 	private PipelineProcessE pipelineProcessE;

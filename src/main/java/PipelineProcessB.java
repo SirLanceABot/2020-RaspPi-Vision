@@ -61,7 +61,7 @@ public class PipelineProcessB implements Runnable
 	// Use the set...() method to set these values.
 	private int cameraWidth = 160;
 	private int cameraHeight = 120;
-	private String cameraName = "Bumper Camera";
+	private String cameraName = "Turret Camera";
 
 	private VideoSource camera;
 	private CameraProcessB cameraProcess;
@@ -148,9 +148,9 @@ public class PipelineProcessB implements Runnable
 		inputStream = new CvSink("cvsink");
 		inputStream.setSource(camera);
 
-		if (Main.displayBumperContours)
+		if (Main.displayTurretContours)
 		{
-			outputStream = CameraServer.getInstance().putVideo("BumperContours", 160, 120);
+			outputStream = CameraServer.getInstance().putVideo("TurretContours", 160, 120);
 		}
 
         // //////////////////
@@ -161,7 +161,7 @@ public class PipelineProcessB implements Runnable
 
 		// synchronized(Main.tabLock)
 		// {
-		// Main.cameraTab.add("BumperContours", outputStream)
+		// Main.cameraTab.add("TurretContours", outputStream)
 		// .withWidget(BuiltInWidgets.kCameraStream)
 		// .withProperties(mapVideo)
 		// //.withSize(12, 8)
@@ -232,7 +232,7 @@ public class PipelineProcessB implements Runnable
 				}
 			}
 
-			Main.bumperCamera.setImage(mat);
+			Main.turretCamera.setImage(mat);
 
 			// Call the process() method that was created by the user to process the camera
 			// frame.
@@ -248,14 +248,14 @@ public class PipelineProcessB implements Runnable
 				loopTargetTime = Timer.getFPGATimestamp() - loopTargetTime;
 			}
 
-			Main.bumperPipeline.setImage(mat);
+			Main.turretPipeline.setImage(mat);
 
 			// The synchronized set() method is ONLY called twice.
 			// (1) Here in the thread loop and (2) after the thread loop is terminated
 			// below.
 			set(nextTargetData); // sets currentTargetData from nextTargetData
 
-			Main.sendMessage.Communicate("Bumper " + currentTargetData.toJson());
+			Main.sendMessage.Communicate("Turret " + currentTargetData.toJson());
 
 			if (Main.logImage)
 			{
@@ -274,10 +274,10 @@ public class PipelineProcessB implements Runnable
 				}
 			}
 
-			if (Main.displayBumperContours)
+			if (Main.displayTurretContours)
 			{
 				// Display the camera frame in the output stream.
-				Imgproc.putText(mat, "Bumper Contours", new Point(20, 30), Core.FONT_HERSHEY_SIMPLEX, 0.5,
+				Imgproc.putText(mat, "Turret Contours", new Point(20, 30), Core.FONT_HERSHEY_SIMPLEX, 0.5,
 						new Scalar(100, 100, 255), 1);
 				outputStream.putFrame(mat);
 			}

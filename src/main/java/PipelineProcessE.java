@@ -61,7 +61,7 @@ public class PipelineProcessE implements Runnable
 	// Use the set...() method to set these values.
 	private int cameraWidth = 320;
 	private int cameraHeight = 240;
-	private String cameraName = "Elevator Camera";
+	private String cameraName = "Intake Camera";
 
 	private VideoSource camera;
 	private CameraProcessE cameraProcess;
@@ -148,9 +148,9 @@ public class PipelineProcessE implements Runnable
 		inputStream = new CvSink("cvsink");
 		inputStream.setSource(camera);
 
-		if (Main.displayElevatorContours)
+		if (Main.displayIntakeContours)
 		{
-			outputStream = CameraServer.getInstance().putVideo("ElevatorContours", 320, 240);
+			outputStream = CameraServer.getInstance().putVideo("IntakeContours", 320, 240);
 		}
 		
         // //////////////////
@@ -161,7 +161,7 @@ public class PipelineProcessE implements Runnable
 
 		// synchronized(Main.tabLock)
 		// {
-		// Main.cameraTab.add("ElevatorContours", outputStream)
+		// Main.cameraTab.add("IntakeContours", outputStream)
 		// .withWidget(BuiltInWidgets.kCameraStream)
 		// .withProperties(mapVideo)
 		// //.withSize(12, 8)
@@ -232,7 +232,7 @@ public class PipelineProcessE implements Runnable
 				}
 			}
 
-			Main.elevatorCamera.setImage(mat);
+			Main.intakeCamera.setImage(mat);
 
 			// Call the process() method that was created by the user to process the camera
 			// frame.
@@ -248,14 +248,14 @@ public class PipelineProcessE implements Runnable
 				loopTargetTime = Timer.getFPGATimestamp() - loopTargetTime;
 			}
 
-			Main.elevatorPipeline.setImage(mat);
+			Main.intakePipeline.setImage(mat);
 
 			// The synchronized set() method is ONLY called twice.
 			// (1) Here in the thread loop and (2) after the thread loop is terminated
 			// below.
 			set(nextTargetData); // sets currentTargetData from nextTargetData
 
-			Main.sendMessage.Communicate("Elevator " + currentTargetData.toJson());
+			Main.sendMessage.Communicate("Intake " + currentTargetData.toJson());
 
 			if (Main.logImage)
 			{
@@ -274,10 +274,10 @@ public class PipelineProcessE implements Runnable
 				}
 			}
 
-			if (Main.displayElevatorContours)
+			if (Main.displayIntakeContours)
 			{
 				// Display the camera frame in the output stream.
-				Imgproc.putText(mat, "Elevator Contours", new Point(25, 30), Core.FONT_HERSHEY_SIMPLEX, 0.5,
+				Imgproc.putText(mat, "Intake Contours", new Point(25, 30), Core.FONT_HERSHEY_SIMPLEX, 0.5,
 						new Scalar(100, 100, 255), 1);
 				outputStream.putFrame(mat);
 			}
