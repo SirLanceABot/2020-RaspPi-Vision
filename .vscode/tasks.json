@@ -15,14 +15,14 @@
             },
             "presentation": {"focus": true},
             "problemMatcher": []
-        }
+        },
         {
             "label": "Monitor RPi Vision UDP Output",
             "type": "shell",
             "windows": {
-                "command": "powershell .\\receiveUDP.ps1"
+                "command": "PowerShell_ISE.exe .\\receiveUDP.ps1"
             },
-            "presentation": {"focus": true},
+            "presentation": {"reveal": "never"},
             "problemMatcher": []
         }
     ]
