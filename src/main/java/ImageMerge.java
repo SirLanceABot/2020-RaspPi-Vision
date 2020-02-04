@@ -67,9 +67,9 @@ public class ImageMerge implements Runnable
 		// mapVideo.put("Show crosshair", false);
 		// mapVideo.put("Show controls", false);
         //
-		// synchronized(Main.obj.tabLock)
+		// synchronized(Main.tabLock)
 		// {
-		// Main.obj.cameraTab.add("ImageMerge", outputStream)
+		// Main.cameraTab.add("ImageMerge", outputStream)
 		// .withWidget(BuiltInWidgets.kCameraStream)
 		// .withProperties(mapVideo)
 		// //.withSize(12, 8)
@@ -86,8 +86,8 @@ public class ImageMerge implements Runnable
             {
                 // only get these images from Main once because they will wait for FRESH and the
                 // second get would be STALE
-                Main.obj.elevatorPipeline.getImage(ImageOverlay); // get the primary elevator image
-                Main.obj.bumperPipeline.getImage(insert); // get the insert bumper image
+                Main.elevatorPipeline.getImage(ImageOverlay); // get the primary elevator image
+                Main.bumperPipeline.getImage(insert); // get the insert bumper image
 
                 if (ImageOverlay.dims() <= 1)
                 {

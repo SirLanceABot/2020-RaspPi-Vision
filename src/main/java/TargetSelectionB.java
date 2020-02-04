@@ -217,7 +217,7 @@ public class TargetSelectionB
         }
 
         // // get distance to retroflective tape to use as estimate where to cutoff processing white tape
-        // int tapeDistance = Main.obj.tapeDistance.get();
+        // int tapeDistance = Main.tapeDistance.get();
  
         if(true)
         {

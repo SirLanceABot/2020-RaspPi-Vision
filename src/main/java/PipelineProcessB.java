@@ -159,9 +159,9 @@ public class PipelineProcessB implements Runnable
 		// mapVideo.put("Show crosshair", false);
 		// mapVideo.put("Show controls", false);
 
-		// synchronized(Main.obj.tabLock)
+		// synchronized(Main.tabLock)
 		// {
-		// Main.obj.cameraTab.add("BumperContours", outputStream)
+		// Main.cameraTab.add("BumperContours", outputStream)
 		// .withWidget(BuiltInWidgets.kCameraStream)
 		// .withProperties(mapVideo)
 		// //.withSize(12, 8)
@@ -232,7 +232,7 @@ public class PipelineProcessB implements Runnable
 				}
 			}
 
-			Main.obj.bumperCamera.setImage(mat);
+			Main.bumperCamera.setImage(mat);
 
 			// Call the process() method that was created by the user to process the camera
 			// frame.
@@ -248,7 +248,7 @@ public class PipelineProcessB implements Runnable
 				loopTargetTime = Timer.getFPGATimestamp() - loopTargetTime;
 			}
 
-			Main.obj.bumperPipeline.setImage(mat);
+			Main.bumperPipeline.setImage(mat);
 
 			// The synchronized set() method is ONLY called twice.
 			// (1) Here in the thread loop and (2) after the thread loop is terminated

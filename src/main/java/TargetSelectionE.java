@@ -225,7 +225,7 @@ public class TargetSelectionE
 			System.out.println("Distance: " + distanceTarget);
 		}
 
-		Main.obj.tapeDistance.set(distanceTarget);
+		Main.tapeDistance.set(distanceTarget);
 		nextTargetData.isFreshData = true;
         nextTargetData.isTargetFound = isTargetFoundLocal;
         }

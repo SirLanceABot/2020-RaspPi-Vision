@@ -131,19 +131,24 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
    }
  */
 
-public final class Main {
+public final class Main
 {
-    try {
-      Thread.sleep(10000);
-    } catch (InterruptedException ex) {
-    }
-} 
+    {
+        try
+        {
+            Thread.sleep(10000);
+        }
+        catch (InterruptedException ex) 
+        { }
+    } 
+
     private static final String pId = new String("[Main]");
 
     private static String output(InputStream inputStream) throws IOException
     {
         StringBuilder sb = new StringBuilder();
         BufferedReader br = null;
+
         try
         {
             br = new BufferedReader(new InputStreamReader(inputStream));
@@ -152,28 +157,32 @@ public final class Main {
             {
                 sb.append(line + System.getProperty("line.separator"));
             }
-        } finally
+        }
+        finally
         {
             br.close();
         }
+
         return sb.toString();
     }
 
     private static String configFile = "/boot/frc.json";
 
     @SuppressWarnings("MemberName")
-    public static class CameraConfig {
+    public static class CameraConfig
+    {
         public String name;
         public String path;
         public JsonObject config;
         public JsonElement streamConfig;
     }
 	
- @SuppressWarnings("MemberName")
-  public static class SwitchedCameraConfig {
-    public String name;
-    public String key;
-  };
+    @SuppressWarnings("MemberName")
+    public static class SwitchedCameraConfig
+    {
+        public String name;
+        public String key;
+    };
 
     private static CameraProcessB cpB;
     private static CameraProcessE cpE;
@@ -191,14 +200,13 @@ public final class Main {
     private static UdpReceive testUDPreceive; // test UDP receiver in place of a roboRIO
     private static Thread UDPreceiveThread; // remove these or at least don't start this thread if using the roboRIO
 
-    static Main obj;
-    Images bumperCamera;
-    Images bumperPipeline;
-    Images elevatorCamera;
-    Images elevatorPipeline;
-    AtomicInteger tapeDistance;
-    ShuffleboardTab cameraTab;
-    Object tabLock;
+    static Images bumperCamera;
+    static Images bumperPipeline;
+    static Images elevatorCamera;
+    static Images elevatorPipeline;
+    static AtomicInteger tapeDistance;
+    static ShuffleboardTab cameraTab;
+    static Object tabLock;
 
 // Settable parameters for some outputs listed below the skull
 
@@ -234,7 +242,8 @@ public final class Main {
 
     static String version = "2020 RPi Vision 2/3/20";
     static boolean runTestUDPreceiver = false;
-    static String UDPreceiverName = "TEAM4237-1.local";
+    static String UDPreceiverName = "jwoodard-hp16.local";
+    // static String UDPreceiverName = "TEAM4237-1.local";
     //static String UDPreceiverName = "RKT-LapTop.local";
     
     //static String UDPreceiverName = "0.0.0.0";
@@ -257,20 +266,24 @@ public final class Main {
     public static List<SwitchedCameraConfig> switchedCameraConfigs = new ArrayList<>();
     public static List<VideoSource> cameras = new ArrayList<>();
  
-  private Main() {
-  }
+    private Main()
+    {
+
+    }
 
     /**
      * Report parse error.
      */
-    public static void parseError(String str) {
+    public static void parseError(String str)
+    {
         System.err.println(pId + " config error in '" + configFile + "': " + str);
     }
 
     /**
      * Read single camera configuration.
      */
-    public static boolean readCameraConfig(JsonObject config) {
+    public static boolean readCameraConfig(JsonObject config)
+    {
         CameraConfig cam = new CameraConfig();
 
         // name
@@ -299,68 +312,84 @@ public final class Main {
     }
 
     /**
-   * Read single switched camera configuration.
-   */
-  public static boolean readSwitchedCameraConfig(JsonObject config) {
-    SwitchedCameraConfig cam = new SwitchedCameraConfig();
+     * Read single switched camera configuration.
+     */
+    public static boolean readSwitchedCameraConfig(JsonObject config)
+    {
+        SwitchedCameraConfig cam = new SwitchedCameraConfig();
 
-    // name
-    JsonElement nameElement = config.get("name");
-    if (nameElement == null) {
-      parseError("could not read switched camera name");
-      return false;
+        // name
+        JsonElement nameElement = config.get("name");
+        if (nameElement == null)
+        {
+            parseError("could not read switched camera name");
+            return false;
+        }
+        cam.name = nameElement.getAsString();
+
+        // path
+        JsonElement keyElement = config.get("key");
+        if (keyElement == null)
+        {
+            parseError("switched camera '" + cam.name + "': could not read key");
+            return false;
+        }
+        cam.key = keyElement.getAsString();
+
+        switchedCameraConfigs.add(cam);
+        return true;
     }
-    cam.name = nameElement.getAsString();
 
-    // path
-    JsonElement keyElement = config.get("key");
-    if (keyElement == null) {
-      parseError("switched camera '" + cam.name + "': could not read key");
-      return false;
-    }
-    cam.key = keyElement.getAsString();
-
-    switchedCameraConfigs.add(cam);
-    return true;
-  }
-
-  /**
+    /**
      * Read configuration file.
      */
     @SuppressWarnings("PMD.CyclomaticComplexity")
-    public static boolean readConfig() {
+    public static boolean readConfig()
+    {
         // parse file
         JsonElement top;
-        try {
+        try
+        {
             top = new JsonParser().parse(Files.newBufferedReader(Paths.get(configFile)));
-        } catch (IOException ex) {
+        }
+        catch (IOException ex)
+        {
             System.err.println(pId + " could not open '" + configFile + "': " + ex + "\n");
             return false;
         }
 
         // top level must be an object
-        if (!top.isJsonObject()) {
+        if (!top.isJsonObject())
+        {
             parseError(pId + " must be JSON object");
             return false;
         }
+
         JsonObject obj = top.getAsJsonObject();
 
         // team number
         JsonElement teamElement = obj.get("team");
-        if (teamElement == null) {
+
+        if (teamElement == null)
+        {
             parseError(pId + " could not read team number");
             return false;
         }
         team = teamElement.getAsInt();
 
         // ntmode (optional)
-        if (obj.has("ntmode")) {
+        if (obj.has("ntmode")) 
+        {
             String str = obj.get("ntmode").getAsString();
-            if ("client".equalsIgnoreCase(str)) {
+            if ("client".equalsIgnoreCase(str)) 
+            {
                 server = false;
-            } else if ("server".equalsIgnoreCase(str)) {
+            } 
+            else if ("server".equalsIgnoreCase(str)) 
+            {
                 server = true;
-            } else
+            } 
+            else
             {
                 parseError(pId + " could not understand ntmode value '" + str + "'");
             }
@@ -368,25 +397,32 @@ public final class Main {
 
         // cameras
         JsonElement camerasElement = obj.get("cameras");
-        if (camerasElement == null) {
+        if (camerasElement == null) 
+        {
             parseError(pId + " could not read cameras");
             return false;
         }
+
         JsonArray cameras = camerasElement.getAsJsonArray();
-        for (JsonElement camera : cameras) {
-            if (!readCameraConfig(camera.getAsJsonObject())) {
+        for (JsonElement camera : cameras) 
+        {
+            if (!readCameraConfig(camera.getAsJsonObject())) 
+            {
                 return false;
             }
         }
 
-    if (obj.has("switched cameras")) {
-      JsonArray switchedCameras = obj.get("switched cameras").getAsJsonArray();
-      for (JsonElement camera : switchedCameras) {
-        if (!readSwitchedCameraConfig(camera.getAsJsonObject())) {
-          return false;
+        if (obj.has("switched cameras"))
+        {
+            JsonArray switchedCameras = obj.get("switched cameras").getAsJsonArray();
+            for (JsonElement camera : switchedCameras) 
+            {
+                if (!readSwitchedCameraConfig(camera.getAsJsonObject()))
+                {
+                    return false;
+                }
+            }
         }
-      }
-    }
 
         return true;
     }
@@ -394,7 +430,8 @@ public final class Main {
     /**
      * Start running the camera.
      */
-    public static VideoSource startCamera(CameraConfig config) {
+    public static VideoSource startCamera(CameraConfig config) 
+    {
         System.out.println(pId + " Starting camera '" + config.name + "' on path " + config.path);
 
         // this
@@ -412,7 +449,8 @@ public final class Main {
         camera.setConfigJson(gson.toJson(config.config));
         camera.setConnectionStrategy(VideoSource.ConnectionStrategy.kKeepOpen);
 
-        if (config.streamConfig != null) {
+        if (config.streamConfig != null) 
+        {
             server.setConfigJson(gson.toJson(config.streamConfig));
         }
 
@@ -420,60 +458,70 @@ public final class Main {
     }
 
     /**
-   * Start running the switched camera.
-   */
-  public static MjpegServer startSwitchedCamera(SwitchedCameraConfig config) {
-    System.out.println("Starting switched camera '" + config.name + "' on " + config.key);
-    MjpegServer server = CameraServer.getInstance().addSwitchedCamera(config.name);
+     * Start running the switched camera.
+     */
+    public static MjpegServer startSwitchedCamera(SwitchedCameraConfig config)
+    {
+        System.out.println("Starting switched camera '" + config.name + "' on " + config.key);
+        MjpegServer server = CameraServer.getInstance().addSwitchedCamera(config.name);
 
-    NetworkTableInstance.getDefault()
-        .getEntry(config.key)
-        .addListener(event -> {
-              if (event.value.isDouble()) {
-                int i = (int) event.value.getDouble();
-                if (i >= 0 && i < cameras.size()) {
-                  server.setSource(cameras.get(i));
+        NetworkTableInstance.getDefault()
+            .getEntry(config.key)
+            .addListener(event -> 
+            {
+                if (event.value.isDouble())
+                {
+                    int i = (int) event.value.getDouble();
+                    if (i >= 0 && i < cameras.size()) 
+                    {
+                        server.setSource(cameras.get(i));
+                    }
                 }
-              } else if (event.value.isString()) {
-                String str = event.value.getString();
-                for (int i = 0; i < cameraConfigs.size(); i++) {
-                  if (str.equals(cameraConfigs.get(i).name)) {
-                    server.setSource(cameras.get(i));
-                    break;
-                  }
+                else if (event.value.isString())
+                {
+                    String str = event.value.getString();
+                    for (int i = 0; i < cameraConfigs.size(); i++) 
+                    {
+                        if (str.equals(cameraConfigs.get(i).name)) 
+                        {
+                            server.setSource(cameras.get(i));
+                            break;
+                        }
+                    }
                 }
-              }
             },
             EntryListenerFlags.kImmediate | EntryListenerFlags.kNew | EntryListenerFlags.kUpdate);
 
-    return server;
-  }
+        return server;
+    }
 
-   /**
+    /**
      * Main.
      */
-    public static void main(String... args) {
+    public static void main(String... args)
+    {
         Thread.currentThread().setName("4237Main");
 
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
-        if (args.length > 0) {
+        if (args.length > 0) 
+        {
             configFile = args[0];
         }
 
         // read configuration
-        if (!readConfig()) {
+        if (!readConfig()) 
+        {
             System.out.println(pId + " FATAL ERROR - could not read camera configuration file " + configFile);
             return;
         }
 
-        obj = new Main(); // instantiate Main class to provide for the Images' Mats
-        Main.obj.bumperCamera = new Images();
-        Main.obj.bumperPipeline = new Images();
-        Main.obj.elevatorCamera = new Images();
-        Main.obj.elevatorPipeline = new Images();
-        Main.obj.tabLock = new Object();
-        Main.obj.tapeDistance = new AtomicInteger();
+        bumperCamera = new Images();
+        bumperPipeline = new Images();
+        elevatorCamera = new Images();
+        elevatorPipeline = new Images();
+        tabLock = new Object();
+        tapeDistance = new AtomicInteger();
 
         // // sleep needed on RPi 4 before datagram address resolution and also RPi 3 before mount
         // // and for some other unknown reason after a power on boot up of the RPi 4
@@ -486,28 +534,31 @@ public final class Main {
         sendMessage = new UdpSend(5800, UDPreceiverName);
         
         if(runTestUDPreceiver)
-            {
+        {
             // start test UDP receiver since we don't have a roboRIO to test with
             // this would go on the roboRIO not here on the RPi
             testUDPreceive = new UdpReceive(5800);
             UDPreceiveThread = new Thread(testUDPreceive, "4237UDPreceive");
             UDPreceiveThread.start();
-            }
+        }
             
         // start NetworkTables
         NetworkTableInstance ntinst = NetworkTableInstance.getDefault();
-        if (server) {
+        if (server) 
+        {
             System.out.println(pId + " Setting up NetworkTables server");
             ntinst.startServer();
-        } else {
+        } 
+        else 
+        {
             System.out.println(pId + " Setting up NetworkTables client for team " + team);
             ntinst.startClientTeam(team);
         }
 
         // Create the Camera tab on the shuffleboard
-        synchronized(Main.obj.tabLock)
+        synchronized(tabLock)
         {
-        Main.obj.cameraTab = Shuffleboard.getTab("Camera");
+            cameraTab = Shuffleboard.getTab("Camera");
         }
  
         // see if USB Flash Drive mounted and if so, log the images
@@ -558,9 +609,12 @@ public final class Main {
                 System.out.println(pId + " mkdir errors:\n" + output(process2.getErrorStream()));
             }
             else
+            {
                 System.out.println(pId + " No Flash Drive Mounted");
+            }
 
-        } catch (Exception ex2)
+        }
+        catch (Exception ex2)
         {
             System.out.println(pId + " Error in mount process " + ex2);
         }
@@ -568,10 +622,10 @@ public final class Main {
         System.out.flush();
 
         // start cameras
-        for (CameraConfig config : cameraConfigs) {
-        // assume each camera name appears only once in the list - that is a requirement
-
-	    System.out.println(pId + " Checking for TurretB camera");
+        for (CameraConfig config : cameraConfigs) 
+        {
+            // assume each camera name appears only once in the list - that is a requirement
+	        System.out.println(pId + " Checking for TurretB camera");
             if (config.name.equalsIgnoreCase("TurretB"))
             {
                 System.out.println(pId + " Starting TurretB camera");
@@ -582,24 +636,23 @@ public final class Main {
                 mapBumperCamera.put("Show crosshair", false);
                 mapBumperCamera.put("Show controls", false);
                    
-                synchronized(Main.obj.tabLock)
+                synchronized(tabLock)
                 {
-                Main.obj.cameraTab.add("TurretB Camera", Bcamera)
-                    .withWidget(BuiltInWidgets.kCameraStream)
-                    .withPosition(20, 0)
-                    .withSize(13, 13)
-                    .withProperties(mapBumperCamera)
-                    ;
+                    cameraTab.add("TurretB Camera", Bcamera)
+                        .withWidget(BuiltInWidgets.kCameraStream)
+                        .withPosition(20, 0)
+                        .withSize(13, 13)
+                        .withProperties(mapBumperCamera);
                 }
                 //////////////////
                 cpB = new CameraProcessB(Bcamera);
                 visionThreadB = new Thread(cpB, "4237TurretB Camera");
                 visionThreadB.start(); // start thread using the class' run() method (just saying run() won't start a
                 // thread - that just runs run() once)
-		continue;
+		        continue;
             }
 
-	    System.out.println(pId + " Checking for IntakeE camera");
+	        System.out.println(pId + " Checking for IntakeE camera");
             if (config.name.equalsIgnoreCase("IntakeE"))
             {
                 System.out.println(pId + " Starting IntakeE camera");
@@ -610,21 +663,20 @@ public final class Main {
                 mapElevatorCamera.put("Show crosshair", false);
                 mapElevatorCamera.put("Show controls", false);
           
-                synchronized(Main.obj.tabLock)
+                synchronized(tabLock)
                 {
-                Main.obj.cameraTab.add("IntakeE Camera", Ecamera)
-                    .withWidget(BuiltInWidgets.kCameraStream)
-                    .withPosition(0, 0)
-                    .withSize(20, 17)
-                    .withProperties(mapElevatorCamera)
-                    ;
+                    cameraTab.add("IntakeE Camera", Ecamera)
+                        .withWidget(BuiltInWidgets.kCameraStream)
+                        .withPosition(0, 0)
+                        .withSize(20, 17)
+                        .withProperties(mapElevatorCamera);
                 }
                 //////////////////
                 cpE = new CameraProcessE(Ecamera);
                 visionThreadE = new Thread(cpE, "4237IntakeECamera");
                 visionThreadE.start();
                 continue;
-	    }
+	        }
 
             System.out.println(pId + " Unknown camera in cameraConfigs " + config.name);
         }
@@ -632,8 +684,9 @@ public final class Main {
         Shuffleboard.update();
  
         // start switched cameras
-        for (SwitchedCameraConfig config : switchedCameraConfigs) {
-        startSwitchedCamera(config);
+        for (SwitchedCameraConfig config : switchedCameraConfigs) 
+        {
+            startSwitchedCamera(config);
         }
 
         if(runImageMerge)
@@ -644,9 +697,9 @@ public final class Main {
                 // Wait for other processes to make some images otherwise first time though gets
                 // an error
                 Thread.sleep(2000);
-            } catch (InterruptedException ex)
-            {
             }
+            catch (InterruptedException ex)
+            { }
 
             imageDriver = new ImageMerge();
             imageMergeThread = new Thread(imageDriver, "4237ImageMerge");
@@ -658,8 +711,10 @@ public final class Main {
         // before the ".start"
 
         // loop forever
-        for (;;) {
-            try {
+        for (;;)
+        {
+            try 
+            {
                 System.out.println(pId + " Program Version " + version + "  current time ms " + System.currentTimeMillis());
 
                 // Map<String, String> env = System.getenv(); // or get just one - String myEnv = System.getenv("env_name");
@@ -670,7 +725,9 @@ public final class Main {
                 // }
 
                 Thread.sleep(10000);
-            } catch (InterruptedException ex) {
+            } 
+            catch (InterruptedException ex) 
+            {
                 return;
             }
         }
