@@ -31,7 +31,7 @@ public class CameraProcessB implements Runnable
 	// This object is used to store the camera frame returned from the inputStream
 	// Mats require a lot of memory. Placing this in a loop will cause an 'out of
 	// memory' error.
-	protected Images cameraFrame = new Images();
+	protected Image cameraFrame = new Image();
 	private Mat cameraFrameTemp = new Mat(120, 160, CvType.CV_8UC3);
 
 	// This field is used to determine if debugging information should be displayed.

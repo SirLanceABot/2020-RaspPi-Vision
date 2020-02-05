@@ -11,12 +11,12 @@ public class UdpSend
 {
     private static final String pId = new String("[UdpSend]");
 
-    InetAddress address;
-    byte[] UDPbuffer = new byte[256];
-    final int bufLength = UDPbuffer.length; // save original length because length property is changed with usage
+    private InetAddress address;
+    private byte[] UDPbuffer = new byte[256];
+    private final int bufLength = UDPbuffer.length; // save original length because length property is changed with usage
 
-    DatagramPacket packet;
-    DatagramSocket datagramSocket;
+    private DatagramPacket packet;
+    private DatagramSocket datagramSocket;
 
     public UdpSend(int port, String URL)
     {
@@ -24,7 +24,8 @@ public class UdpSend
         {
             System.out.println(pId + " Sending UDP messages to " + URL + ":" + port);
             address = InetAddress.getByName(URL);
-         } catch (UnknownHostException e)
+        } 
+        catch (UnknownHostException e)
         {
             e.printStackTrace();
         }
@@ -45,7 +46,8 @@ public class UdpSend
             // datagramSocket.setSoTimeout(2000); // robot response receive timeout in
             // milliseconds check in case robot
             // isn't responding. Not used if no attempt to receive a response
-        } catch (SocketException e)
+        } 
+        catch (SocketException e)
         {
             e.printStackTrace();
         }
@@ -62,8 +64,8 @@ public class UdpSend
         try
         {
             datagramSocket.send(packet); // send target information to robot
-
-        } catch (IOException e)
+        } 
+        catch (IOException e)
         {
             e.printStackTrace();
         }

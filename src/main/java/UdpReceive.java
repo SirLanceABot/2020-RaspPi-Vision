@@ -17,7 +17,7 @@
 
 */
 
-import java.io.*;
+import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
@@ -27,8 +27,8 @@ public class UdpReceive implements Runnable
 {
     private static final String pId = new String("[UdpReceive]");
 
-    public static String lastDataReceived = "";
-    protected DatagramSocket socket = null;
+    private static String lastDataReceived = "";
+    private DatagramSocket socket = null;
 
     public UdpReceive(int port)
     {
@@ -36,7 +36,8 @@ public class UdpReceive implements Runnable
         {
             socket = new DatagramSocket(port);
             socket.setSoTimeout(500); // set receive timeout in milliseconds in case RPi is dead
-        } catch (SocketException e)
+        }
+        catch (SocketException e)
         {
             // do something when something bad happens
             e.printStackTrace();
@@ -77,7 +78,6 @@ public class UdpReceive implements Runnable
                     receivedTargetB.fromJson(message);
                     System.out.println(pId + " Turret " + receivedTargetB);   
                 }
-
                 else if (lastDataReceived.startsWith("Intake "))
                 {
                     String message = new String(lastDataReceived.substring("Intake ".length()));
@@ -85,16 +85,17 @@ public class UdpReceive implements Runnable
                     receivedTargetE.fromJson(message);
                     System.out.println(pId + " Intake " + receivedTargetE);   
                 }
-
                 else
                 {
                     System.out.println(pId + " Unknown class received UDP " + lastDataReceived);
                 }
-            } catch (SocketTimeoutException e)
+            } 
+            catch (SocketTimeoutException e)
             {
                 // do something when no messages for awhile
                 System.out.println(pId + " hasn't heard from any vision pipeline for awhile");
-            } catch (IOException e)
+            } 
+            catch (IOException e)
             {
                 e.printStackTrace();
                 // could terminate loop but there is no easy restarting

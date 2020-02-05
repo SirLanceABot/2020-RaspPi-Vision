@@ -158,7 +158,7 @@ public final class Main
         public JsonObject config;
         public JsonElement streamConfig;
     }
-	
+
     @SuppressWarnings("MemberName")
     public static class SwitchedCameraConfig
     {
@@ -182,13 +182,13 @@ public final class Main
     private static UdpReceive testUDPreceive; // test UDP receiver in place of a roboRIO
     private static Thread UDPreceiveThread; // remove these or at least don't start this thread if using the roboRIO
 
-    static Images turretCamera;
-    static Images turretPipeline;
-    static Images intakeCamera;
-    static Images intakePipeline;
+    static Image turretCamera;
+    static Image turretPipeline;
+    static Image intakeCamera;
+    static Image intakePipeline;
+    static Object tabLock;
     static AtomicInteger tapeDistance;
     static ShuffleboardTab cameraTab;
-    static Object tabLock;
 
 // Settable parameters for some outputs listed below the skull
 
@@ -225,9 +225,9 @@ public final class Main
     static String version = "2020 RPi Vision 2/5/20";
     static boolean runTestUDPreceiver = false;
     
-    static String UDPreceiverName = "TEAM4237-1.local";
+    // static String UDPreceiverName = "TEAM4237-1.local";
     // static String UDPreceiverName = "RKT-LapTop.local";
-    // static String UDPreceiverName = "jwoodard-hp16.local";
+    static String UDPreceiverName = "jwoodard-hp16.local";
     // static String UDPreceiverName = "0.0.0.0";
     // "0.0.0.0" should be any computer but doesn't work for other computers - they don't see any packets
     // "roborio-4237-frc.local"
@@ -257,7 +257,7 @@ public final class Main
     /**
      * Report parse error.
      */
-    public static void parseError(String str)
+    private static void parseError(String str)
     {
         System.err.println(pId + " config error in '" + configFile + "': " + str);
     }
@@ -503,12 +503,74 @@ public final class Main
         return server;
     }
 
+    private static void mountUSBFlashDrive()
+    {
+        // try
+        // {
+        //     System.out.println(pId + " Sleeping 3 seconds so auto mount will be done by now, we are hopeful.");
+        //     Thread.sleep(3000);// 3000
+        // } catch (InterruptedException exc)
+        // {
+        //     System.out.println(pId + " Sleep 3 seconds was interrupted");
+        // }
+
+        try
+        {
+            // execute command to check for flash drive mounted
+            List<String> command = new ArrayList<String>(); // build my command as a list of strings
+            command.add("bash");
+            command.add("-c");
+            command.add("mountpoint -q /mnt/usb ; echo $?");
+
+            System.out.println(pId + " Run mountpoint /mnt/usb command");
+            ProcessBuilder pb1 = new ProcessBuilder(command);
+            Process process1 = pb1.start();
+            int errCode1 = process1.waitFor();
+            command.clear();
+            System.out.println(pId + " mountpoint command executed, any errors? " + (errCode1 == 0 ? "No" : "Yes"));
+            
+            String mountOutput = output(process1.getInputStream());
+            System.out.println(pId + " mountpoint output:\n" + mountOutput);
+            System.out.println(pId + " mountpoint errors:\n" + output(process1.getErrorStream()));
+
+            logImage = mountOutput.startsWith("0");
+            if (logImage)
+            {
+                System.out.println(pId + " Flash Drive Mounted /mnt/usb and image logging is on");
+                // mkdir in case they don't exist. Don't bother checking for existance - just do
+                // it.
+
+                command.add("bash");
+                command.add("-c");
+                command.add("sudo mkdir /mnt/usb/B /mnt/usb/BR /mnt/usb/E /mnt/usb/ER");
+
+                // execute command
+                System.out.println(pId + " Run mkdir B BR E ER command");
+                ProcessBuilder pb2 = new ProcessBuilder(command);
+                Process process2 = pb2.start();
+                int errCode2 = process2.waitFor();
+                System.out.println(pId + " mkdir command executed, any errors? " + (errCode2 == 0 ? "No" : "Yes"));
+                System.out.println(pId + " mkdir output:\n" + output(process2.getInputStream()));
+                System.out.println(pId + " mkdir errors:\n" + output(process2.getErrorStream()));
+            }
+            else
+            {
+                System.out.println(pId + " No Flash Drive Mounted");
+            }
+        }
+        catch (Exception ex2)
+        {
+            System.out.println(pId + " Error in mount process " + ex2);
+        }
+    }
+
     /**
      * Main.
      */
     public static void main(String... args)
     {
         Thread.currentThread().setName("4237Main");
+        System.out.println(pId + " ***** main() method starting *****");
 
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
@@ -524,10 +586,10 @@ public final class Main
             return;
         }
 
-        turretCamera = new Images();
-        turretPipeline = new Images();
-        intakeCamera = new Images();
-        intakePipeline = new Images();
+        turretCamera = new Image();
+        turretPipeline = new Image();
+        intakeCamera = new Image();
+        intakePipeline = new Image();
         tabLock = new Object();
         tapeDistance = new AtomicInteger();
 
@@ -570,6 +632,8 @@ public final class Main
         }
  
         // see if USB Flash Drive mounted and if so, log the images
+        mountUSBFlashDrive(); 
+
         // try
         // {
         //     System.out.println(pId + " Sleeping 3 seconds so auto mount will be done by now, we are hopeful.");
@@ -579,53 +643,54 @@ public final class Main
         //     System.out.println(pId + " Sleep 3 seconds was interrupted");
         // }
 
-        try
-        {
-            // execute command to check for flash drive mounted
-            List<String> command = new ArrayList<String>(); // build my command as a list of strings
-            command.add("bash");
-            command.add("-c");
-            command.add("mountpoint -q /mnt/usb ; echo $?");
+        // try
+        // {
+        //     // execute command to check for flash drive mounted
+        //     List<String> command = new ArrayList<String>(); // build my command as a list of strings
+        //     command.add("bash");
+        //     command.add("-c");
+        //     command.add("mountpoint -q /mnt/usb ; echo $?");
 
-            System.out.println(pId + " Run mountpoint /mnt/usb command");
-            ProcessBuilder pb1 = new ProcessBuilder(command);
-            Process process1 = pb1.start();
-            int errCode1 = process1.waitFor();
-            command.clear();
-            System.out.println(pId + " mountpoint command executed, any errors? " + (errCode1 == 0 ? "No" : "Yes"));
-            String mountOutput = output(process1.getInputStream());
-            System.out.println(pId + " mountpoint output:\n" + mountOutput);
-            System.out.println(pId + " mountpoint errors:\n" + output(process1.getErrorStream()));
-            logImage = mountOutput.startsWith("0");
-            if (logImage)
-            {
-                System.out.println(pId + " Flash Drive Mounted /mnt/usb and image logging is on");
-                // mkdir in case they don't exist. Don't bother checking for existance - just do
-                // it.
+        //     System.out.println(pId + " Run mountpoint /mnt/usb command");
+        //     ProcessBuilder pb1 = new ProcessBuilder(command);
+        //     Process process1 = pb1.start();
+        //     int errCode1 = process1.waitFor();
+        //     command.clear();
+        //     System.out.println(pId + " mountpoint command executed, any errors? " + (errCode1 == 0 ? "No" : "Yes"));
+            
+        //     String mountOutput = output(process1.getInputStream());
+        //     System.out.println(pId + " mountpoint output:\n" + mountOutput);
+        //     System.out.println(pId + " mountpoint errors:\n" + output(process1.getErrorStream()));
 
-                command.add("bash");
-                command.add("-c");
-                command.add("sudo mkdir /mnt/usb/B /mnt/usb/BR /mnt/usb/E /mnt/usb/ER");
+        //     logImage = mountOutput.startsWith("0");
+        //     if (logImage)
+        //     {
+        //         System.out.println(pId + " Flash Drive Mounted /mnt/usb and image logging is on");
+        //         // mkdir in case they don't exist. Don't bother checking for existance - just do
+        //         // it.
 
-                // execute command
-                System.out.println(pId + " Run mkdir B BR E ER command");
-                ProcessBuilder pb2 = new ProcessBuilder(command);
-                Process process2 = pb2.start();
-                int errCode2 = process2.waitFor();
-                System.out.println(pId + " mkdir command executed, any errors? " + (errCode2 == 0 ? "No" : "Yes"));
-                System.out.println(pId + " mkdir output:\n" + output(process2.getInputStream()));
-                System.out.println(pId + " mkdir errors:\n" + output(process2.getErrorStream()));
-            }
-            else
-            {
-                System.out.println(pId + " No Flash Drive Mounted");
-            }
+        //         command.add("bash");
+        //         command.add("-c");
+        //         command.add("sudo mkdir /mnt/usb/B /mnt/usb/BR /mnt/usb/E /mnt/usb/ER");
 
-        }
-        catch (Exception ex2)
-        {
-            System.out.println(pId + " Error in mount process " + ex2);
-        }
+        //         // execute command
+        //         System.out.println(pId + " Run mkdir B BR E ER command");
+        //         ProcessBuilder pb2 = new ProcessBuilder(command);
+        //         Process process2 = pb2.start();
+        //         int errCode2 = process2.waitFor();
+        //         System.out.println(pId + " mkdir command executed, any errors? " + (errCode2 == 0 ? "No" : "Yes"));
+        //         System.out.println(pId + " mkdir output:\n" + output(process2.getInputStream()));
+        //         System.out.println(pId + " mkdir errors:\n" + output(process2.getErrorStream()));
+        //     }
+        //     else
+        //     {
+        //         System.out.println(pId + " No Flash Drive Mounted");
+        //     }
+        // }
+        // catch (Exception ex2)
+        // {
+        //     System.out.println(pId + " Error in mount process " + ex2);
+        // }
 
         System.out.flush();
 
