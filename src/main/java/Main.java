@@ -634,64 +634,6 @@ public final class Main
         // see if USB Flash Drive mounted and if so, log the images
         mountUSBFlashDrive(); 
 
-        // try
-        // {
-        //     System.out.println(pId + " Sleeping 3 seconds so auto mount will be done by now, we are hopeful.");
-        //     Thread.sleep(3000);// 3000
-        // } catch (InterruptedException exc)
-        // {
-        //     System.out.println(pId + " Sleep 3 seconds was interrupted");
-        // }
-
-        // try
-        // {
-        //     // execute command to check for flash drive mounted
-        //     List<String> command = new ArrayList<String>(); // build my command as a list of strings
-        //     command.add("bash");
-        //     command.add("-c");
-        //     command.add("mountpoint -q /mnt/usb ; echo $?");
-
-        //     System.out.println(pId + " Run mountpoint /mnt/usb command");
-        //     ProcessBuilder pb1 = new ProcessBuilder(command);
-        //     Process process1 = pb1.start();
-        //     int errCode1 = process1.waitFor();
-        //     command.clear();
-        //     System.out.println(pId + " mountpoint command executed, any errors? " + (errCode1 == 0 ? "No" : "Yes"));
-            
-        //     String mountOutput = output(process1.getInputStream());
-        //     System.out.println(pId + " mountpoint output:\n" + mountOutput);
-        //     System.out.println(pId + " mountpoint errors:\n" + output(process1.getErrorStream()));
-
-        //     logImage = mountOutput.startsWith("0");
-        //     if (logImage)
-        //     {
-        //         System.out.println(pId + " Flash Drive Mounted /mnt/usb and image logging is on");
-        //         // mkdir in case they don't exist. Don't bother checking for existance - just do
-        //         // it.
-
-        //         command.add("bash");
-        //         command.add("-c");
-        //         command.add("sudo mkdir /mnt/usb/B /mnt/usb/BR /mnt/usb/E /mnt/usb/ER");
-
-        //         // execute command
-        //         System.out.println(pId + " Run mkdir B BR E ER command");
-        //         ProcessBuilder pb2 = new ProcessBuilder(command);
-        //         Process process2 = pb2.start();
-        //         int errCode2 = process2.waitFor();
-        //         System.out.println(pId + " mkdir command executed, any errors? " + (errCode2 == 0 ? "No" : "Yes"));
-        //         System.out.println(pId + " mkdir output:\n" + output(process2.getInputStream()));
-        //         System.out.println(pId + " mkdir errors:\n" + output(process2.getErrorStream()));
-        //     }
-        //     else
-        //     {
-        //         System.out.println(pId + " No Flash Drive Mounted");
-        //     }
-        // }
-        // catch (Exception ex2)
-        // {
-        //     System.out.println(pId + " Error in mount process " + ex2);
-        // }
-
         System.out.flush();
 
         // start cameras
@@ -784,7 +726,7 @@ public final class Main
         // before the ".start"
 
         // loop forever
-        for (;;)
+        while(true)
         {
             try 
             {
