@@ -143,28 +143,6 @@ public final class Main
 
     private static final String pId = new String("[Main]");
 
-    private static String output(InputStream inputStream) throws IOException
-    {
-        StringBuilder sb = new StringBuilder();
-        BufferedReader br = null;
-
-        try
-        {
-            br = new BufferedReader(new InputStreamReader(inputStream));
-            String line = null;
-            while ((line = br.readLine()) != null)
-            {
-                sb.append(line + System.getProperty("line.separator"));
-            }
-        }
-        finally
-        {
-            br.close();
-        }
-
-        return sb.toString();
-    }
-
     private static String configFile = "/boot/frc.json";
 
     @SuppressWarnings("MemberName")
@@ -181,7 +159,7 @@ public final class Main
     {
         public String name;
         public String key;
-    };
+    }
 
     private static CameraProcessB cpB;
     private static CameraProcessE cpE;
@@ -241,13 +219,14 @@ public final class Main
 
     static String version = "2020 RPi Vision 2/4/20";
     static boolean runTestUDPreceiver = false;
-    //static String UDPreceiverName = "jwoodard-hp16.local";
-    static String UDPreceiverName = "TEAM4237-1.local";
-    //static String UDPreceiverName = "RKT-LapTop.local";
     
-    //static String UDPreceiverName = "0.0.0.0";
+    static String UDPreceiverName = "TEAM4237-1.local";
+    // static String UDPreceiverName = "RKT-LapTop.local";
+    // static String UDPreceiverName = "jwoodard-hp16.local";
+    // static String UDPreceiverName = "0.0.0.0";
     // "0.0.0.0" should be any computer but doesn't work for other computers - they don't see any packets
     // "roborio-4237-frc.local"
+
     static boolean runImageMerge = false;
     static boolean debug = false;
     static boolean displayTurretContours = true;
@@ -278,6 +257,28 @@ public final class Main
         System.err.println(pId + " config error in '" + configFile + "': " + str);
     }
 
+    private static String output(InputStream inputStream) throws IOException
+    {
+        StringBuilder sb = new StringBuilder();
+        BufferedReader br = null;
+
+        try
+        {
+            br = new BufferedReader(new InputStreamReader(inputStream));
+            String line = null;
+            while ((line = br.readLine()) != null)
+            {
+                sb.append(line + System.getProperty("line.separator"));
+            }
+        }
+        finally
+        {
+            br.close();
+        }
+
+        return sb.toString();
+    }
+
     /**
      * Read single camera configuration.
      */
@@ -287,7 +288,8 @@ public final class Main
 
         // name
         JsonElement nameElement = config.get("name");
-        if (nameElement == null) {
+        if (nameElement == null) 
+        {
             parseError(pId + " could not read camera name");
             return false;
         }
@@ -295,7 +297,8 @@ public final class Main
 
         // path
         JsonElement pathElement = config.get("path");
-        if (pathElement == null) {
+        if (pathElement == null) 
+        {
             parseError(pId + " camera '" + cam.name + "': could not read path");
             return false;
         }
@@ -307,6 +310,7 @@ public final class Main
         cam.config = config;
 
         cameraConfigs.add(cam);
+
         return true;
     }
 
@@ -336,6 +340,7 @@ public final class Main
         cam.key = keyElement.getAsString();
 
         switchedCameraConfigs.add(cam);
+
         return true;
     }
 
@@ -368,7 +373,6 @@ public final class Main
 
         // team number
         JsonElement teamElement = obj.get("team");
-
         if (teamElement == null)
         {
             parseError(pId + " could not read team number");

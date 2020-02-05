@@ -127,9 +127,12 @@ public class CameraProcessB implements Runnable
 			{ // good frame grab so see if pipeline should be started
 				if (firstTime)
 				{
-					try {
+					try 
+					{
 						Thread.sleep(5000);
-					} catch (InterruptedException e) {
+					} 
+					catch (InterruptedException e) 
+					{
 						e.printStackTrace();
 					}
 					pipeline.start();
@@ -142,10 +145,10 @@ public class CameraProcessB implements Runnable
 			if (debuggingEnabled)
 			{
 				loopTotalTime = Timer.getFPGATimestamp() - loopTotalTime;
-				System.out.format("%s %6.2f FPS, loop/camera time %5.3f\n", pId, 1.0/loopTotalTime, loopTotalTime);
+				System.out.format("%s %6.2f FPS, loop/camera time %5.3f\n", pId, 1.0 / loopTotalTime, loopTotalTime);
 			}
 		} // End of the thread loop
 
-			System.out.println(pId + " Camera Frame Grab Interrupted and Ended Thread");
+		System.out.println(pId + " Camera Frame Grab Interrupted and Ended Thread");
 	}
 }

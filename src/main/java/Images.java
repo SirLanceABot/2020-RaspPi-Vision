@@ -7,8 +7,8 @@ public class Images
 {
     private static final String pId = new String("[Images]");
 
-    Mat mat = new Mat();
-    boolean isFreshImage = false;
+    private Mat mat = new Mat();
+    private boolean isFreshImage = false;
 
     public synchronized void setImage(Mat mat)
     {
@@ -24,14 +24,14 @@ public class Images
             try
             {
                 wait();
-         } catch (Exception e)
+            } 
+            catch (Exception e)
             {
                 System.out.println(pId + " error " + e);
             }
         }
         this.isFreshImage = false;
         this.mat.copyTo(mat);
-        return;
     }
 
     public synchronized boolean isFreshImage()

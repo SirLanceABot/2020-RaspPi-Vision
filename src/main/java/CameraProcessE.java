@@ -127,9 +127,12 @@ public class CameraProcessE implements Runnable
 			{ // good frame grab so see if pipeline should be started
 				if (firstTime)
 				{
-					try {
+					try 
+					{
 						Thread.sleep(5000);
-					} catch (InterruptedException e) {
+					} 
+					catch (InterruptedException e) 
+					{
 						e.printStackTrace();
 					}
 					pipeline.start();
@@ -146,6 +149,6 @@ public class CameraProcessE implements Runnable
 			}
 		} // End of the thread loop
 
-			System.out.println(pId + " Camera Frame Grab Interrupted and Ended Thread");
+		System.out.println(pId + " Camera Frame Grab Interrupted and Ended Thread");
 	}
 }
