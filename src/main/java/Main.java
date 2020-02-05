@@ -1,16 +1,18 @@
 /*
-To get rid of "errors" in the VS Code source presentation, change the .classpath to see the libraries
 
-
-Note there are some settable parameters located at the SKULL in the right wide scroller.
+Note there are some settable parameters located below the SKULL in the right wide scroller.
 
 The change from the standard FRCVISION example project is:
 
-Changes to and creation of the compile the project cmd file:
+To get rid of "errors" in the VS Code source presentation, change the .classpath to see the libraries as needed.
+As of the early 2020 release this wasn't necessary.
 
-RPiVisionCompile.cmd
-
-A tasks.json task is added to VS Code to run that command file
+A tasks.json task is added to VS Code to run helpful commands made for the team:
+(Access these commands on the VSC command palette ctrl-shift-P / Tasks: Run Task)
+    Creation of the project build cmd file:
+        RPiVisionCompile.cmd
+    Creation of PowerShell Script to display the UDP message output (the optional thread can also do this)
+        receiveUDP.ps1
 ====
 
 RaspBerry Pi setup:
@@ -24,10 +26,8 @@ RaspBerry Pi setup:
 Download frcvision image (from some WPI Github repository)
 Load image on SD card with balena Etcher [or others]
 Add auto mount of our camera image log USB flash drive to /etc/fstab
-
-# USB flash drive mounted for logging
-/dev/sda1	/mnt/usb	vfat	auto,users,rw,uid=1000,gid=100,umask=0002,nofail	0	0
-Copy of the file fstab is included in this project and can be used.
+    # USB flash drive mounted for logging. Requires directory mount point [sudo mkdir /mnt/usb]
+    /dev/sda1	/mnt/usb	vfat	auto,users,rw,uid=1000,gid=100,umask=0002,nofail	0	0
 
 Make camera image log directory mount point [sudo mkdir /mnt/usb]
 
@@ -40,11 +40,15 @@ The configuration file is then saved in /boot/frc.json
 Program starts execution in Main.java - main.java
 
 Threads are spawned (optionally) for
-    UdpReceive (test receive data if no roboRIO)
     CameraProcessB (TurretB camera)
     CameraProcessE (IntakeE camera)
     ImageMerge (show picture in picture from the 2 cameras)
---
+    UdpReceive (test receive data if no roboRIO - note that the PowerShell UDP monitor can also be used)
+
+Image processing threads are then spawned for
+    PipelineProcessB
+    PipelineProcessE
+ --
 
 Some of this project is based on the frc provided example thus:
 */
@@ -132,7 +136,8 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 
 public final class Main
 {
-    {
+    { // sleep needed for early version of this code in 2020.  Linux or JVM allowed this program to start before
+      // Linux or JVM was fully functional to run correctly the threads spawned by this program
         try
         {
             Thread.sleep(10000);
@@ -217,7 +222,7 @@ public final class Main
 
 // Settable parameters for some outputs listed below
 
-    static String version = "2020 RPi Vision 2/4/20";
+    static String version = "2020 RPi Vision 2/5/20";
     static boolean runTestUDPreceiver = false;
     
     static String UDPreceiverName = "TEAM4237-1.local";
@@ -290,7 +295,7 @@ public final class Main
         JsonElement nameElement = config.get("name");
         if (nameElement == null) 
         {
-            parseError(pId + " could not read camera name");
+            parseError("could not read camera name");
             return false;
         }
         cam.name = nameElement.getAsString();
@@ -299,7 +304,7 @@ public final class Main
         JsonElement pathElement = config.get("path");
         if (pathElement == null) 
         {
-            parseError(pId + " camera '" + cam.name + "': could not read path");
+            parseError("camera '" + cam.name + "': could not read path");
             return false;
         }
         cam.path = pathElement.getAsString();
@@ -365,7 +370,7 @@ public final class Main
         // top level must be an object
         if (!top.isJsonObject())
         {
-            parseError(pId + " must be JSON object");
+            parseError("must be JSON object");
             return false;
         }
 
@@ -375,7 +380,7 @@ public final class Main
         JsonElement teamElement = obj.get("team");
         if (teamElement == null)
         {
-            parseError(pId + " could not read team number");
+            parseError("could not read team number");
             return false;
         }
         team = teamElement.getAsInt();
@@ -394,7 +399,7 @@ public final class Main
             } 
             else
             {
-                parseError(pId + " could not understand ntmode value '" + str + "'");
+                parseError("could not understand ntmode value '" + str + "'");
             }
         }
 
@@ -402,7 +407,7 @@ public final class Main
         JsonElement camerasElement = obj.get("cameras");
         if (camerasElement == null) 
         {
-            parseError(pId + " could not read cameras");
+            parseError("could not read cameras");
             return false;
         }
 
