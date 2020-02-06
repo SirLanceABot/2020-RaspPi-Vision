@@ -145,13 +145,11 @@ public class TargetSelectionB
                 // Draw a rotatedRect, using lines, that represents the minAreaRect
                 Point boxPts[] = new Point[4];
                 boundRect.points(boxPts);
-                Point boxPtsO[] = new Point[4];
-                boundRect.points(boxPtsO);
                 
                 // Determine if this is the best contour using center.y
-
-                if (nextTargetData.center.y < boundRect.center.y)
-                {
+                // TODO: Review this
+                // if (nextTargetData.center.y < boundRect.center.y)
+                // {
                     bestContourIndex = contourIndex;
 
                 //System.out.println(boundRect); // { {76.72164916992188, 101.87628936767578} 9x92 * -66.03751373291016 }
@@ -184,23 +182,35 @@ public class TargetSelectionB
                 Imgproc.drawMarker(mat, boxPts[2], new Scalar(  0, 255, 255), Imgproc.MARKER_STAR, 7);// yellow
                 Imgproc.drawMarker(mat, boxPts[3], new Scalar(255,   0, 255), Imgproc.MARKER_STAR, 7);// magenta
  
+                    // Find the corner points of the bounding rectangle and the image size
+                    nextTargetData.boundingBoxPts[0] = boxPts[0];
+                    nextTargetData.boundingBoxPts[1] = boxPts[1];
+                    nextTargetData.boundingBoxPts[2] = boxPts[2];
+                    nextTargetData.boundingBoxPts[3] = boxPts[3];
+                    nextTargetData.imageSize.width = mat.width();
+                    nextTargetData.imageSize.height = mat.height();
+
+                    /*
                     // Find the center x, center y, width, height, and angle of the bounding rectangle
                     nextTargetData.center = boundRect.center;
                     nextTargetData.size = boundRect.size;
                     nextTargetData.angle = boundRect.angle;
+                    */
 
                     // Imgproc.putText(mat, String.format("%5.0f", boundRect.angle), new Point(15, 15),
                     //   Core.FONT_HERSHEY_SIMPLEX, .6, new Scalar(255, 255, 255), 1);
  
-                    nextTargetData.fixedAngle = 90.0;
+                    // nextTargetData.fixedAngle = 90.0;
  
                     //Update the target
                     nextTargetData.isFreshData = true;
                     nextTargetData.isTargetFound = true;
-                }
+                // }
             }
             // draw the best - selected - contour
             Imgproc.drawContours(mat, filteredContours, bestContourIndex, new Scalar(0, 0, 255), 1);
+
+            /* 2019 code
             // draw the pointer to the target
             double angleInRadians = nextTargetData.fixedAngle * (Math.PI/180);
             endpoint.x = nextTargetData.center.x - ( (nextTargetData.size.height / 2) * Math.cos(angleInRadians) );
@@ -208,6 +218,7 @@ public class TargetSelectionB
             Imgproc.line(mat, nextTargetData.center, endpoint,  new Scalar(255, 0, 255), 1, Imgproc.LINE_4);
             Mat bestContour = Mat.zeros(mat.rows(), mat.cols(), CvType.CV_8UC1); // blank Mat to draw the best Contour on
             Imgproc.drawContours(bestContour, filteredContours, bestContourIndex, new Scalar(255), 1, Imgproc.LINE_4);
+            */
 
         } // end of processing all contours in this camera frame
         }

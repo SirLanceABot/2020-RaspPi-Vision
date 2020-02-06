@@ -17,10 +17,13 @@ public class TargetDataB
     // NOTE: No modifier means visible to both the class and package.
 
     // Target data that we need
-    Point center;
-    Size size;
-    double angle;
-    public double fixedAngle;
+    Point boundingBoxPts[];
+    Size imageSize;
+
+    // Point center;
+    // Size size;
+    // double angle;
+    // public double fixedAngle;
 
     // These fields are used to track the validity of the data.
     int frameNumber; // Number of the camera frame
@@ -32,8 +35,10 @@ public class TargetDataB
      */
      public TargetDataB()
     {
-        center = new Point();
-        size = new Size();
+        boundingBoxPts = new Point[4];
+        imageSize = new Size();
+        // center = new Point();
+        // size = new Size();
         reset();
         frameNumber = 0;
     }
@@ -44,12 +49,18 @@ public class TargetDataB
      */
     public synchronized void reset()
     {
-        center.x = -1.0;
-        center.y = -1.0;
-        size.width = -1.0;
-        size.height = -1.0;
-        angle = -1.0;
-        fixedAngle = -1.0;
+        boundingBoxPts[0] = new Point(-1.0, -1.0);
+        boundingBoxPts[1] = new Point(-1.0, -1.0);
+        boundingBoxPts[2] = new Point(-1.0, -1.0);
+        boundingBoxPts[3] = new Point(-1.0, -1.0);
+        imageSize = new Size(-1.0, -1.0);
+
+        // center.x = -1.0;
+        // center.y = -1.0;
+        // size.width = -1.0;
+        // size.height = -1.0;
+        // angle = -1.0;
+        // fixedAngle = -1.0;
         isTargetFound = false;
 
         // DO NOT reset the frameNumber
@@ -64,12 +75,23 @@ public class TargetDataB
      */
     public synchronized void set(TargetDataB targetData)
     {
-        center.x = targetData.center.x;
-        center.y = targetData.center.y;
-        size.width = targetData.size.width;
-        size.height = targetData.size.height;
-        angle = targetData.angle;
-        fixedAngle = targetData.fixedAngle;
+        boundingBoxPts[0].x = targetData.boundingBoxPts[0].x;
+        boundingBoxPts[0].y = targetData.boundingBoxPts[0].y;
+        boundingBoxPts[1].x = targetData.boundingBoxPts[1].x;
+        boundingBoxPts[1].y = targetData.boundingBoxPts[1].y;
+        boundingBoxPts[2].x = targetData.boundingBoxPts[2].x;
+        boundingBoxPts[2].y = targetData.boundingBoxPts[2].y;
+        boundingBoxPts[3].x = targetData.boundingBoxPts[3].x;
+        boundingBoxPts[3].y = targetData.boundingBoxPts[3].y;
+        imageSize.width = targetData.imageSize.width;
+        imageSize.height = targetData.imageSize.height;
+
+        // center.x = targetData.center.x;
+        // center.y = targetData.center.y;
+        // size.width = targetData.size.width;
+        // size.height = targetData.size.height;
+        // angle = targetData.angle;
+        // fixedAngle = targetData.fixedAngle;
         isTargetFound = targetData.isTargetFound;
         frameNumber = targetData.frameNumber;
 
@@ -87,12 +109,23 @@ public class TargetDataB
     public synchronized TargetDataB get()
     {
         TargetDataB targetData = new TargetDataB();
-        targetData.center.x = center.x;
-        targetData.center.y = center.y;
-        targetData.size.width = size.width;
-        targetData.size.height = size.height;
-        targetData.angle = angle;
-        targetData.fixedAngle = fixedAngle;
+        targetData.boundingBoxPts[0].x = boundingBoxPts[0].x;
+        targetData.boundingBoxPts[0].y = boundingBoxPts[0].y;
+        targetData.boundingBoxPts[1].x = boundingBoxPts[1].x;
+        targetData.boundingBoxPts[1].y = boundingBoxPts[1].y;
+        targetData.boundingBoxPts[2].x = boundingBoxPts[2].x;
+        targetData.boundingBoxPts[2].y = boundingBoxPts[2].y;
+        targetData.boundingBoxPts[3].x = boundingBoxPts[3].x;
+        targetData.boundingBoxPts[3].y = boundingBoxPts[3].y;
+        targetData.imageSize.width = imageSize.width;
+        targetData.imageSize.height = imageSize.height;
+
+        // targetData.center.x = center.x;
+        // targetData.center.y = center.y;
+        // targetData.size.width = size.width;
+        // targetData.size.height = size.height;
+        // targetData.angle = angle;
+        // targetData.fixedAngle = fixedAngle;
         targetData.isTargetFound = isTargetFound;
         targetData.frameNumber = frameNumber;
         targetData.isFreshData = isFreshData;
@@ -113,6 +146,17 @@ public class TargetDataB
             frameNumber++;
     }
 
+    public synchronized Point[] getBoundingBoxPts()
+    {
+        return boundingBoxPts;
+    }
+
+    public synchronized Size getImageSize()
+    {
+        return imageSize;
+    }
+
+    /*
     public synchronized  Point getCenter()
     {
         return center;
@@ -132,6 +176,7 @@ public class TargetDataB
     {
         return fixedAngle;
     }
+    */
 
    /**
      * This method indicates if a target was found.
@@ -184,8 +229,14 @@ public class TargetDataB
      */
     public synchronized String toString()
     {
+        return String.format("Frame = %d, %s, boundingBoxPts = [{%f, %f}, {%f, %f}, {%f, %f}, {%f, %f}],\nimageSize.width = %f, imageSize.height = %f", 
+            frameNumber, isTargetFound ? "target" : "no target",
+            boundingBoxPts[0].x, boundingBoxPts[0].y, boundingBoxPts[1].x, boundingBoxPts[1].y, boundingBoxPts[2].x, boundingBoxPts[2].y, boundingBoxPts[3].x, boundingBoxPts[3].y, imageSize.width, imageSize.height, isFreshData ? "FRESH" : "stale");
+
+        /*
         return String.format("Frame = %d, %s, center.x = %f, center.y = %f, size.width = %f, size.height = %f, angle = %f, fixedAngle = %f %s", 
             frameNumber, isTargetFound ? "target" : "no target",
             center.x, center.y, size.width, size.height, angle, fixedAngle, isFreshData ? "FRESH" : "stale");
+            */
     }
 }
