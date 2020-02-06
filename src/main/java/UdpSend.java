@@ -27,6 +27,8 @@ public class UdpSend
         } 
         catch (UnknownHostException e)
         {
+            System.out.println(pId + " Requested message receiver not responding. Camera servers probably will work but other vision functions for object detection likely are failing.");
+
             e.printStackTrace();
         }
 

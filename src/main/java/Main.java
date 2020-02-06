@@ -219,18 +219,26 @@ public final class Main
     // ____"$$$$$"______________________""$$$$""__
 
 
+// Choices fror sending driving messages.  Add to the list as desired.  Select which one is used a few lines below.
+    static String sendToJW = "jwoodard-hp16.local";
+    static String SendToRT = "RKT-LapTop.local";
+    static String sendToTeam1 = "TEAM4237-1.local";
+    static String sendToROBORIO = "roborio-4237-frc.local";
 
 // Settable parameters for some outputs listed below
+// Settable parameters for some outputs listed below
+// Settable parameters for some outputs listed below
 
-    static String version = "2020 RPi Vision 2/5/20";
+    static String version = "2020 RPi Vision 2/6/20";
     static boolean runTestUDPreceiver = false;
-    
-    static String UDPreceiverName = "TEAM4237-1.local";
-    // static String UDPreceiverName = "RKT-LapTop.local";
-    // static String UDPreceiverName = "jwoodard-hp16.local";
+
+// URL where driving messages are to be sent
+// This should be the roboRIO except if testing
+    static String UDPreceiverName = SendToRT;
+ 
     // static String UDPreceiverName = "0.0.0.0";
     // "0.0.0.0" should be any computer but doesn't work for other computers - they don't see any packets
-    // "roborio-4237-frc.local"
+    // 
 
     static boolean runImageMerge = false;
     static boolean debug = false;
@@ -731,6 +739,9 @@ public final class Main
             try 
             {
                 System.out.println(pId + " Program Version " + version + "  current time ms " + System.currentTimeMillis());
+
+                if (UDPreceiverName != sendToROBORIO)
+                    System.out.println(pId + " Warning - robot driving messages not being sent to roboRIO");
 
                 // Map<String, String> env = System.getenv(); // or get just one - String myEnv = System.getenv("env_name");
                 // for (String envName : env.keySet()) {

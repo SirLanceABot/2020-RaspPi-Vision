@@ -124,7 +124,7 @@ public class TargetSelectionE
         Imgproc.HoughCircles(input, circles, Imgproc.CV_HOUGH_GRADIENT, 1, input.rows()/8, 50, 30, 30, 100);
         
         //System.out.println(String.valueOf("size: " + circles.cols()) + ", " + String.valueOf(circles.rows()));
-        System.out.println("size: " + circles.cols() + ", " + circles.rows());
+        //System.out.println("size: " + circles.cols() + ", " + circles.rows());
 
         if (circles.cols() > 0) 
         {
@@ -136,7 +136,7 @@ public class TargetSelectionE
 			//System.out.print("[Vision] " + aContour.size() + " points in contour\n[Vision]"); // a contour is a bunch of points
 			// convert MatofPoint to an array of those Points and iterate (could do list of Points but no need for this)
 			//for(Point aPoint : aContour.toArray())System.out.print(" " + aPoint); // print each point
-			System.out.println(circles.dump());
+			//System.out.println(circles.dump());
 			
             for (int x=0; x < Math.min(circles.cols(), 5); x++ ) 
             {
@@ -149,7 +149,7 @@ public class TargetSelectionE
 
                 Point center = new Point((int) circleVec[0], (int) circleVec[1]);
                 int radius = (int) circleVec[2];
-                System.out.println(" x, y, r " + (circleVec[0]) + " " + (circleVec[1]) + " " + (circleVec[2]));
+                //System.out.println(" x, y, r " + (circleVec[0]) + " " + (circleVec[1]) + " " + (circleVec[2]));
 
                 Imgproc.circle(input, center, 3, new Scalar(255, 255, 255), 5);
                 Imgproc.circle(input, center, radius, new Scalar(255, 255, 255), 2);
