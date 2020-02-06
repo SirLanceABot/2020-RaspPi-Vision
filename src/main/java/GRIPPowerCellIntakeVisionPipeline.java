@@ -45,9 +45,9 @@ public class GRIPPowerCellIntakeVisionPipeline {
 
 		// Step HSV_Threshold0:
 		Mat hsvThresholdInput = blurOutput;
-		// double[] hsvThresholdHue = {43.70503597122302, 92.45733788395906};
-		// double[] hsvThresholdSaturation = {119.24460431654677, 239.76962457337885};
-		// double[] hsvThresholdValue = {100.89928057553956, 255};
+		double[] hsvThresholdHue = {10.0, 50.0};
+		double[] hsvThresholdSaturation = {119.24460431654677, 239.76962457337885};
+		double[] hsvThresholdValue = {100.89928057553956, 255};
 		hsvThreshold(hsvThresholdInput, hsvThresholdHue, hsvThresholdSaturation, hsvThresholdValue, hsvThresholdOutput);
 
 		// Step Find_Contours0:

@@ -62,6 +62,7 @@ public class TargetSelectionE
 		// Let the gripPowerCellIntakeVisionPipeline filter through the camera frame
 		gripPowerCellIntakeVisionPipeline.process(mat);
 		MatOfPoint2f contour2;
+		gripPowerCellIntakeVisionPipeline.hsvThresholdOutput().copyTo(mat);
         detectPowerCells(mat);
 
 		// The gripPowerCellIntakeVisionPipeline creates an array of contours that must be searched to find

@@ -225,9 +225,9 @@ public final class Main
     static String version = "2020 RPi Vision 2/5/20";
     static boolean runTestUDPreceiver = false;
     
-    // static String UDPreceiverName = "TEAM4237-1.local";
+    static String UDPreceiverName = "TEAM4237-1.local";
     // static String UDPreceiverName = "RKT-LapTop.local";
-    static String UDPreceiverName = "jwoodard-hp16.local";
+    // static String UDPreceiverName = "jwoodard-hp16.local";
     // static String UDPreceiverName = "0.0.0.0";
     // "0.0.0.0" should be any computer but doesn't work for other computers - they don't see any packets
     // "roborio-4237-frc.local"
