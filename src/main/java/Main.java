@@ -166,6 +166,43 @@ public final class Main
         public String key;
     }
 
+    public static class CameraWidget
+    {
+        public String name;
+
+        public int column;
+        public int row;
+        public int width;
+        public int height;
+
+        // Name	Type        Default     Value	Notes
+        // Show crosshair	Boolean     true	Show or hide a crosshair on the image
+        // Crosshair color	Color	    "white"	Can be a string or a rgba integer
+        // Show controls	Boolean	    true	Show or hide the stream controls
+        // Rotation	        String	    "NONE"	Rotates the displayed image. One of ["NONE", "QUARTER_CW", "QUARTER_CCW", "HALF"]
+ 
+        public boolean showCrosshair;
+        public String crosshairColor;
+        public boolean showControls;
+        public String rotation;
+
+        public void setLocation(int row, int column, int height, int width)
+        {
+            this.column = column;
+            this.width = width;
+            this.height = height;
+            this.width = width;
+        }
+
+        public void setProperties(boolean showCrosshair, String crosshairColor, boolean showControls, String rotation)
+        {
+            this.showCrosshair = showCrosshair;
+            this.crosshairColor = crosshairColor;
+            this.showControls = showControls;
+            this.rotation = rotation;
+        }
+    }
+
     private static CameraProcessB cpB;
     private static CameraProcessE cpE;
     private static ImageMerge imageDriver;
@@ -221,7 +258,7 @@ public final class Main
 
 // Choices fror sending driving messages.  Add to the list as desired.  Select which one is used a few lines below.
     static String sendToJW = "jwoodard-hp16.local";
-    static String SendToRT = "RKT-LapTop.local";
+    static String sendToRT = "RKT-LapTop.local";
     static String sendToTeam1 = "TEAM4237-1.local";
     static String sendToROBORIO = "roborio-4237-frc.local";
 
@@ -234,7 +271,7 @@ public final class Main
 
 // URL where driving messages are to be sent
 // This should be the roboRIO except if testing
-    static String UDPreceiverName = SendToRT;
+    static String UDPreceiverName = sendToTeam1;
  
     // static String UDPreceiverName = "0.0.0.0";
     // "0.0.0.0" should be any computer but doesn't work for other computers - they don't see any packets
@@ -572,6 +609,30 @@ public final class Main
         }
     }
 
+    private static void createCameraShuffleboardWidget(VideoSource camera, CameraWidget cw)
+    {
+        // Name	Type        Default     Value	Notes
+        // Show crosshair	Boolean     true	Show or hide a crosshair on the image
+        // Crosshair color	Color	    "white"	Can be a string or a rgba integer
+        // Show controls	Boolean	    true	Show or hide the stream controls
+        // Rotation	        String	    "NONE"	Rotates the displayed image. One of ["NONE", "QUARTER_CW", "QUARTER_CCW", "HALF"]
+       
+        Map<String, Object> cameraWidgetProperties = new HashMap<String, Object>();
+        cameraWidgetProperties.put("Show crosshair", cw.showCrosshair);
+        cameraWidgetProperties.put("Crosshair color", cw.crosshairColor);
+        cameraWidgetProperties.put("Show controls", cw.showControls);
+        cameraWidgetProperties.put("Rotation", cw.rotation);
+           
+        synchronized(tabLock)
+        {
+            cameraTab.add(cw.name + " Camera", camera)
+                .withWidget(BuiltInWidgets.kCameraStream)
+                .withPosition(cw.column, cw.row)
+                .withSize(cw.width, cw.height)
+                .withProperties(cameraWidgetProperties);
+        }
+    }
+
     /**
      * Main.
      */
@@ -648,60 +709,45 @@ public final class Main
         for (CameraConfig config : cameraConfigs) 
         {
             // assume each camera name appears only once in the list - that is a requirement
-	        System.out.println(pId + " Checking for TurretB camera");
+            System.out.println(pId + " Checking for " + config.name + " camera");
             if (config.name.equalsIgnoreCase("TurretB"))
             {
                 System.out.println(pId + " Starting TurretB camera");
                 VideoSource Bcamera = startCamera(config);
-                ///////////////////
+
                 // Widget in Shuffleboard Tab
-                Map<String, Object> mapTurretCamera = new HashMap<String, Object>();
-                mapTurretCamera.put("Show crosshair", false);
-                mapTurretCamera.put("Show controls", false);
-                   
-                synchronized(tabLock)
-                {
-                    cameraTab.add("TurretB Camera", Bcamera)
-                        .withWidget(BuiltInWidgets.kCameraStream)
-                        .withPosition(20, 0)
-                        .withSize(13, 13)
-                        .withProperties(mapTurretCamera);
-                }
-                //////////////////
+                CameraWidget cw = new CameraWidget();
+                cw.name = config.name;
+                cw.setLocation(0, 20, 13, 13);
+                cw.setProperties(false, "white", false, "NONE");
+                createCameraShuffleboardWidget(Bcamera, cw);                
+
                 cpB = new CameraProcessB(Bcamera);
                 visionThreadB = new Thread(cpB, "4237TurretB Camera");
-                visionThreadB.start(); // start thread using the class' run() method (just saying run() won't start a
-                // thread - that just runs run() once)
-		        continue;
+                // start thread using the class' run() method (just saying run() won't start a thread - that just runs run() once)
+                visionThreadB.start(); 
             }
-
-	        System.out.println(pId + " Checking for IntakeE camera");
-            if (config.name.equalsIgnoreCase("IntakeE"))
+            else if (config.name.equalsIgnoreCase("IntakeE"))
             {
                 System.out.println(pId + " Starting IntakeE camera");
                 VideoSource Ecamera = startCamera(config);
-                ///////////////////
+
                 // Widget in Shuffleboard Tab
-                Map<String, Object> mapIntakeCamera = new HashMap<String, Object>();
-                mapIntakeCamera.put("Show crosshair", false);
-                mapIntakeCamera.put("Show controls", false);
-          
-                synchronized(tabLock)
-                {
-                    cameraTab.add("IntakeE Camera", Ecamera)
-                        .withWidget(BuiltInWidgets.kCameraStream)
-                        .withPosition(0, 0)
-                        .withSize(20, 17)
-                        .withProperties(mapIntakeCamera);
-                }
-                //////////////////
+                CameraWidget cw = new CameraWidget();
+                cw.name = config.name;
+                cw.setLocation(0, 0, 17, 20);
+                cw.setProperties(false, "white", false, "NONE");
+                createCameraShuffleboardWidget(Ecamera, cw);
+
                 cpE = new CameraProcessE(Ecamera);
                 visionThreadE = new Thread(cpE, "4237IntakeECamera");
+                // start thread using the class' run() method (just saying run() won't start a thread - that just runs run() once)
                 visionThreadE.start();
-                continue;
-	        }
-
-            System.out.println(pId + " Unknown camera in cameraConfigs " + config.name);
+            }
+            else
+            {
+                System.out.println(pId + " Unknown camera in cameraConfigs " + config.name);
+            }
         }
         
         Shuffleboard.update();
