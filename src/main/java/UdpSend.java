@@ -12,14 +12,52 @@ public class UdpSend
     private static final String pId = new String("[UdpSend]");
 
     private InetAddress address;
+    private boolean isConnected;
+
     private byte[] UDPbuffer = new byte[256];
     private final int bufLength = UDPbuffer.length; // save original length because length property is changed with usage
 
     private DatagramPacket packet;
     private DatagramSocket datagramSocket;
+    private int port;
+    private String URL;
 
     public UdpSend(int port, String URL)
     {
+        isConnected = false;
+        this.port = port;
+        this.URL = URL;
+        Connect();
+    }
+
+    public synchronized void Communicate(String message)
+    {
+        if(isConnected)
+        {
+        UDPbuffer = message.getBytes();
+
+        packet.setData(UDPbuffer, 0, UDPbuffer.length);
+
+        try
+        {
+            datagramSocket.send(packet); // send target information to robot
+        } 
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+        }
+    }
+
+    public synchronized boolean isConnected() // getter for isConnected
+    {
+        return isConnected;
+    }
+
+    public synchronized void Connect ()
+    {
+        if(isConnected) return; // cannot connect if already connected
+
         try
         {
             System.out.println(pId + " Sending UDP messages to " + URL + ":" + port);
@@ -27,9 +65,10 @@ public class UdpSend
         } 
         catch (UnknownHostException e)
         {
-            System.out.println(pId + " Requested message receiver not responding. Camera servers probably will work but other vision functions for object detection likely are failing.");
+            System.out.println(pId + " Requested message receiver not responding.");
 
             e.printStackTrace();
+            return;
         }
 
         try
@@ -52,24 +91,12 @@ public class UdpSend
         catch (SocketException e)
         {
             e.printStackTrace();
+            return;
         }
 
         packet = new DatagramPacket(UDPbuffer, bufLength, address, port);
+
+        isConnected = true; // made it all the way here so assume all is OK
     }
 
-    public synchronized void Communicate(String message)
-    {
-        UDPbuffer = message.getBytes();
-
-        packet.setData(UDPbuffer, 0, UDPbuffer.length);
-
-        try
-        {
-            datagramSocket.send(packet); // send target information to robot
-        } 
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
-    }
 }
