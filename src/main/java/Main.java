@@ -788,6 +788,12 @@ public final class Main
 
                 if (UDPreceiverName != sendToROBORIO)
                     System.out.println(pId + " Warning - robot driving messages not being sent to roboRIO");
+                
+                if(!sendMessage.isConnected())
+                    {
+                    System.out.println(pId + " Warning - robot driving messages not being sent anywhere - trying to connect");
+                    sendMessage.Connect(); // keep trying to connect if it isn't
+                    }
 
                 // Map<String, String> env = System.getenv(); // or get just one - String myEnv = System.getenv("env_name");
                 // for (String envName : env.keySet()) {
