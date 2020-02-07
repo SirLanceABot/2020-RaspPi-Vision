@@ -1,3 +1,12 @@
+// IMPORTANT***********************************************************
+// Pixel-Inches Readings:
+// horizontal distance is HD and angled distance is AD
+// (110, HD = 128.5 and AD = 143)
+// (30-60, HD = 38 and AD = 72)
+// (0, HD = 232 and AD = 240)
+
+
+
 import java.util.ArrayList;
 import java.util.List;
 import java.lang.Math;
@@ -6,6 +15,7 @@ import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.Point;
+import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.core.MatOfPoint2f;
@@ -101,7 +111,7 @@ public class TargetSelectionB
         }
         else // if contours were found ...
         {
-            RotatedRect boundRect;
+            Rect boundRect;
 
             if (debuggingEnabled)
 			{
@@ -140,11 +150,14 @@ public class TargetSelectionB
                 // }
                 
                 // Create a bounding upright rectangle for the contour's points
-                boundRect = Imgproc.minAreaRect(NewMtx);
+                boundRect = Imgproc.boundingRect(NewMtx);
 
                 // Draw a rotatedRect, using lines, that represents the minAreaRect
                 Point boxPts[] = new Point[4];
-                boundRect.points(boxPts);
+                boxPts[0] = boundRect.tl();
+                boxPts[1] = new Point(boundRect.br().x, boundRect.tl().y);
+                boxPts[2] = boundRect.br();
+                boxPts[3] = new Point(boundRect.tl().x, boundRect.br().y);
                 
                 // Determine if this is the best contour using center.y
                 // TODO: Review this
@@ -189,6 +202,10 @@ public class TargetSelectionB
                     nextTargetData.boundingBoxPts[3] = boxPts[3];
                     nextTargetData.imageSize.width = mat.width();
                     nextTargetData.imageSize.height = mat.height();
+                    nextTargetData.widthOfPortDistance = 0.0;
+                    // Find the shorest distance from the left of the frame to the box
+                    nextTargetData.locationOfPortDistance = boundRect.tl().x;
+                    System.out.println("Distance in pixels = " + nextTargetData.locationOfPortDistance);
 
                     /*
                     // Find the center x, center y, width, height, and angle of the bounding rectangle
