@@ -20,6 +20,7 @@ public class TargetDataB
     Point boundingBoxPts[];
     Size imageSize;
     double widthOfPortDistance, locationOfPortDistance;
+    double angleToTurn, angleToRise;
 
     // Point center;
     // Size size;
@@ -58,6 +59,8 @@ public class TargetDataB
         imageSize = new Size(-1.0, -1.0);
         widthOfPortDistance = -1.0;
         locationOfPortDistance = -1.0;
+        angleToTurn = 0;
+        angleToRise = 0;
 
         // center.x = -1.0;
         // center.y = -1.0;
@@ -91,6 +94,8 @@ public class TargetDataB
         imageSize.height = targetData.imageSize.height;
         widthOfPortDistance = targetData.widthOfPortDistance;
         locationOfPortDistance = targetData.locationOfPortDistance;
+        angleToTurn = targetData.angleToTurn;
+        angleToRise = targetData.angleToRise;
 
         // center.x = targetData.center.x;
         // center.y = targetData.center.y;
@@ -127,6 +132,8 @@ public class TargetDataB
         targetData.imageSize.height = imageSize.height;
         targetData.widthOfPortDistance = widthOfPortDistance;
         targetData.locationOfPortDistance = locationOfPortDistance;
+        targetData.angleToTurn = angleToTurn;
+        targetData.angleToRise = angleToRise;
 
         // targetData.center.x = center.x;
         // targetData.center.y = center.y;
@@ -237,9 +244,9 @@ public class TargetDataB
      */
     public synchronized String toString()
     {
-        return String.format("Frame = %d, %s, boundingBoxPts = [{%f, %f}, {%f, %f}, {%f, %f}, {%f, %f}],\nimageSize.width = %f, imageSize.height = %f, \nwidthOfPortDistance = %f, locationOfPortDistance = %f", 
+        return String.format("Frame = %d, %s, boundingBoxPts = [{%f, %f}, {%f, %f}, {%f, %f}, {%f, %f}],\nimageSize.width = %f, imageSize.height = %f, \nwidthOfPortDistance = %f, locationOfPortDistance = %f, \nangleToTurn = %d, angleToRise = %d", 
             frameNumber, isTargetFound ? "target" : "no target",
-            boundingBoxPts[0].x, boundingBoxPts[0].y, boundingBoxPts[1].x, boundingBoxPts[1].y, boundingBoxPts[2].x, boundingBoxPts[2].y, boundingBoxPts[3].x, boundingBoxPts[3].y, imageSize.width, imageSize.height, widthOfPortDistance, locationOfPortDistance, isFreshData ? "FRESH" : "stale");
+            boundingBoxPts[0].x, boundingBoxPts[0].y, boundingBoxPts[1].x, boundingBoxPts[1].y, boundingBoxPts[2].x, boundingBoxPts[2].y, boundingBoxPts[3].x, boundingBoxPts[3].y, imageSize.width, imageSize.height, widthOfPortDistance, locationOfPortDistance, angleToTurn, angleToRise, isFreshData ? "FRESH" : "stale");
 
         /*
         return String.format("Frame = %d, %s, center.x = %f, center.y = %f, size.width = %f, size.height = %f, angle = %f, fixedAngle = %f %s", 
