@@ -204,8 +204,14 @@ public class TargetSelectionB
                     nextTargetData.imageSize.height = mat.height();
                     nextTargetData.widthOfPortDistance = 0.0;
                     // Find the shorest distance from the left of the frame to the box
-                    nextTargetData.locationOfPortDistance = boundRect.tl().x;
-                    System.out.println("Distance in pixels = " + nextTargetData.locationOfPortDistance);
+                    // Use a linear equation to convert the distance in pixels to the distance in inches
+                    // a better way will be to use geometry to calculate the distance in inches to the power port with a sinusoidal equation
+                    nextTargetData.locationOfPortDistance = ((100.0 / 231.0) * boundRect.br().x) - (283.0 / 11.0);
+                    // System.out.println("Distance in pixels = " + boundRect.br().x);
+                    // System.out.println("Distance in inches (hopefully) = " + nextTargetData.locationOfPortDistance);
+                    nextTargetData.angleToTurn = (60.0 / nextTargetData.imageSize.width) * ((nextTargetData.imageSize.width / 2.0) -
+                                                    (nextTargetData.boundingBoxPts[3].x - nextTargetData.boundingBoxPts[2].x) / 2.0);
+                    System.out.println("Angle to turn in degrees = " + nextTargetData.angleToTurn);
 
                     /*
                     // Find the center x, center y, width, height, and angle of the bounding rectangle
