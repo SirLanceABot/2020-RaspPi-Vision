@@ -18,9 +18,9 @@ public class CameraProcessB implements Runnable
 {
 	private static final String pId = new String("[BCameraProcess]");
 
-	private String cameraName = "Turret Camera";
-	private int cameraWidth = 160;
-	private int cameraHeight = 120;
+	private String cameraName;// = "Turret Camera";
+	private int cameraWidth;// = 160;
+	private int cameraHeight;// = 120;
 	private PipelineProcessB pipelineProcessB;
 	private Thread pipeline;
 
@@ -31,8 +31,8 @@ public class CameraProcessB implements Runnable
 	// This object is used to store the camera frame returned from the inputStream
 	// Mats require a lot of memory. Placing this in a loop will cause an 'out of
 	// memory' error.
-	protected Image cameraFrame = new Image();
-	private Mat cameraFrameTemp = new Mat(120, 160, CvType.CV_8UC3);
+	protected Image cameraFrame;// = new Image();
+	private Mat cameraFrameTemp;// = new Mat(120, 160, CvType.CV_8UC3);
 
 	// This field is used to determine if debugging information should be displayed.
 	// Use the setDebuggingEnabled() method to set this value.
@@ -42,10 +42,18 @@ public class CameraProcessB implements Runnable
 	// Use the set...() method to set these values.
 
 	private VideoSource camera;
+	private Main.CameraConfig config;
 
-	public CameraProcessB(VideoSource camera)
+	public CameraProcessB(VideoSource camera, Main.CameraConfig cameraConfig)
 	{
 		this.camera = camera;
+		this.cameraName = cameraConfig.name;
+		this.cameraWidth = cameraConfig.width;
+		this.cameraHeight = cameraConfig.height;
+
+		config = cameraConfig;
+		cameraFrame = new Image();
+		cameraFrameTemp = new Mat(cameraHeight, cameraWidth, CvType.CV_8UC3);
 	}
 
 	/**
@@ -102,12 +110,12 @@ public class CameraProcessB implements Runnable
 		inputStream = new CvSink("cvsink");
 		inputStream.setSource(camera);
 
-		pipelineProcessB = new PipelineProcessB(this);
+		pipelineProcessB = new PipelineProcessB(this, config);
 		pipeline = new Thread(pipelineProcessB, "4237Bpipeline");
 
         this.setDebuggingEnabled(Main.debug);
 
-			// This is the thread loop. It can be stopped by calling the interrupt() method.
+		// This is the thread loop. It can be stopped by calling the interrupt() method.
 		while (!Thread.interrupted())
 		{
 			if (debuggingEnabled)

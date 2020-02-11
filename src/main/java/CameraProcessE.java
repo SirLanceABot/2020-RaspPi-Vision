@@ -16,11 +16,11 @@ import edu.wpi.first.wpilibj.Timer;
  */
 public class CameraProcessE implements Runnable
 {
-	private static final String pId = new String("[ECameraProcess]");
+	private static final String pId = new String("[CameraProcessE]");
 
-	private String cameraName = "Intake Camera";
-	private int cameraWidth = 320;
-	private int cameraHeight = 240;
+	private String cameraName;// = "Intake Camera";
+	private int cameraWidth;// = 320;
+	private int cameraHeight;// = 240;
 	private PipelineProcessE pipelineProcessE;
 	private Thread pipeline;
 
@@ -31,8 +31,8 @@ public class CameraProcessE implements Runnable
 	// This object is used to store the camera frame returned from the inputStream
 	// Mats require a lot of memory. Placing this in a loop will cause an 'out of
 	// memory' error.
-	protected Image cameraFrame = new Image();
-	private Mat cameraFrameTemp = new Mat(240, 320, CvType.CV_8UC3);
+	protected Image cameraFrame;// = new Image();
+	private Mat cameraFrameTemp;// = new Mat(240, 320, CvType.CV_8UC3);
 
 	// This field is used to determine if debugging information should be displayed.
 	// Use the setDebuggingEnabled() method to set this value.
@@ -42,10 +42,18 @@ public class CameraProcessE implements Runnable
 	// Use the set...() method to set these values.
 
 	private VideoSource camera;
+	private Main.CameraConfig config;
 
-	public CameraProcessE(VideoSource camera)
+	public CameraProcessE(VideoSource camera, Main.CameraConfig cameraConfig)
 	{
 		this.camera = camera;
+		this.cameraName = cameraConfig.name;
+		this.cameraWidth = cameraConfig.width;
+		this.cameraHeight = cameraConfig.height;
+
+		config = cameraConfig;
+		cameraFrame = new Image();
+		cameraFrameTemp = new Mat(cameraHeight, cameraWidth, CvType.CV_8UC3);
 	}
 
 	/**
@@ -102,7 +110,7 @@ public class CameraProcessE implements Runnable
 		inputStream = new CvSink("cvsink");
 		inputStream.setSource(camera);
 
-		pipelineProcessE = new PipelineProcessE(this);
+		pipelineProcessE = new PipelineProcessE(this, config);
 		pipeline = new Thread(pipelineProcessE, "4237Epipeline");
 
         this.setDebuggingEnabled(Main.debug);
