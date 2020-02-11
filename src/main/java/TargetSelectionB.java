@@ -9,20 +9,16 @@
 
 import java.util.ArrayList;
 import java.util.List;
-import java.lang.Math;
 
 import org.opencv.core.Core;
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
+import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
-import org.opencv.core.MatOfPoint2f;
-import org.opencv.core.RotatedRect;
-import org.opencv.core.CvType;
-import org.opencv.core.MatOfFloat;
-import org.opencv.core.MatOfInt;
 
 /**
  * This class is used to select the target from the camera frame. The user MUST
@@ -208,9 +204,10 @@ public class TargetSelectionB
                     // a better way will be to use geometry to calculate the distance in inches to the power port with a sinusoidal equation
                     nextTargetData.locationOfPortDistance = ((100.0 / 231.0) * boundRect.br().x) - (283.0 / 11.0);
                     // System.out.println("Distance in pixels = " + boundRect.br().x);
-                    // System.out.println("Distance in inches (hopefully) = " + nextTargetData.locationOfPortDistance);
-                    nextTargetData.angleToTurn = (60.0 / nextTargetData.imageSize.width) * ((nextTargetData.imageSize.width / 2.0) -
-                                                    (nextTargetData.boundingBoxPts[3].x - nextTargetData.boundingBoxPts[2].x) / 2.0);
+                    System.out.println("Distance in inches (hopefully) = " + nextTargetData.locationOfPortDistance);
+                    // Find the degrees to turn by finding the difference between the horizontal center of the camera frame and the horizontal center of the target.
+                    nextTargetData.angleToTurn = (35.0 / nextTargetData.imageSize.height) * ((nextTargetData.imageSize.height / 2.0) -
+                                                    ((nextTargetData.boundingBoxPts[1].y + nextTargetData.boundingBoxPts[2].y) / 2.0));
                     System.out.println("Angle to turn in degrees = " + nextTargetData.angleToTurn);
 
                     /*
@@ -220,8 +217,20 @@ public class TargetSelectionB
                     nextTargetData.angle = boundRect.angle;
                     */
 
-                    // Imgproc.putText(mat, String.format("%5.0f", boundRect.angle), new Point(15, 15),
-                    //   Core.FONT_HERSHEY_SIMPLEX, .6, new Scalar(255, 255, 255), 1);
+                    // TODO: Use the blank mat
+                    // Mat mat = new Mat();
+
+                    Imgproc.drawMarker(mat, new Point(nextTargetData.imageSize.width / 2.0, nextTargetData.imageSize.height / 2.0), 
+                        new Scalar(0, 255, 0), Imgproc.MARKER_CROSS, 40);// green center of camera frame
+                    Imgproc.drawMarker(mat, new Point((boxPts[0].x + boxPts[2].x / 2.0), boxPts[0].y), 
+                        new Scalar(0, 0, 255), Imgproc.MARKER_TILTED_CROSS, 40);// red center of hexagon
+                   
+                    // Maybe draw hexagon using Imgproc.polylines
+
+                    Imgproc.putText(mat, String.format("Distance: %fin", nextTargetData.locationOfPortDistance), new Point(15, 15),
+                        Core.FONT_HERSHEY_SIMPLEX, .6, new Scalar(255, 255, 255), 1);
+                    Imgproc.putText(mat, String.format("Angle to turn: %f degrees", nextTargetData.angleToTurn), new Point(15, 40),
+                        Core.FONT_HERSHEY_SIMPLEX, .6, new Scalar(255, 255, 255), 1);
  
                     // nextTargetData.fixedAngle = 90.0;
  
