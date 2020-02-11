@@ -17,10 +17,10 @@ public class TargetDataB
     // NOTE: No modifier means visible to both the class and package.
 
     // Target data that we need
-    Point boundingBoxPts[];
+    Point[] boundingBoxPts;
     Size imageSize;
-    double widthOfPortDistance, locationOfPortDistance;
-    double angleToTurn, angleToRise;
+    double portPositionInFrame, portDistance;
+    double angleToTurn;
 
     // Point center;
     // Size size;
@@ -57,10 +57,9 @@ public class TargetDataB
         boundingBoxPts[2] = new Point(-1.0, -1.0);
         boundingBoxPts[3] = new Point(-1.0, -1.0);
         imageSize = new Size(-1.0, -1.0);
-        widthOfPortDistance = -1.0;
-        locationOfPortDistance = -1.0;
+        portPositionInFrame = -1.0;
+        portDistance = -1.0;
         angleToTurn = 0;
-        angleToRise = 0;
 
         // center.x = -1.0;
         // center.y = -1.0;
@@ -92,10 +91,9 @@ public class TargetDataB
         boundingBoxPts[3].y = targetData.boundingBoxPts[3].y;
         imageSize.width = targetData.imageSize.width;
         imageSize.height = targetData.imageSize.height;
-        widthOfPortDistance = targetData.widthOfPortDistance;
-        locationOfPortDistance = targetData.locationOfPortDistance;
+        portPositionInFrame = targetData.portPositionInFrame;
+        portDistance = targetData.portDistance;
         angleToTurn = targetData.angleToTurn;
-        angleToRise = targetData.angleToRise;
 
         // center.x = targetData.center.x;
         // center.y = targetData.center.y;
@@ -130,10 +128,9 @@ public class TargetDataB
         targetData.boundingBoxPts[3].y = boundingBoxPts[3].y;
         targetData.imageSize.width = imageSize.width;
         targetData.imageSize.height = imageSize.height;
-        targetData.widthOfPortDistance = widthOfPortDistance;
-        targetData.locationOfPortDistance = locationOfPortDistance;
+        targetData.portPositionInFrame = portPositionInFrame;
+        targetData.portDistance = portDistance;
         targetData.angleToTurn = angleToTurn;
-        targetData.angleToRise = angleToRise;
 
         // targetData.center.x = center.x;
         // targetData.center.y = center.y;
@@ -244,11 +241,11 @@ public class TargetDataB
      */
     public synchronized String toString()
     {
-       return String.format("Frame = %d, %s, boundingBoxPts = [{%f, %f}, {%f, %f}, {%f, %f}, {%f, %f}],\nimageSize.width = %f, imageSize.height = %f,\nwidthOfPortDistance = %f, locationOfPortDistance = %f,\nangleToTurn = %f, angleToRise = %f %s", 
+       return String.format("Frame = %d, %s, boundingBoxPts = [{%f, %f}, {%f, %f}, {%f, %f}, {%f, %f}],\nimageSize.width = %f, imageSize.height = %f,\nportPositionInFrame = %f, portDistance = %f,\nangleToTurn = %f %s", 
             frameNumber, isTargetFound ? "target" : "no target",
             boundingBoxPts[0].x, boundingBoxPts[0].y, boundingBoxPts[1].x, boundingBoxPts[1].y,
             boundingBoxPts[2].x, boundingBoxPts[2].y, boundingBoxPts[3].x, boundingBoxPts[3].y,
-            imageSize.width, imageSize.height, widthOfPortDistance, locationOfPortDistance, angleToTurn, angleToRise, isFreshData ? "FRESH" : "stale");
+            imageSize.width, imageSize.height, portPositionInFrame, portDistance, angleToTurn, isFreshData ? "FRESH" : "stale");
         /*
         return String.format("Frame = %d, %s, center.x = %f, center.y = %f, size.width = %f, size.height = %f, angle = %f, fixedAngle = %f %s", 
             frameNumber, isTargetFound ? "target" : "no target",

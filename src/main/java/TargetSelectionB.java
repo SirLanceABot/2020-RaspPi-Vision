@@ -198,13 +198,13 @@ public class TargetSelectionB
                     nextTargetData.boundingBoxPts[3] = boxPts[3];
                     nextTargetData.imageSize.width = mat.width();
                     nextTargetData.imageSize.height = mat.height();
-                    nextTargetData.widthOfPortDistance = 0.0;
-                    // Find the shorest distance from the left of the frame to the box
+                    nextTargetData.portPositionInFrame = 0.0;
+                    // Find the shortest distance from the left of the frame to the box
                     // Use a linear equation to convert the distance in pixels to the distance in inches
                     // a better way will be to use geometry to calculate the distance in inches to the power port with a sinusoidal equation
-                    nextTargetData.locationOfPortDistance = ((100.0 / 231.0) * boundRect.br().x) - (283.0 / 11.0);
+                    nextTargetData.portDistance = ((100.0 / 231.0) * boundRect.br().x) - (283.0 / 11.0);
                     // System.out.println("Distance in pixels = " + boundRect.br().x);
-                    System.out.println("Distance in inches (hopefully) = " + nextTargetData.locationOfPortDistance);
+                    System.out.println("Distance in inches (hopefully) = " + nextTargetData.portDistance);
                     // Find the degrees to turn by finding the difference between the horizontal center of the camera frame and the horizontal center of the target.
                     nextTargetData.angleToTurn = (35.0 / nextTargetData.imageSize.height) * ((nextTargetData.imageSize.height / 2.0) -
                                                     ((nextTargetData.boundingBoxPts[1].y + nextTargetData.boundingBoxPts[2].y) / 2.0));
@@ -227,7 +227,7 @@ public class TargetSelectionB
                    
                     // Maybe draw hexagon using Imgproc.polylines
 
-                    Imgproc.putText(mat, String.format("Distance: %fin", nextTargetData.locationOfPortDistance), new Point(15, 15),
+                    Imgproc.putText(mat, String.format("Distance: %fin", nextTargetData.portDistance), new Point(15, 15),
                         Core.FONT_HERSHEY_SIMPLEX, .6, new Scalar(255, 255, 255), 1);
                     Imgproc.putText(mat, String.format("Angle to turn: %f degrees", nextTargetData.angleToTurn), new Point(15, 40),
                         Core.FONT_HERSHEY_SIMPLEX, .6, new Scalar(255, 255, 255), 1);
