@@ -62,6 +62,7 @@ public class ImageMerge implements Runnable
 
         // //////////////////
         // // uncomment all this to make a Shuffleboard widget for this video stream
+	// TODO: Since Main was refactored this might not be the exact or best way to get to the Shuffleboard now
         // // Widget in Shuffleboard Tab
 		// Map<String, Object> mapVideo = new HashMap<String, Object>();
 		// mapVideo.put("Show crosshair", false);
