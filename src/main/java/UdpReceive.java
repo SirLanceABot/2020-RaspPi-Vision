@@ -6,9 +6,10 @@
    Start the thread or multiple threads if each thread processes its own messages
    
    In a RPi test environment with no roboRIO use the below 5 statements in Main.java
-   On the roboRIO use something similar in the right place (likely robot.java)
-    private static UdpReceive testUDPreceive; // test UDP receiver in place of a roboRIO
-    private static Thread UDPreceiveThread; // remove these or at least don't start this thread if using the roboRIO
+   On the roboRIO use something similar in the right place (likely robot.java) and don't call it test!
+   
+    private static UdpReceive testUDPreceive;
+    private static Thread UDPreceiveThread;
 
     // start test UDP receiver
     UDPreceive = new UdpReceive(5800); // port must match what the RPi is sending on
