@@ -14,7 +14,7 @@ public class UdpSend
     private InetAddress address;
     private boolean isConnected;
 
-    private byte[] UDPbuffer = new byte[256];
+    private byte[] UDPbuffer = new byte[1024];
     private final int bufLength = UDPbuffer.length; // save original length because length property is changed with usage
 
     private DatagramPacket packet;
