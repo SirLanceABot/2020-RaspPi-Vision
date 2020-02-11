@@ -217,7 +217,7 @@ public final class Main
     protected static UdpSend sendMessage;
 
     private static UdpReceive testUDPreceive; // test UDP receiver in place of a roboRIO
-    private static Thread UDPreceiveThread; // remove these or at least don't start this thread if using the roboRIO
+    private static Thread UDPreceiveThread; // remove these or at least don't start this thread if using the roboRIO - see parameter below skull
 
     static Image turretCamera;
     static Image turretPipeline;
