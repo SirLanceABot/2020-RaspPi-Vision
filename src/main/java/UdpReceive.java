@@ -56,7 +56,7 @@ public class UdpReceive implements Runnable
     public void run()
     {
         System.out.println(pId + " packet listener thread started");
-        byte[] buf = new byte[256];
+        byte[] buf = new byte[1024];
         final int bufLength = buf.length; // save original length because length property is changed with usage
         DatagramPacket packet = new DatagramPacket(buf, bufLength);
 
