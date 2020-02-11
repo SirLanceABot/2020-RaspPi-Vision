@@ -256,3 +256,94 @@ public class TargetSelectionB
         }
     }
 }
+
+// Hough Lines example in case that is useful to determine target location
+// but it is slow so check the frame rates
+
+// The Feature Detection for line segments in GRIP does not work in the OpenCV version in the RPi and roboRIO.
+// GRIP has an older version of OpenCV with Line Segment Detection and the RPi and roboRIO have a newer OpenCV
+// with only HoughLinesP. The latest OpenCV with Fast Line Segment Detection is not installed in RPi or roboRIO.
+
+//     private HoughLinesRun findLines = new HoughLinesRun(); // testing finding lines
+
+// One way to sharpen an image.  Not needed for line detection. Not necessarily the best sharpener.
+// Maybe an OpenCV filter2D edge detector with an appropriate kernel would give good results
+// https://en.wikipedia.org/wiki/Kernel_(image_processing)
+// // sharpen image
+// blur is low pass filter
+// subtract the low frequencies from the orignal leaving the middle and higher frequencies
+//cv::Mat image = cv::imread(file);
+//cv::Mat gaussBlur;
+//GaussianBlur(image, gaussBlur, cv::Size(0,0), 3);
+//cv::addWeighted(image, 1.5, gaussBlur, -0.5, 0, image);
+
+// findLines.findLines(mat);
+
+//  Hough Transform in OpenCV Lines Parameters
+// image	8-bit, single-channel binary source image. The image may be modified by the function.
+// lines	output vector of lines(cv.32FC2 type). Each line is represented by a two-element vector (rho,theta) . rho is the distance from the coordinate origin (0,0). theta is the line rotation angle in radians.
+// rho	distance resolution of the accumulator in pixels.
+// theta	angle resolution of the accumulator in radians.
+// threshold	accumulator threshold parameter. Only those lines are returned that get enough votes
+// srn	for the multi-scale Hough transform, it is a divisor for the distance resolution rho . The coarse accumulator distance resolution is rho and the accurate accumulator resolution is rho/srn . If both srn=0 and stn=0 , the classical Hough transform is used. Otherwise, both these parameters should be positive.
+// stn	for the multi-scale Hough transform, it is a divisor for the distance resolution theta.
+// min_theta	for standard and multi-scale Hough transform, minimum angle to check for lines. Must fall between 0 and max_theta.
+// max_theta	for standard and multi-scale Hough transform, maximum angle to check for lines. Must fall between min_theta and CV_PI.
+
+
+//  Probabilistic Hough Transform  Lines Parameters
+// image	8-bit, single-channel binary source image. The image may be modified by the function.
+// lines	output vector of lines(cv.32SC4 type). Each line is represented by a 4-element vector (x1,y1,x2,y2) ,where (x1,y1) and (x2,y2) are the ending points of each detected line segment.
+// rho	distance resolution of the accumulator in pixels.
+// theta	angle resolution of the accumulator in radians.
+// threshold	accumulator threshold parameter. Only those lines are returned that get enough votes
+// minLineLength	minimum line length. Line segments shorter than that are rejected.
+// maxLineGap	maximum allowed gap between points on the same line to link them.
+
+//     class HoughLinesRun {
+//         public void findLines(Mat src) {
+//             // Declare the output variables
+//             Mat dst = new Mat(), cdst = new Mat(), cdstP;
+//             // Edge detection
+//             Imgproc.Canny(src, dst, 50, 200, 3, false);
+//             // Copy edges to the images that will display the results in BGR
+//             Imgproc.cvtColor(dst, cdst, Imgproc.COLOR_GRAY2BGR);
+//             cdstP = cdst.clone();
+
+//             // Standard Hough Line Transform
+//             // Line is all the way across the image - probably not what is wanted - it's not a segment
+//             // So don't use this
+//             Mat lines = new Mat(); // will hold the results of the detection
+//             Imgproc.HoughLines(dst, lines, 1, Math.PI/180, 60); // runs the actual detection
+
+//             System.out.println("HoughLines rows = " + lines.rows());
+//             // Draw the lines
+//             for (int x = 0; x < lines.rows(); x++) {
+//                 double rho = lines.get(x, 0)[0],
+//                         theta = lines.get(x, 0)[1];
+//                 double a = Math.cos(theta), b = Math.sin(theta);
+//                 double x0 = a*rho, y0 = b*rho;
+//                 Point pt1 = new Point(Math.round(x0 + 1000*(-b)), Math.round(y0 + 1000*(a)));
+//                 Point pt2 = new Point(Math.round(x0 - 1000*(-b)), Math.round(y0 - 1000*(a)));
+//                 Imgproc.line(src, pt1, pt2, new Scalar(0, 255, 255), 3, Imgproc.LINE_AA, 0);
+//             }
+
+//             // Probabilistic Line Transform
+//             // Produces Line Segments - probably what is wanted
+//             Mat linesP = new Mat(); // will hold the results of the detection
+//             Imgproc.HoughLinesP(dst, linesP, 1, Math.PI/180, 50, 50, 10); // runs the actual detection
+
+//             System.out.println("HoughLInesP rows = " + linesP.rows());
+//             // Draw the lines
+//             for (int x = 0; x < linesP.rows(); x++) {
+//                 double[] l = linesP.get(x, 0);
+//                 Imgproc.line(src, new Point(l[0], l[1]), new Point(l[2], l[3]), new Scalar(0, 0, 255), 1, Imgproc.LINE_AA, 0);
+//             }
+
+//             dst.release();
+//             cdst.release();
+//             cdstP.release();
+//             lines.release();
+//             linesP.release();
+//         }
+//     }
