@@ -51,7 +51,7 @@ public class PipelineProcessE implements Runnable
 	// This object is used to store the camera frame returned from the inputStream
 	// Mats require a lot of memory. Placing this in a loop will cause an 'out of
 	// memory' error.
-	private Mat mat = new Mat(240, 320, CvType.CV_8UC3);
+	private Mat mat;// = new Mat(240, 320, CvType.CV_8UC3);
 
 	// This field is used to determine if debugging information should be displayed.
 	// Use the setDebuggingEnabled() method to set this value.
@@ -59,16 +59,20 @@ public class PipelineProcessE implements Runnable
 
 	// These fields are used to set the camera resolution and camera name.
 	// Use the set...() method to set these values.
-	private int cameraWidth = 320;
-	private int cameraHeight = 240;
-	private String cameraName = "Intake Camera";
+	private int cameraWidth;// = 320;
+	private int cameraHeight;// = 240;
+	private String cameraName;// = "Intake Camera";
 
 	private VideoSource camera;
 	private CameraProcessE cameraProcess;
 
-	protected PipelineProcessE(CameraProcessE cameraProcess)
+	protected PipelineProcessE(CameraProcessE cameraProcess, Main.CameraConfig cameraConfig)
 	{
 		this.cameraProcess = cameraProcess;
+		this.cameraName = cameraConfig.name;
+		this.cameraWidth = cameraConfig.width;
+		this.cameraHeight = cameraConfig.height;
+		mat = new Mat(cameraHeight, cameraWidth, CvType.CV_8UC3);
 	}
 
 	/**
