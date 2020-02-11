@@ -244,9 +244,11 @@ public class TargetDataB
      */
     public synchronized String toString()
     {
-       return String.format("Frame = %d, %s, boundingBoxPts = [{%f, %f}, {%f, %f}, {%f, %f}, {%f, %f}],\nimageSize.width = %f, imageSize.height = %f, \nwidthOfPortDistance = %f, locationOfPortDistance = %f,\nangleToTurn = %f, angleToRise = %f %s", 
+       return String.format("Frame = %d, %s, boundingBoxPts = [{%f, %f}, {%f, %f}, {%f, %f}, {%f, %f}],\nimageSize.width = %f, imageSize.height = %f,\nwidthOfPortDistance = %f, locationOfPortDistance = %f,\nangleToTurn = %f, angleToRise = %f %s", 
             frameNumber, isTargetFound ? "target" : "no target",
-            boundingBoxPts[0].x, boundingBoxPts[0].y, boundingBoxPts[1].x, boundingBoxPts[1].y, boundingBoxPts[2].x, boundingBoxPts[2].y, boundingBoxPts[3].x, boundingBoxPts[3].y, imageSize.width, imageSize.height, widthOfPortDistance, locationOfPortDistance, angleToTurn, angleToRise, isFreshData ? "FRESH" : "stale");
+            boundingBoxPts[0].x, boundingBoxPts[0].y, boundingBoxPts[1].x, boundingBoxPts[1].y,
+            boundingBoxPts[2].x, boundingBoxPts[2].y, boundingBoxPts[3].x, boundingBoxPts[3].y,
+            imageSize.width, imageSize.height, widthOfPortDistance, locationOfPortDistance, angleToTurn, angleToRise, isFreshData ? "FRESH" : "stale");
         /*
         return String.format("Frame = %d, %s, center.x = %f, center.y = %f, size.width = %f, size.height = %f, angle = %f, fixedAngle = %f %s", 
             frameNumber, isTargetFound ? "target" : "no target",
