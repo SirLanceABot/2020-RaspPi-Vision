@@ -257,21 +257,21 @@ public final class Main
 
 
 // Choices fror sending driving messages.  Add to the list as desired.  Select which one is used a few lines below.
-    static String sendToJW = "jwoodard-hp16.local";
-    static String sendToRT = "RKT-LapTop.local";
-    static String sendToTeam1 = "TEAM4237-1.local";
-    static String sendToROBORIO = "roborio-4237-frc.local";
+    static String JW = "jwoodard-hp16.local";
+    static String RT = "RKT-LapTop.local";
+    static String Team1 = "TEAM4237-1.local";
+    static String roboRIO = "roborio-4237-frc.local";
 
 // Settable parameters for some outputs listed below
 // Settable parameters for some outputs listed below
 // Settable parameters for some outputs listed below
 
-    static String version = "2020 RPi Vision 2/6/20";
+    static String version = "2020 RPi Vision 2/11/20";
     static boolean runTestUDPreceiver = false;
 
 // URL where driving messages are to be sent
 // This should be the roboRIO except if testing
-    static String UDPreceiverName = sendToTeam1;
+    static String UDPreceiverName = Team1;
  
     // static String UDPreceiverName = "0.0.0.0";
     // "0.0.0.0" should be any computer but doesn't work for other computers - they don't see any packets
