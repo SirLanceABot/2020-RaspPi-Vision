@@ -261,17 +261,18 @@ public final class Main
     static String RT = "RKT-LapTop.local";
     static String Team1 = "TEAM4237-1.local";
     static String roboRIO = "roborio-4237-frc.local";
+    static String Self = "frcvision.local";
 
 // Settable parameters for some outputs listed below
 // Settable parameters for some outputs listed below
 // Settable parameters for some outputs listed below
 
     static String version = "2020 RPi Vision 2/11/20";
-    static boolean runTestUDPreceiver = false;
+    static boolean runTestUDPreceiver = true;
 
 // URL where driving messages are to be sent
 // This should be the roboRIO except if testing
-    static String UDPreceiverName = Team1;
+    static String UDPreceiverName = Self;
  
     // static String UDPreceiverName = "0.0.0.0";
     // "0.0.0.0" should be any computer but doesn't work for other computers - they don't see any packets
