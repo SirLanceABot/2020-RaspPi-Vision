@@ -807,7 +807,7 @@ public final class Main
             {
                 System.out.println(pId + " Program Version " + version + "  current time ms " + System.currentTimeMillis());
 
-                if (UDPreceiverName != sendToROBORIO)
+                if (UDPreceiverName != roboRIO)
                     System.out.println(pId + " Warning - robot driving messages not being sent to roboRIO");
                 
                 if(!sendMessage.isConnected())
