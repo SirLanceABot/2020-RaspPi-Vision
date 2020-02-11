@@ -155,6 +155,8 @@ public final class Main
     {
         public String name;
         public String path;
+        public int height;
+        public int width;
         public JsonObject config;
         public JsonElement streamConfig;
     }
@@ -354,6 +356,22 @@ public final class Main
             return false;
         }
         cam.path = pathElement.getAsString();
+
+        // height
+        JsonElement heightElement = config.get("height");
+        if (heightElement == null)
+        {
+            parseError("camera " + cam.name + ": could not read height");
+        }
+        cam.height = heightElement.getAsInt();
+
+        // width
+        JsonElement widthElement = config.get("width");
+        if (widthElement == null)
+        {
+            parseError("camera " + cam.name + ": could not read width");
+        }
+        cam.width = widthElement.getAsInt();
 
         // stream properties
         cam.streamConfig = config.get("stream");
@@ -612,11 +630,13 @@ public final class Main
 
     private static void createCameraShuffleboardWidget(VideoSource camera, CameraWidget cw)
     {
-        // Name	Type        Default     Value	Notes
-        // Show crosshair	Boolean     true	Show or hide a crosshair on the image
-        // Crosshair color	Color	    "white"	Can be a string or a rgba integer
-        // Show controls	Boolean	    true	Show or hide the stream controls
-        // Rotation	        String	    "NONE"	Rotates the displayed image. One of ["NONE", "QUARTER_CW", "QUARTER_CCW", "HALF"]
+        // Name	Type            Default     Value	    Notes
+        // -----------------    ---------   --------    ----------------------------------------------------
+        // Show crosshair	    Boolean     true	    Show or hide a crosshair on the image
+        // Crosshair color	    Color	    "white"	    Can be a string or a rgba integer
+        // Show controls	    Boolean	    true	    Show or hide the stream controls
+        // Rotation	            String	    "NONE"	    Rotates the displayed image. 
+        //                                              One of ["NONE", "QUARTER_CW", "QUARTER_CCW", "HALF"]
        
         Map<String, Object> cameraWidgetProperties = new HashMap<String, Object>();
         cameraWidgetProperties.put("Show crosshair", cw.showCrosshair);
@@ -723,7 +743,7 @@ public final class Main
                 cw.setProperties(false, "white", false, "NONE");
                 createCameraShuffleboardWidget(Bcamera, cw);                
 
-                cpB = new CameraProcessB(Bcamera);
+                cpB = new CameraProcessB(Bcamera, config);
                 visionThreadB = new Thread(cpB, "4237TurretB Camera");
                 // start thread using the class' run() method (just saying run() won't start a thread - that just runs run() once)
                 visionThreadB.start(); 
@@ -740,7 +760,7 @@ public final class Main
                 cw.setProperties(false, "white", false, "NONE");
                 createCameraShuffleboardWidget(Ecamera, cw);
 
-                cpE = new CameraProcessE(Ecamera);
+                cpE = new CameraProcessE(Ecamera, config);
                 visionThreadE = new Thread(cpE, "4237IntakeECamera");
                 // start thread using the class' run() method (just saying run() won't start a thread - that just runs run() once)
                 visionThreadE.start();
