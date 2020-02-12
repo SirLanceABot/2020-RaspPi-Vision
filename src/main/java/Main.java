@@ -270,11 +270,11 @@ public final class Main
 // Settable parameters for some outputs listed below
 
     static String version = "2020 RPi Vision 2/11/20";
-    static boolean runTestUDPreceiver = true;
+    static boolean runTestUDPreceiver = false;
 
 // URL where driving messages are to be sent
 // This should be the roboRIO except if testing
-    static String UDPreceiverName = Self;
+    static String UDPreceiverName = roboRIO;
  
     // static String UDPreceiverName = "0.0.0.0";
     // "0.0.0.0" should be any computer but doesn't work for other computers - they don't see any packets
