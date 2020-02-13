@@ -173,7 +173,7 @@ public class TargetSelectionB
                     mat,                      // Matrix obj of the image
                     listMidContour,           // java.util.List<MatOfPoint> pts
                     true,                     // isClosed
-                    new Scalar(255, 0, 255),  // Scalar object for color
+                    new Scalar(0, 0, 255),  // Scalar object for color
                     1,                        // Thickness of the line
                     Imgproc.LINE_4           // line type
                 );
@@ -220,13 +220,27 @@ public class TargetSelectionB
                     // TODO: Use the blank mat
                     // Mat mat = new Mat();
 
+                    // Draw shapes
                     Imgproc.drawMarker(mat, new Point(nextTargetData.imageSize.width / 2.0, nextTargetData.imageSize.height / 2.0), 
-                        new Scalar(0, 255, 0), Imgproc.MARKER_CROSS, 40);// green center of camera frame
-                    Imgproc.drawMarker(mat, new Point((boxPts[0].x + boxPts[2].x / 2.0), boxPts[0].y), 
-                        new Scalar(0, 0, 255), Imgproc.MARKER_TILTED_CROSS, 40);// red center of hexagon
-                   
-                    // Maybe draw hexagon using Imgproc.polylines
+                        new Scalar(0, 255, 0), Imgproc.MARKER_CROSS, 40);// green cross representing center of camera frame
+                    Imgproc.circle(mat, new Point(nextTargetData.imageSize.width / 2.0, nextTargetData.imageSize.height / 2.0), 20, 
+                        new Scalar(0, 255, 0), 2); // green circle surrounding green cross
 
+                    // Red hexagon:
+                    // Center point would be Point((boundRect[0].x + boundRect[2].x) / 2), (boundRect[0].y + boundRect[2].y) / 2))
+                    List<MatOfPoint> list = new ArrayList();
+                    list.add(new MatOfPoint(
+                                new Point((boxPts[0].x + boxPts[2].x) / 2     , nextTargetData.imageSize.height / 2 + 20),
+                                new Point((boxPts[0].x + boxPts[2].x) / 2 + 20, nextTargetData.imageSize.height / 2 + 10), 
+                                new Point((boxPts[0].x + boxPts[2].x) / 2 + 20, nextTargetData.imageSize.height / 2 - 10), 
+                                new Point((boxPts[0].x + boxPts[2].x) / 2     , nextTargetData.imageSize.height / 2 - 20), 
+                                new Point((boxPts[0].x + boxPts[2].x) / 2 - 20, nextTargetData.imageSize.height / 2 - 10), 
+                                new Point((boxPts[0].x + boxPts[2].x) / 2 - 20, nextTargetData.imageSize.height / 2 + 10)  
+                                           )
+                            );
+                    Imgproc.polylines(mat, list, true, new Scalar(0, 0, 255), 2, 1); 
+
+                    // Draw distance text and angle text
                     Imgproc.putText(mat, String.format("Distance: %fin", nextTargetData.portDistance), new Point(15, 15),
                         Core.FONT_HERSHEY_SIMPLEX, .6, new Scalar(255, 255, 255), 1);
                     Imgproc.putText(mat, String.format("Angle to turn: %f degrees", nextTargetData.angleToTurn), new Point(15, 40),
