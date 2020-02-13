@@ -1,3 +1,5 @@
+//TODO: getters for angle and distance
+//TODO: remove commented out code clutter
 import com.google.gson.Gson;
 import org.opencv.core.Point;
 import org.opencv.core.Size;
