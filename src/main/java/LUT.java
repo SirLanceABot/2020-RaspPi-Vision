@@ -1,7 +1,3 @@
-package app;
-
-public class App {
-
 /*
 
 Table lookup of X, Y co-ordinates
@@ -91,18 +87,5 @@ public class LUT
         str = str + "{" + LUT[idx].X + ", " + LUT[idx].Y + "}";
         str = str + "}";
         return str;
-    }
-}
-    public static void main(String[] args)
-    {
-        App x = new App();
-
-        LUT distanceConversion = x.new LUT(10); // construct with parameter at least as large as the number of data points - min 2
-        distanceConversion.add(1., 100.); // enter X, Y co-ordinate
-        distanceConversion.add(0., 200.); // enter the data in X order ascending  must add at least 2 data points
-        System.out.println("Converted to " + distanceConversion.lookup(1.5)); // lookup returns the value of Y coresponding to the X parameter
-
-        System.out.println(distanceConversion);
-
     }
 }
