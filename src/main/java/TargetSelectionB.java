@@ -209,6 +209,15 @@ public class TargetSelectionB
                     nextTargetData.angleToTurn = (35.0 / nextTargetData.imageSize.height) * ((nextTargetData.imageSize.height / 2.0) -
                                                     ((nextTargetData.boundingBoxPts[1].y + nextTargetData.boundingBoxPts[2].y) / 2.0));
                     System.out.println("Angle to turn in degrees = " + nextTargetData.angleToTurn);
+                    
+                    // Pixels to Inches Data Table Lookup
+                    LUT pixelsToInchesTable = new LUT(10); // allocate fixed size array with parameter at least as large as the number of data points - minimum of 2 points
+                    // Enter more data points for more accuracy. The equation should model some sort of sinusoidal function.
+                    // The x coordinate is pixels and the y coordinate is the horizontal distance to the target.
+                    pixelsToInchesTable.add(0.0, 232.0); // enter X, Y co-ordinate
+                    pixelsToInchesTable.add(45.0, 38.0);
+                    pixelsToInchesTable.add(110.0, 128.5); // enter the data in X ascending order, must add at least 2 data points
+                    System.out.println(pixelsToInchesTable); // print the whole table
 
                     /*
                     // Find the center x, center y, width, height, and angle of the bounding rectangle
@@ -228,17 +237,18 @@ public class TargetSelectionB
 
                     // Red hexagon:
                     // Center point would be Point((boundRect[0].x + boundRect[2].x) / 2), (boundRect[0].y + boundRect[2].y) / 2))
-                    List<MatOfPoint> list = new ArrayList();
-                    list.add(new MatOfPoint(
-                                new Point((boxPts[0].x + boxPts[2].x) / 2     , nextTargetData.imageSize.height / 2 + 20),
-                                new Point((boxPts[0].x + boxPts[2].x) / 2 + 20, nextTargetData.imageSize.height / 2 + 10), 
-                                new Point((boxPts[0].x + boxPts[2].x) / 2 + 20, nextTargetData.imageSize.height / 2 - 10), 
-                                new Point((boxPts[0].x + boxPts[2].x) / 2     , nextTargetData.imageSize.height / 2 - 20), 
-                                new Point((boxPts[0].x + boxPts[2].x) / 2 - 20, nextTargetData.imageSize.height / 2 - 10), 
-                                new Point((boxPts[0].x + boxPts[2].x) / 2 - 20, nextTargetData.imageSize.height / 2 + 10)  
+                    int offset = (int)((-(double)mat.width() / 30.0) * nextTargetData.angleToTurn + 0.5*(double)mat.width());
+                    List<MatOfPoint> listOfHexagonPoints = new ArrayList();
+                    listOfHexagonPoints.add(new MatOfPoint(
+                                new Point(nextTargetData.imageSize.width / 2      + offset, nextTargetData.imageSize.height / 2 + 20),
+                                new Point(nextTargetData.imageSize.width / 2 + 20 + offset, nextTargetData.imageSize.height / 2 + 10), 
+                                new Point(nextTargetData.imageSize.width / 2 + 20 + offset, nextTargetData.imageSize.height / 2 - 10), 
+                                new Point(nextTargetData.imageSize.width / 2      + offset, nextTargetData.imageSize.height / 2 - 20), 
+                                new Point(nextTargetData.imageSize.width / 2 - 20 + offset, nextTargetData.imageSize.height / 2 - 10), 
+                                new Point(nextTargetData.imageSize.width / 2 - 20 + offset, nextTargetData.imageSize.height / 2 + 10)  
                                            )
                             );
-                    Imgproc.polylines(mat, list, true, new Scalar(0, 0, 255), 2, 1); 
+                    Imgproc.polylines(mat, listOfHexagonPoints, true, new Scalar(0, 0, 255), 2, 1); 
 
                     // Draw distance text and angle text
                     Imgproc.putText(mat, String.format("Distance: %fin", nextTargetData.portDistance), new Point(15, 15),

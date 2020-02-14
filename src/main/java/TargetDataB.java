@@ -1,5 +1,3 @@
-//TODO: getters for angle and distance
-//TODO: remove commented out code clutter
 import com.google.gson.Gson;
 import org.opencv.core.Point;
 import org.opencv.core.Size;
@@ -112,6 +110,26 @@ public class TargetDataB
         // System.out.println(pId + " " + center.x + " " + center.y);
     }
 
+    /**
+     * This method returns the target data for the port distance.
+     * 
+     * @return The port distance.
+     */
+    public synchronized double getPortDistance()
+    {
+        return portDistance;
+    }
+
+    /**
+     * This method returns the target data for the angle to turn.
+     * 
+     * @return The angle to turn.
+     */
+    public synchronized double getAngleToTurn()
+    {
+        return angleToTurn;
+    }
+
      /**
      * This method returns all of the target data.
      * 
@@ -133,13 +151,6 @@ public class TargetDataB
         targetData.portPositionInFrame = portPositionInFrame;
         targetData.portDistance = portDistance;
         targetData.angleToTurn = angleToTurn;
-
-        // targetData.center.x = center.x;
-        // targetData.center.y = center.y;
-        // targetData.size.width = size.width;
-        // targetData.size.height = size.height;
-        // targetData.angle = angle;
-        // targetData.fixedAngle = fixedAngle;
         targetData.isTargetFound = isTargetFound;
         targetData.frameNumber = frameNumber;
         targetData.isFreshData = isFreshData;
@@ -169,28 +180,6 @@ public class TargetDataB
     {
         return imageSize;
     }
-
-    /*
-    public synchronized  Point getCenter()
-    {
-        return center;
-    }
-
-    public synchronized  Size getSize()
-    {
-        return size;
-    }
-
-    public synchronized  double getAngle()
-    {
-        return angle;
-    }
-
-    public synchronized double getFixedAngle()
-    {
-        return fixedAngle;
-    }
-    */
 
    /**
      * This method indicates if a target was found.
@@ -248,10 +237,5 @@ public class TargetDataB
             boundingBoxPts[0].x, boundingBoxPts[0].y, boundingBoxPts[1].x, boundingBoxPts[1].y,
             boundingBoxPts[2].x, boundingBoxPts[2].y, boundingBoxPts[3].x, boundingBoxPts[3].y,
             imageSize.width, imageSize.height, portPositionInFrame, portDistance, angleToTurn, isFreshData ? "FRESH" : "stale");
-        /*
-        return String.format("Frame = %d, %s, center.x = %f, center.y = %f, size.width = %f, size.height = %f, angle = %f, fixedAngle = %f %s", 
-            frameNumber, isTargetFound ? "target" : "no target",
-            center.x, center.y, size.width, size.height, angle, fixedAngle, isFreshData ? "FRESH" : "stale");
-            */
     }
 }
