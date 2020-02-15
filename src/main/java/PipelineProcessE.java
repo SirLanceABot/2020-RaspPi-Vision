@@ -236,8 +236,6 @@ public class PipelineProcessE implements Runnable
 				}
 			}
 
-			Main.intakeCamera.setImage(mat);
-
 			// Call the process() method that was created by the user to process the camera
 			// frame.
 			if (debuggingEnabled)
@@ -251,9 +249,7 @@ public class PipelineProcessE implements Runnable
 			{
 				loopTargetTime = Timer.getFPGATimestamp() - loopTargetTime;
 			}
-
-			Main.intakePipeline.setImage(mat);
-
+			
 			// The synchronized set() method is ONLY called twice.
 			// (1) Here in the thread loop and (2) after the thread loop is terminated
 			// below.

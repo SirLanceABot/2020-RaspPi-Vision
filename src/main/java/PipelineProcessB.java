@@ -236,8 +236,6 @@ public class PipelineProcessB implements Runnable
 				}
 			}
 
-			Main.turretCamera.setImage(mat);
-
 			// Call the process() method that was created by the user to process the camera
 			// frame.
 			if (debuggingEnabled)
@@ -251,8 +249,6 @@ public class PipelineProcessB implements Runnable
 			{
 				loopTargetTime = Timer.getFPGATimestamp() - loopTargetTime;
 			}
-
-			Main.turretPipeline.setImage(mat);
 
 			// The synchronized set() method is ONLY called twice.
 			// (1) Here in the thread loop and (2) after the thread loop is terminated

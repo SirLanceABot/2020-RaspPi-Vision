@@ -70,7 +70,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-
+import java.util.concurrent.atomic.AtomicIntegerArray;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
@@ -207,11 +207,11 @@ public final class Main
 
     private static CameraProcessB cpB;
     private static CameraProcessE cpE;
-    private static ImageMerge imageDriver;
+    private static ImageOperator imageOperator;
 
     private static Thread visionThreadB;
     private static Thread visionThreadE;
-    private static Thread imageMergeThread;
+    private static Thread imageOperatorThread;
 
     // TODO:
     // all messages go to one UDP sender defined for one port but could have two
@@ -221,14 +221,14 @@ public final class Main
     private static UdpReceive testUDPreceive; // test UDP receiver in place of a roboRIO
     private static Thread UDPreceiveThread; // remove these or at least don't start this thread if using the roboRIO - see parameter below skull
 
-    static Image turretCamera;
-    static Image turretPipeline;
-    static Image intakeCamera;
-    static Image intakePipeline;
     static Object tabLock;
-    static AtomicInteger tapeDistance;
     static ShuffleboardTab cameraTab;
 
+    static int tapeDistance = -1;
+    static int tapeAngle = -1;
+    static Object tapeLock;
+
+    static boolean isDistanceAngleFresh = false;
 // Settable parameters for some outputs listed below the skull
 
 
@@ -274,13 +274,13 @@ public final class Main
 
 // URL where driving messages are to be sent
 // This should be the roboRIO except if testing
-    static String UDPreceiverName = roboRIO;
+    static String UDPreceiverName = RT;
  
     // static String UDPreceiverName = "0.0.0.0";
     // "0.0.0.0" should be any computer but doesn't work for other computers - they don't see any packets
     // 
 
-    static boolean runImageMerge = false;
+    static boolean runImageOperator = true;
     static boolean debug = false;
     static boolean displayTurretContours = true;
     static boolean displayIntakeContours = true;
@@ -644,9 +644,9 @@ public final class Main
         cameraWidgetProperties.put("Show controls", cw.showControls);
         cameraWidgetProperties.put("Rotation", cw.rotation);
            
-        synchronized(tabLock)
+        synchronized(Main.tabLock)
         {
-            cameraTab.add(cw.name + " Camera", camera)
+            Main.cameraTab.add(cw.name + " Camera", camera)
                 .withWidget(BuiltInWidgets.kCameraStream)
                 .withPosition(cw.column, cw.row)
                 .withSize(cw.width, cw.height)
@@ -676,13 +676,9 @@ public final class Main
             return;
         }
 
-        turretCamera = new Image();
-        turretPipeline = new Image();
-        intakeCamera = new Image();
-        intakePipeline = new Image();
         tabLock = new Object();
-        tapeDistance = new AtomicInteger();
-
+        tapeLock = new Object();
+       
         // // sleep needed on RPi 4 before datagram address resolution and also RPi 3 before mount
         // // and for some other unknown reason after a power on boot up of the RPi 4
         // try {
@@ -779,7 +775,7 @@ public final class Main
             startSwitchedCamera(config);
         }
 
-        if(runImageMerge)
+        if(runImageOperator)
         {
             // start processed images merge and serve thread
             try
@@ -791,9 +787,9 @@ public final class Main
             catch (InterruptedException ex)
             { }
 
-            imageDriver = new ImageMerge();
-            imageMergeThread = new Thread(imageDriver, "4237ImageMerge");
-            imageMergeThread.start();
+            imageOperator = new ImageOperator();
+            imageOperatorThread = new Thread(imageOperator, "4237ImageOperator");
+            imageOperatorThread.start();
         }
         
         // visionThreadB.setDaemon(true); // defines a sort of "background" task that

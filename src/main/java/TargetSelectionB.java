@@ -204,12 +204,22 @@ public class TargetSelectionB
                     // a better way will be to use geometry to calculate the distance in inches to the power port with a sinusoidal equation
                     nextTargetData.portDistance = ((100.0 / 231.0) * boundRect.br().x) - (283.0 / 11.0);
                     // System.out.println("Distance in pixels = " + boundRect.br().x);
-                    System.out.println("Distance in inches (hopefully) = " + nextTargetData.portDistance);
+                    // System.out.println("Distance in inches (hopefully) = " + nextTargetData.portDistance);
                     // Find the degrees to turn by finding the difference between the horizontal center of the camera frame and the horizontal center of the target.
                     nextTargetData.angleToTurn = (35.0 / nextTargetData.imageSize.height) * ((nextTargetData.imageSize.height / 2.0) -
                                                     ((nextTargetData.boundingBoxPts[1].y + nextTargetData.boundingBoxPts[2].y) / 2.0));
-                    System.out.println("Angle to turn in degrees = " + nextTargetData.angleToTurn);
-                    
+
+                    synchronized(Main.tapeLock)
+                    {
+                    // save the 2 data points to pass through Main to the "cartoon" image maker/presenter
+                    Main.tapeDistance = (int)(nextTargetData.portDistance+0.5);
+                    Main.tapeAngle = (int)(nextTargetData.angleToTurn+0.5);
+                    Main.isDistanceAngleFresh = true;
+                    Main.tapeLock.notify();
+                    }
+
+                    //System.out.println("Angle to turn in degrees = " + nextTargetData.angleToTurn);
+
                     // Pixels to Inches Data Table Lookup
                     LUT pixelsToInchesTable = new LUT(10); // allocate fixed size array with parameter at least as large as the number of data points - minimum of 2 points
                     // Enter more data points for more accuracy. The equation should model some sort of sinusoidal function.
@@ -217,7 +227,7 @@ public class TargetSelectionB
                     pixelsToInchesTable.add(0.0, 232.0); // enter X, Y co-ordinate
                     pixelsToInchesTable.add(45.0, 38.0);
                     pixelsToInchesTable.add(110.0, 128.5); // enter the data in X ascending order, must add at least 2 data points
-                    System.out.println(pixelsToInchesTable); // print the whole table
+                    //System.out.println(pixelsToInchesTable); // print the whole table
 
                     /*
                     // Find the center x, center y, width, height, and angle of the bounding rectangle
@@ -237,7 +247,8 @@ public class TargetSelectionB
 
                     // Red hexagon:
                     // Center point would be Point((boundRect[0].x + boundRect[2].x) / 2), (boundRect[0].y + boundRect[2].y) / 2))
-                    int offset = (int)((-(double)mat.width() / 30.0) * nextTargetData.angleToTurn + 0.5*(double)mat.width());
+                    int offset = (int)
+                        ( (-(double)mat.width()/30.)*nextTargetData.angleToTurn + (double)mat.width()/2. );
                     List<MatOfPoint> listOfHexagonPoints = new ArrayList();
                     listOfHexagonPoints.add(new MatOfPoint(
                                 new Point(nextTargetData.imageSize.width / 2      + offset, nextTargetData.imageSize.height / 2 + 20),
