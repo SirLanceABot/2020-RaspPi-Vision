@@ -40,8 +40,17 @@ public class TargetSelectionB
 
     Mat subMat = new Mat(); // place for small image inserted into large image
 
+    // Pixels to Inches Data Table Lookup
+    LUT pixelsToInchesTable = new LUT(10); // allocate fixed size array with parameter at least as large as the number of data points - minimum of 2 points
+
 	TargetSelectionB()
 	{
+        // Enter more data points for more accuracy. The equation should model some sort of sinusoidal function.
+        // The x coordinate is pixels and the y coordinate is the horizontal distance to the target in inches.
+        pixelsToInchesTable.add(0.0, 38.0); // enter (x, y) coordinates x ascending order, must add at least 2 data points
+        pixelsToInchesTable.add(510.0, 116.0);
+        pixelsToInchesTable.add(640.0, 232.0);
+        //System.out.println(pixelsToInchesTable); // print the whole table
 	}
 
 	/**
@@ -202,9 +211,9 @@ public class TargetSelectionB
                     // Find the shortest distance from the left of the frame to the box
                     // Use a linear equation to convert the distance in pixels to the distance in inches
                     // a better way will be to use geometry to calculate the distance in inches to the power port with a sinusoidal equation
-                    nextTargetData.portDistance = ((100.0 / 231.0) * boundRect.br().x) - (283.0 / 11.0);
-                    // System.out.println("Distance in pixels = " + boundRect.br().x);
-                    // System.out.println("Distance in inches (hopefully) = " + nextTargetData.portDistance);
+                    nextTargetData.portDistance = pixelsToInchesTable.lookup(boundRect.br().x);
+                    System.out.println("Distance in pixels = " + boundRect.br().x);
+                    System.out.println("Distance in inches = " + nextTargetData.portDistance);
                     // Find the degrees to turn by finding the difference between the horizontal center of the camera frame and the horizontal center of the target.
                     nextTargetData.angleToTurn = (35.0 / nextTargetData.imageSize.height) * ((nextTargetData.imageSize.height / 2.0) -
                                                     ((nextTargetData.boundingBoxPts[1].y + nextTargetData.boundingBoxPts[2].y) / 2.0));
@@ -220,14 +229,7 @@ public class TargetSelectionB
 
                     //System.out.println("Angle to turn in degrees = " + nextTargetData.angleToTurn);
 
-                    // Pixels to Inches Data Table Lookup
-                    LUT pixelsToInchesTable = new LUT(10); // allocate fixed size array with parameter at least as large as the number of data points - minimum of 2 points
-                    // Enter more data points for more accuracy. The equation should model some sort of sinusoidal function.
-                    // The x coordinate is pixels and the y coordinate is the horizontal distance to the target.
-                    pixelsToInchesTable.add(0.0, 232.0); // enter X, Y co-ordinate
-                    pixelsToInchesTable.add(45.0, 38.0);
-                    pixelsToInchesTable.add(110.0, 128.5); // enter the data in X ascending order, must add at least 2 data points
-                    //System.out.println(pixelsToInchesTable); // print the whole table
+            
 
                     /*
                     // Find the center x, center y, width, height, and angle of the bounding rectangle
@@ -239,33 +241,33 @@ public class TargetSelectionB
                     // TODO: Use the blank mat
                     // Mat mat = new Mat();
 
-                    // Draw shapes
-                    Imgproc.drawMarker(mat, new Point(nextTargetData.imageSize.width / 2.0, nextTargetData.imageSize.height / 2.0), 
-                        new Scalar(0, 255, 0), Imgproc.MARKER_CROSS, 40);// green cross representing center of camera frame
-                    Imgproc.circle(mat, new Point(nextTargetData.imageSize.width / 2.0, nextTargetData.imageSize.height / 2.0), 20, 
-                        new Scalar(0, 255, 0), 2); // green circle surrounding green cross
+                    // // Draw shapes
+                    // Imgproc.drawMarker(mat, new Point(nextTargetData.imageSize.width / 2.0, nextTargetData.imageSize.height / 2.0), 
+                    //     new Scalar(0, 255, 0), Imgproc.MARKER_CROSS, 40);// green cross representing center of camera frame
+                    // Imgproc.circle(mat, new Point(nextTargetData.imageSize.width / 2.0, nextTargetData.imageSize.height / 2.0), 20, 
+                    //     new Scalar(0, 255, 0), 2); // green circle surrounding green cross
 
-                    // Red hexagon:
-                    // Center point would be Point((boundRect[0].x + boundRect[2].x) / 2), (boundRect[0].y + boundRect[2].y) / 2))
-                    int offset = (int)
-                        ( (-(double)mat.width()/30.)*nextTargetData.angleToTurn + (double)mat.width()/2. );
-                    List<MatOfPoint> listOfHexagonPoints = new ArrayList();
-                    listOfHexagonPoints.add(new MatOfPoint(
-                                new Point(nextTargetData.imageSize.width / 2      + offset, nextTargetData.imageSize.height / 2 + 20),
-                                new Point(nextTargetData.imageSize.width / 2 + 20 + offset, nextTargetData.imageSize.height / 2 + 10), 
-                                new Point(nextTargetData.imageSize.width / 2 + 20 + offset, nextTargetData.imageSize.height / 2 - 10), 
-                                new Point(nextTargetData.imageSize.width / 2      + offset, nextTargetData.imageSize.height / 2 - 20), 
-                                new Point(nextTargetData.imageSize.width / 2 - 20 + offset, nextTargetData.imageSize.height / 2 - 10), 
-                                new Point(nextTargetData.imageSize.width / 2 - 20 + offset, nextTargetData.imageSize.height / 2 + 10)  
-                                           )
-                            );
-                    Imgproc.polylines(mat, listOfHexagonPoints, true, new Scalar(0, 0, 255), 2, 1); 
+                    // // Red hexagon:
+                    // // Center point would be Point((boundRect[0].x + boundRect[2].x) / 2), (boundRect[0].y + boundRect[2].y) / 2))
+                    // int offset = (int)
+                    //     ( (-(double)mat.width()/30.)*nextTargetData.angleToTurn + (double)mat.width()/2. );
+                    // List<MatOfPoint> listOfHexagonPoints = new ArrayList();
+                    // listOfHexagonPoints.add(new MatOfPoint(
+                    //             new Point(nextTargetData.imageSize.width / 2      + offset, nextTargetData.imageSize.height / 2 + 20),
+                    //             new Point(nextTargetData.imageSize.width / 2 + 20 + offset, nextTargetData.imageSize.height / 2 + 10), 
+                    //             new Point(nextTargetData.imageSize.width / 2 + 20 + offset, nextTargetData.imageSize.height / 2 - 10), 
+                    //             new Point(nextTargetData.imageSize.width / 2      + offset, nextTargetData.imageSize.height / 2 - 20), 
+                    //             new Point(nextTargetData.imageSize.width / 2 - 20 + offset, nextTargetData.imageSize.height / 2 - 10), 
+                    //             new Point(nextTargetData.imageSize.width / 2 - 20 + offset, nextTargetData.imageSize.height / 2 + 10)  
+                    //                        )
+                    //         );
+                    // Imgproc.polylines(mat, listOfHexagonPoints, true, new Scalar(0, 0, 255), 2, 1); 
 
-                    // Draw distance text and angle text
-                    Imgproc.putText(mat, String.format("Distance: %fin", nextTargetData.portDistance), new Point(15, 15),
-                        Core.FONT_HERSHEY_SIMPLEX, .6, new Scalar(255, 255, 255), 1);
-                    Imgproc.putText(mat, String.format("Angle to turn: %f degrees", nextTargetData.angleToTurn), new Point(15, 40),
-                        Core.FONT_HERSHEY_SIMPLEX, .6, new Scalar(255, 255, 255), 1);
+                    // // Draw distance text and angle text
+                    // Imgproc.putText(mat, String.format("Distance: %fin", nextTargetData.portDistance), new Point(15, 15),
+                    //     Core.FONT_HERSHEY_SIMPLEX, .6, new Scalar(255, 255, 255), 1);
+                    // Imgproc.putText(mat, String.format("Angle to turn: %f degrees", nextTargetData.angleToTurn), new Point(15, 40),
+                    //     Core.FONT_HERSHEY_SIMPLEX, .6, new Scalar(255, 255, 255), 1);
  
                     // nextTargetData.fixedAngle = 90.0;
  

@@ -1,12 +1,16 @@
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.lang.model.util.ElementScanner6;
+
+import java.util.ArrayList;
+
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
-import org.opencv.core.Size;
 import org.opencv.core.CvType;
+import org.opencv.core.MatOfPoint;
 import org.opencv.imgproc.Imgproc;
 
 import edu.wpi.cscore.CvSource;
@@ -42,7 +46,7 @@ public class ImageOperator implements Runnable {
 
         Mat mat; // Mat to draw on
 
-        outputStream = CameraServer.getInstance().putVideo("OperatorImage", 640, 160);
+        outputStream = CameraServer.getInstance().putVideo("OperatorImage", 640, 45);
 
         // starting the video stream could look like this but then it isn't shown by its
         // "nice" name
@@ -76,11 +80,9 @@ public class ImageOperator implements Runnable {
         while (true) {
             try {
                 // DRAW HERE
+                int portDistance, angleToTurn;
 
-                int d;
-                int a;
-
-                mat = Mat.zeros(160, 640, CvType.CV_8UC3); // blank color Mat to draw on
+                mat = Mat.zeros(45, 640, CvType.CV_8UC3); // blank color Mat to draw on
 
                 synchronized (Main.tapeLock)
                 {
@@ -90,20 +92,73 @@ public class ImageOperator implements Runnable {
                        Main.tapeLock.wait();
                     }
 
-                    d = Main.tapeDistance;
-                    a = Main.tapeAngle;
+                    portDistance = Main.tapeDistance;
+                    angleToTurn = Main.tapeAngle;
                     Main.isDistanceAngleFresh = false;
                 }
 
-                Imgproc.putText(mat, String.format("Mr. Thomas was here %d  %d", a, d), new Point(15, 40),
-                        Core.FONT_HERSHEY_SIMPLEX, .6, new Scalar(90, 255, 255), 1);
+                 // Draw shapes
+                Imgproc.drawMarker(mat, new Point(mat.width() / 2.0, mat.height() / 2.0), 
+                 new Scalar(0, 255, 0), Imgproc.MARKER_CROSS, 40);// green cross representing center of camera frame
+                Imgproc.circle(mat, new Point(mat.width() / 2.0, mat.height() / 2.0), 20, 
+                 new Scalar(0, 255, 0), 2); // green circle surrounding green cross
+
+                // Red hexagon:
+                int offset;
+                
+                if(angleToTurn <= -15)
+                {
+                    Imgproc.putText(mat, String.format("Target not found"), new Point(15, 35),
+                            Core.FONT_HERSHEY_SIMPLEX, .6, new Scalar(255, 255, 255), 1);
+                }
+                else if(angleToTurn > -15 && angleToTurn < 15)
+                {
+                    offset = (int)
+                    ( ((double)mat.width()/30.0)*angleToTurn + (double)mat.width()/2.0 );
+                    ArrayList<MatOfPoint> listOfHexagonPoints = new ArrayList();
+                    listOfHexagonPoints.add(new MatOfPoint(
+                                new Point(      offset, mat.height() / 2 + 20),
+                                new Point( 20 + offset, mat.height() / 2 + 10), 
+                                new Point( 20 + offset, mat.height() / 2 - 10), 
+                                new Point(      offset, mat.height() / 2 - 20), 
+                                new Point(-20 + offset, mat.height() / 2 - 10), 
+                                new Point(-20 + offset, mat.height() / 2 + 10)  
+                                            )
+                            );
+                    Imgproc.polylines(mat, listOfHexagonPoints, true, new Scalar(0, 0, 255), 2, 1); 
+
+                    // if(angleToTurn > -15 && angleToTurn < 0)
+                    // {
+                    //     Imgproc.putText(mat, String.format("Turn left %d deg.", angleToTurn), new Point(15, 35),
+                    //         Core.FONT_HERSHEY_SIMPLEX, .4, new Scalar(255, 255, 255), 1);
+                    // }
+                    // else if(angleToTurn == 0)
+                    // {
+                    //     Imgproc.putText(mat, String.format("Shoot!"), new Point(15, 35),
+                    //         Core.FONT_HERSHEY_SIMPLEX, .4, new Scalar(255, 255, 255), 1);
+                    // }
+                    // else if(angleToTurn > 0 && angleToTurn < 15)
+                    // {
+                    //     Imgproc.putText(mat, String.format("Turn right %d deg.", angleToTurn), new Point(15, 35),
+                    //         Core.FONT_HERSHEY_SIMPLEX, .4, new Scalar(255, 255, 255), 1);
+                    // }
+                }
+                else
+                {
+                    Imgproc.putText(mat, String.format("Target not found"), new Point(15, 35),
+                            Core.FONT_HERSHEY_SIMPLEX, .8, new Scalar(255, 255, 255), 1);
+                }
+
+             // Draw distance text and text
+             Imgproc.putText(mat, String.format("%d", portDistance), new Point(15, 15),
+                 Core.FONT_HERSHEY_SIMPLEX, .4, new Scalar(255, 255, 255), 1);
 
                 outputStream.putFrame(mat);
 
-             } catch (Exception e)
+             } catch (Exception exception)
                 {
-                System.out.println(pId + " error " + e);
-                e.printStackTrace();
+                System.out.println(pId + " error " + exception);
+                exception.printStackTrace();
                 } 
             }
         }

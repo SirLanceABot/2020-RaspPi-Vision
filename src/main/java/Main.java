@@ -224,8 +224,7 @@ public final class Main
     static Object tabLock;
     static ShuffleboardTab cameraTab;
 
-    static int tapeDistance = -1;
-    static int tapeAngle = -1;
+    static int tapeDistance = -1, tapeAngle = -1;
     static Object tapeLock;
 
     static boolean isDistanceAngleFresh = false;
@@ -274,7 +273,7 @@ public final class Main
 
 // URL where driving messages are to be sent
 // This should be the roboRIO except if testing
-    static String UDPreceiverName = RT;
+    static String UDPreceiverName = Team1;
  
     // static String UDPreceiverName = "0.0.0.0";
     // "0.0.0.0" should be any computer but doesn't work for other computers - they don't see any packets
