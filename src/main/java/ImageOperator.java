@@ -93,6 +93,8 @@ public class ImageOperator implements Runnable {
                     portDistance = Main.tapeDistance;
                     angleToTurn = Main.tapeAngle;
                     Main.isDistanceAngleFresh = false;
+//FIXME: isTargetFound error
+//TODO: isTargetFound is NOT to be set by ImageOperator - it is to be USED by ImageOperator
                     Main.isTargetFound = false;
                 }
 
