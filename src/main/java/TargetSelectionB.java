@@ -1,6 +1,10 @@
 //TODO: either use the best contour of more than one or abandon trying to find the best
 // current code seems to be mixed up on this aspect.  TargetData is set even if not seemingly the best.
 //TODO: use is-target-found here and pass through to Operator Image
+//TODO: Include an additive "calibration" adjustment to the alignment.  If Power Cell going left of aim then subtract that from angle
+// to turn so OperatorImage forced to align to that value and adjustment sent to roboRIO.  Similarly for error to the right.
+// This behaves as if the camera is pointing incorrectly or Power Cells take off incorrectly.
+// Suggest getting this value in Main infinite loop at the end using Network Table value entered on th Shuffleboard.
 import java.util.ArrayList;
 import java.util.List;
 
