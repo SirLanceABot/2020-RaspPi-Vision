@@ -197,8 +197,8 @@ public class TargetSelectionB
                 // Use a linear equation to convert the distance in pixels to the distance in inches
                 // a better way will be to use geometry to calculate the distance in inches to the power port with a sinusoidal equation
                 nextTargetData.portDistance = pixelsToInchesTable.lookup(boundRect.br().x);
-                System.out.println("Distance in pixels = " + boundRect.br().x);
-                System.out.println("Distance in inches = " + nextTargetData.portDistance);
+                //System.out.println("Distance in pixels = " + boundRect.br().x);
+                //System.out.println("Distance in inches = " + nextTargetData.portDistance);
                 // Find the degrees to turn by finding the difference between the horizontal center of the camera frame and the horizontal center of the target.
                 //TODO: document 35.0 - make it a constant somewhere obvious
                 nextTargetData.angleToTurn = (35.0 / nextTargetData.imageSize.height) * ((nextTargetData.imageSize.height / 2.0) -

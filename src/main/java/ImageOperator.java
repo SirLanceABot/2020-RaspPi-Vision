@@ -39,7 +39,7 @@ public class ImageOperator implements Runnable {
 
     @Override
     public void run() {
-        System.out.println(pId + " Thread Started");
+        System.out.println(pId + " Starting run");
 
         this.setDebuggingEnabled(Main.debug);
 
@@ -58,18 +58,18 @@ public class ImageOperator implements Runnable {
         // mjpegServer.setSource(outputStream);
 
         //////////////////
-        // TODO: Since Main was refactored this might not be the exact or best way to
-        ////////////////// get to the Shuffleboard now
+        ////////////////// put to the Shuffleboard now
         // Widget in Shuffleboard Tab
-        Map<String, Object> mapVideo = new HashMap<String, Object>();
-        mapVideo.put("Show crosshair", false);
-        mapVideo.put("Show controls", false);
+        Map<String, Object> cameraWidgetProperties = new HashMap<String, Object>();
+        cameraWidgetProperties.put("Show crosshair", false);
+        cameraWidgetProperties.put("Show controls", false);
 
-        synchronized (Main.tabLock) {
-            Main.cameraTab.add("ImageMerge", outputStream).withWidget(BuiltInWidgets.kCameraStream)
-                    .withProperties(mapVideo)
-            // .withSize(12, 8)
-            // .withPosition(1, 2)
+        synchronized (Main.tabLock)
+        {
+            Main.cameraTab.add("High Power Port Alignment", outputStream).withWidget(BuiltInWidgets.kCameraStream)
+                    .withProperties(cameraWidgetProperties)
+                    .withSize(12, 1)
+                    .withPosition(20, 0)
             ;
 
             Shuffleboard.update();
@@ -81,6 +81,7 @@ public class ImageOperator implements Runnable {
                 // DRAW HERE
                 int portDistance, angleToTurn;
                 //TODO: consider black & white mat to save network bandwidth
+                //TODO: consider compression to save network bandwidth
                 mat = Mat.zeros(45, 640, CvType.CV_8UC3); // blank color Mat to draw on
 
                 synchronized (Main.tapeLock)
@@ -161,7 +162,7 @@ public class ImageOperator implements Runnable {
 
              // Draw distance text and text
              Imgproc.putText(mat, String.format("%d", portDistance), new Point(15, 15),
-                 Core.FONT_HERSHEY_SIMPLEX, .4, new Scalar(255, 255, 255), 1);
+                 Core.FONT_HERSHEY_SIMPLEX, 1., new Scalar(255, 255, 255), 1);
 
                 outputStream.putFrame(mat);
 

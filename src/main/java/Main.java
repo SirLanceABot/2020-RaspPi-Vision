@@ -262,7 +262,7 @@ public final class Main
     // ____"$$$$$"______________________""$$$$""__
 
 
-    static String version = "2020 RPi Vision 2/15/20";
+    static String version = "2020 RPi Vision 2/16/20";
 
 
 // Settable parameters for some outputs listed below
@@ -286,14 +286,18 @@ public final class Main
     // "0.0.0.0" should be any computer but doesn't work for other computers - they don't see any packets
     // 
 
+    // camera streams already available from the FRCVISION server
+    // generated video streams switched on/off here
     static boolean runImageOperator = true;
-    static boolean debug = false;
     static boolean displayTurretContours = true;
     static boolean displayIntakeContours = true;
 
-// Shuffleboard display video streams commented out for contour images
-// No settable variables here for that
-// See the TargetSelection codes to uncomment
+    static boolean debug = false;
+    
+// Shuffleboard automatic display of intake camera and High Power Port alignment turned on.
+//
+// No Shuffleboard automatic display of other video streams - commented out for contour images in TargetSelection codes
+// and Turret Camera below here in main.  You can always drag and drop the streams within Shuffleboard if you want to see them.
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
     static boolean logImage = false;
@@ -574,15 +578,6 @@ public final class Main
 
     private static void mountUSBFlashDrive()
     {
-        // try
-        // {
-        //     System.out.println(pId + " Sleeping 3 seconds so auto mount will be done by now, we are hopeful.");
-        //     Thread.sleep(3000);// 3000
-        // } catch (InterruptedException exc)
-        // {
-        //     System.out.println(pId + " Sleep 3 seconds was interrupted");
-        // }
-
         try
         {
             // execute command to check for flash drive mounted
@@ -656,6 +651,7 @@ public final class Main
                 .withPosition(cw.column, cw.row)
                 .withSize(cw.width, cw.height)
                 .withProperties(cameraWidgetProperties);
+            Shuffleboard.update();
         }
     }
 
@@ -742,7 +738,9 @@ public final class Main
                 cw.name = config.name;
                 cw.setLocation(0, 20, 13, 13);
                 cw.setProperties(false, "white", false, "NONE");
-                createCameraShuffleboardWidget(Bcamera, cw);                
+                // comment or not Shuffleboard Widget to display Turret Camera
+                // Normally this camera shows only the reflected tape rotated 90 deg - confusing to humans
+                // createCameraShuffleboardWidget(Bcamera, cw);                
 
                 cpB = new CameraProcessB(Bcamera, config);
                 visionThreadB = new Thread(cpB, "4237TurretB Camera");
@@ -772,8 +770,6 @@ public final class Main
             }
         }
         
-        Shuffleboard.update();
- 
         // start switched cameras
         for (SwitchedCameraConfig config : switchedCameraConfigs) 
         {
@@ -782,7 +778,7 @@ public final class Main
 
         if(runImageOperator)
         {
-            // start processed images merge and serve thread
+            // start thread to process image for High Power Port Alignment "cartoon"
             try
             {
                 // Wait for other processes to make some images otherwise first time though gets
@@ -824,8 +820,8 @@ public final class Main
                 //               env.get(envName));
                 // }
 
-                Thread.sleep(10000);
-            } 
+                Thread.sleep(5000);
+            }
             catch (InterruptedException ex) 
             {
                 return;
