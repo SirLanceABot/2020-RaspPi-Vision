@@ -131,11 +131,11 @@ public class ImageOperator implements Runnable {
                     Imgproc.polylines(mat, listOfHexagonPoints, true, new Scalar(0, 0, 255), 2, 1);
 
                     //TODO: rotate the hexagon and NOT this way
-                    Mat subMat = mat.submat(mat.height() / 2 - 21, mat.height() / 2 + 21, -21 + offset, 21 + offset);
+                    //Mat subMat = mat.submat(mat.height() / 2 - 21, mat.height() / 2 + 21, -21 + offset, 21 + offset);
                     //Creating the transformation matrix M
-                    Mat rotationMatrix = Imgproc.getRotationMatrix2D(new Point(offset, mat.height() /2), 30, 1);
+                    //Mat rotationMatrix = Imgproc.getRotationMatrix2D(new Point(offset, mat.height() /2), 30, 1);
                     //Rotating the given image
-                    Imgproc.warpAffine(subMat, subMat,rotationMatrix, new Size(42, 42));
+                    //Imgproc.warpAffine(subMat, subMat,rotationMatrix, new Size(42, 42));
 
                     // if(angleToTurn > -15 && angleToTurn < 0)
                     // {
