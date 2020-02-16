@@ -89,11 +89,12 @@ import edu.wpi.cscore.UsbCamera;
 import edu.wpi.cscore.VideoSource;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.networktables.EntryListenerFlags;
+import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
-
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 /*
    JSON format:
    {
@@ -796,6 +797,20 @@ public final class Main
         // just keeps running (until all the normal threads have terminated; must set
         // before the ".start"
 
+        // Get an angle Calibration from Shuffleboard
+        //ShuffleboardTab tab = Shuffleboard.getTab("Camera");
+        NetworkTableEntry calibrate;
+        synchronized(tabLock)
+        {
+        calibrate =
+            cameraTab.add("Turret Calibration", 0.0)
+            .withSize(4, 2)
+            .withPosition(20, 12)
+           .getEntry();
+        
+        Shuffleboard.update();
+        }
+        
         // loop forever
         while(true)
         {
@@ -811,8 +826,12 @@ public final class Main
                     System.out.println(pId + " Warning - robot driving messages not being sent anywhere - trying to connect");
                     sendMessage.Connect(); // keep trying to connect if it isn't
                     }
+ 
+                double calibrateAngle = calibrate.getDouble(0.0);
 
-                // Map<String, String> env = System.getenv(); // or get just one - String myEnv = System.getenv("env_name");
+                System.out.println("calibrateAngle = " + calibrateAngle);
+
+                 // Map<String, String> env = System.getenv(); // or get just one - String myEnv = System.getenv("env_name");
                 // for (String envName : env.keySet()) {
                 //     System.out.format("%s=%s%n",
                 //               envName,
