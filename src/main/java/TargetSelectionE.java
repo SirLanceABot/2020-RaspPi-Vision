@@ -61,7 +61,7 @@ public class TargetSelectionE
 		boolean isTargetFoundLocal = true;
 		// Let the gripPowerCellIntakeVisionPipeline filter through the camera frame
 		gripPowerCellIntakeVisionPipeline.process(mat);
-		MatOfPoint2f contour2;
+
 		gripPowerCellIntakeVisionPipeline.hsvThresholdOutput().copyTo(mat);
         detectPowerCells(mat);
 
@@ -94,24 +94,18 @@ public class TargetSelectionE
 				Imgproc.drawContours(mat, filteredContours, -1, new Scalar(255, 255, 255), 2);
 			}
 			Imgproc.drawContours(mat, filteredContours, -1, new Scalar(255, 0, 0), 1);
-        for(MatOfPoint contour : filteredContours)
-        {
-            contour2 = new MatOfPoint2f(contour.toArray());
-        }
-	}
+		}
 
 		//Update the target
 		nextTargetData.center = centerTarget;
 		nextTargetData.distance = distanceTarget;
-
+		nextTargetData.isFreshData = true;
+		nextTargetData.isTargetFound = isTargetFoundLocal;
+		
 		if (debuggingEnabled)
 		{
 			System.out.println("Distance: " + distanceTarget);
 		}
-
-		nextTargetData.isFreshData = true;
-        nextTargetData.isTargetFound = isTargetFoundLocal;
-        
 	}
 	
 	 public void detectPowerCells(Mat input) 
@@ -159,7 +153,6 @@ public class TargetSelectionE
 
         circles.release();
         //input.release();
-        
     }
 
     /**

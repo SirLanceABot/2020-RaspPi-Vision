@@ -7,7 +7,9 @@ Given an independent variable value a dependent value is returned
 Straight line interpolation between table entries
 Double.NEGATIVE_INFINITY and Double.POSITIVE_INFINITY independent values are infered as extensions of the first and last table entries
     that is all values less than the first table entry to *.lookup(Double.NEGATIVE_INFINITY) return the first table entry as extrapolation
-    and similarly all values greater than the last table entry to *.lookup(Double.POSITIVE_INFINITY) return the last table entry as extrapolation
+    and similarly all values greater than the last table entry to *.lookup(Double.POSITIVE_INFINITY) return the last table entry as
+    extrapolation.  If this is inappropriate for the usage then make sure the first and last data points bound the possible data to
+    prevent attempted extrapolation.
 Not much is optimized for anything except easy to program and easy to use.
     That implies relatively few table entries.
     Data must be added to the table with the independent variable increasing from the previous entry.

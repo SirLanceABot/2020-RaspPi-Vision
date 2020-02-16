@@ -1,12 +1,6 @@
-// IMPORTANT***********************************************************
-// Pixel-Inches Readings:
-// horizontal distance is HD and angled distance is AD
-// (110, HD = 128.5 and AD = 143)
-// (30-60, HD = 38 and AD = 72)
-// (0, HD = 232 and AD = 240)
-
-
-
+//TODO: either use the best contour of more than one or abandon trying to find the best
+// current code seems to be mixed up on this aspect.  TargetData is set even if not seemingly the best.
+//TODO: use is-target-found here and pass through to Operator Image
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,6 +45,11 @@ public class TargetSelectionB
         pixelsToInchesTable.add(510.0, 116.0);
         pixelsToInchesTable.add(640.0, 232.0);
         //System.out.println(pixelsToInchesTable); // print the whole table
+        // Questionable testing data of Pixel-Inches Readings:
+        // horizontal distance is HD and angled distance is AD
+        // (110, HD = 128.5 and AD = 143)
+        // (30-60, HD = 38 and AD = 72)
+        // (0, HD = 232 and AD = 240)
 	}
 
 	/**
@@ -75,23 +74,6 @@ public class TargetSelectionB
 	 */
     public void process(Mat mat, TargetDataB nextTargetData)
     {
-        if(false)
-        {
-        // Enhance Image
-        // Convert to YUV
-        // Apply histogram equalization
-        // Convert Back To BGR
-        Mat Image_yuv = new Mat(mat.rows(), mat.cols(), CvType.CV_8UC3);
-        List<Mat> yuvPlanes = new ArrayList<>();
-        Imgproc.cvtColor(mat, Image_yuv, Imgproc.COLOR_BGR2YUV);
-        Core.split(Image_yuv, yuvPlanes);
-        Imgproc.equalizeHist(yuvPlanes.get(0), yuvPlanes.get(0));
-        Core.merge(yuvPlanes, Image_yuv);
-        Imgproc.cvtColor(Image_yuv, mat, Imgproc.COLOR_YUV2BGR);
-        }
-
-        if(true)
-        {
   		// Let the gripPowerCellIntakeVisionPipeline filter through the camera frame
         gripPowerPortVisionPipeline.process(mat);
 
@@ -132,7 +114,6 @@ public class TargetSelectionB
             
             int contourIndex = -1;
             int bestContourIndex = -1;
-            Point endpoint = new Point();
 
             for (MatOfPoint contour : filteredContours)
             {
@@ -143,7 +124,7 @@ public class TargetSelectionB
                 //System.out.println("Contour Index = " + contourIndex);
                 //System.out.println(contour.dump()); // OpenCV Mat dump one line string of numbers
                 // or more control over formating with your own array to manipualte
-				//System.out.print("[Vision] " + aContour.size() + " points in contour\n[Vision]"); // a contour is a bunch of points
+				//System.out.println(pId + " " + aContour.size() + " points in contour"); // a contour is a bunch of points
 				// convert MatofPoint to an array of those Points and iterate (could do list of Points but no need for this)
 				//for(Point aPoint : aContour.toArray())System.out.print(" " + aPoint); // print each point
 
@@ -157,7 +138,7 @@ public class TargetSelectionB
                 // Create a bounding upright rectangle for the contour's points
                 boundRect = Imgproc.boundingRect(NewMtx);
 
-                // Draw a rotatedRect, using lines, that represents the minAreaRect
+                // Draw a Rect, using lines, that represents the Rect
                 Point boxPts[] = new Point[4];
                 boxPts[0] = boundRect.tl();
                 boxPts[1] = new Point(boundRect.br().x, boundRect.tl().y);
@@ -170,7 +151,7 @@ public class TargetSelectionB
                 // {
                     bestContourIndex = contourIndex;
 
-                //System.out.println(boundRect); // { {76.72164916992188, 101.87628936767578} 9x92 * -66.03751373291016 }
+                //System.out.println(boundRect);
                 
                 // draw edges of minimum rotated rectangle    
                 List<MatOfPoint> listMidContour = new ArrayList<MatOfPoint>();
@@ -199,100 +180,62 @@ public class TargetSelectionB
                 Imgproc.drawMarker(mat, boxPts[1], new Scalar(255, 255,   0), Imgproc.MARKER_STAR, 7);// teal then cw from 0
                 Imgproc.drawMarker(mat, boxPts[2], new Scalar(  0, 255, 255), Imgproc.MARKER_STAR, 7);// yellow
                 Imgproc.drawMarker(mat, boxPts[3], new Scalar(255,   0, 255), Imgproc.MARKER_STAR, 7);// magenta
- 
-                    // Find the corner points of the bounding rectangle and the image size
-                    nextTargetData.boundingBoxPts[0] = boxPts[0];
-                    nextTargetData.boundingBoxPts[1] = boxPts[1];
-                    nextTargetData.boundingBoxPts[2] = boxPts[2];
-                    nextTargetData.boundingBoxPts[3] = boxPts[3];
-                    nextTargetData.imageSize.width = mat.width();
-                    nextTargetData.imageSize.height = mat.height();
-                    nextTargetData.portPositionInFrame = 0.0;
-                    // Find the shortest distance from the left of the frame to the box
-                    // Use a linear equation to convert the distance in pixels to the distance in inches
-                    // a better way will be to use geometry to calculate the distance in inches to the power port with a sinusoidal equation
-                    nextTargetData.portDistance = pixelsToInchesTable.lookup(boundRect.br().x);
-                    System.out.println("Distance in pixels = " + boundRect.br().x);
-                    System.out.println("Distance in inches = " + nextTargetData.portDistance);
-                    // Find the degrees to turn by finding the difference between the horizontal center of the camera frame and the horizontal center of the target.
-                    nextTargetData.angleToTurn = (35.0 / nextTargetData.imageSize.height) * ((nextTargetData.imageSize.height / 2.0) -
-                                                    ((nextTargetData.boundingBoxPts[1].y + nextTargetData.boundingBoxPts[2].y) / 2.0));
 
-                    synchronized(Main.tapeLock)
-                    {
-                    // save the 2 data points to pass through Main to the "cartoon" image maker/presenter
-                    Main.tapeDistance = (int)(nextTargetData.portDistance+0.5);
-                    Main.tapeAngle = (int)(nextTargetData.angleToTurn+0.5);
-                    Main.isDistanceAngleFresh = true;
-                    Main.tapeLock.notify();
-                    }
+                // Find the corner points of the bounding rectangle and the image size
+                nextTargetData.boundingBoxPts[0] = boxPts[0];
+                nextTargetData.boundingBoxPts[1] = boxPts[1];
+                nextTargetData.boundingBoxPts[2] = boxPts[2];
+                nextTargetData.boundingBoxPts[3] = boxPts[3];
+                nextTargetData.imageSize.width = mat.width();
+                nextTargetData.imageSize.height = mat.height();
+                nextTargetData.portPositionInFrame = 0.0;
+                // Find the shortest distance from the left of the frame to the box
+                // Use a linear equation to convert the distance in pixels to the distance in inches
+                // a better way will be to use geometry to calculate the distance in inches to the power port with a sinusoidal equation
+                nextTargetData.portDistance = pixelsToInchesTable.lookup(boundRect.br().x);
+                System.out.println("Distance in pixels = " + boundRect.br().x);
+                System.out.println("Distance in inches = " + nextTargetData.portDistance);
+                // Find the degrees to turn by finding the difference between the horizontal center of the camera frame and the horizontal center of the target.
+                //TODO: document 35.0 - make it a constant somewhere obvious
+                nextTargetData.angleToTurn = (35.0 / nextTargetData.imageSize.height) * ((nextTargetData.imageSize.height / 2.0) -
+                                                ((nextTargetData.boundingBoxPts[1].y + nextTargetData.boundingBoxPts[2].y) / 2.0));
 
-                    //System.out.println("Angle to turn in degrees = " + nextTargetData.angleToTurn);
+                //Update the target
+                nextTargetData.isFreshData = true;
+                nextTargetData.isTargetFound = true;
+                
+                synchronized(Main.tapeLock)
+                {
+                // save the 2 data points to pass through Main to the "cartoon" image maker/presenter
+                Main.tapeDistance = (int)(nextTargetData.portDistance+0.5);
+                Main.tapeAngle = (int)(nextTargetData.angleToTurn+0.5);
+                Main.isDistanceAngleFresh = true;
+                //TODO: add is-target-found
+                Main.tapeLock.notify();
+                }
 
-            
-
-                    /*
-                    // Find the center x, center y, width, height, and angle of the bounding rectangle
-                    nextTargetData.center = boundRect.center;
-                    nextTargetData.size = boundRect.size;
-                    nextTargetData.angle = boundRect.angle;
-                    */
-
-                    // TODO: Use the blank mat
-                    // Mat mat = new Mat();
-
-                    // // Draw shapes
-                    // Imgproc.drawMarker(mat, new Point(nextTargetData.imageSize.width / 2.0, nextTargetData.imageSize.height / 2.0), 
-                    //     new Scalar(0, 255, 0), Imgproc.MARKER_CROSS, 40);// green cross representing center of camera frame
-                    // Imgproc.circle(mat, new Point(nextTargetData.imageSize.width / 2.0, nextTargetData.imageSize.height / 2.0), 20, 
-                    //     new Scalar(0, 255, 0), 2); // green circle surrounding green cross
-
-                    // // Red hexagon:
-                    // // Center point would be Point((boundRect[0].x + boundRect[2].x) / 2), (boundRect[0].y + boundRect[2].y) / 2))
-                    // int offset = (int)
-                    //     ( (-(double)mat.width()/30.)*nextTargetData.angleToTurn + (double)mat.width()/2. );
-                    // List<MatOfPoint> listOfHexagonPoints = new ArrayList();
-                    // listOfHexagonPoints.add(new MatOfPoint(
-                    //             new Point(nextTargetData.imageSize.width / 2      + offset, nextTargetData.imageSize.height / 2 + 20),
-                    //             new Point(nextTargetData.imageSize.width / 2 + 20 + offset, nextTargetData.imageSize.height / 2 + 10), 
-                    //             new Point(nextTargetData.imageSize.width / 2 + 20 + offset, nextTargetData.imageSize.height / 2 - 10), 
-                    //             new Point(nextTargetData.imageSize.width / 2      + offset, nextTargetData.imageSize.height / 2 - 20), 
-                    //             new Point(nextTargetData.imageSize.width / 2 - 20 + offset, nextTargetData.imageSize.height / 2 - 10), 
-                    //             new Point(nextTargetData.imageSize.width / 2 - 20 + offset, nextTargetData.imageSize.height / 2 + 10)  
-                    //                        )
-                    //         );
-                    // Imgproc.polylines(mat, listOfHexagonPoints, true, new Scalar(0, 0, 255), 2, 1); 
-
-                    // // Draw distance text and angle text
-                    // Imgproc.putText(mat, String.format("Distance: %fin", nextTargetData.portDistance), new Point(15, 15),
-                    //     Core.FONT_HERSHEY_SIMPLEX, .6, new Scalar(255, 255, 255), 1);
-                    // Imgproc.putText(mat, String.format("Angle to turn: %f degrees", nextTargetData.angleToTurn), new Point(15, 40),
-                    //     Core.FONT_HERSHEY_SIMPLEX, .6, new Scalar(255, 255, 255), 1);
- 
-                    // nextTargetData.fixedAngle = 90.0;
- 
-                    //Update the target
-                    nextTargetData.isFreshData = true;
-                    nextTargetData.isTargetFound = true;
-                // }
+                //System.out.println("Angle to turn in degrees = " + nextTargetData.angleToTurn);
             }
             // draw the best - selected - contour
             Imgproc.drawContours(mat, filteredContours, bestContourIndex, new Scalar(0, 0, 255), 1);
 
-            /* 2019 code
-            // draw the pointer to the target
-            double angleInRadians = nextTargetData.fixedAngle * (Math.PI/180);
-            endpoint.x = nextTargetData.center.x - ( (nextTargetData.size.height / 2) * Math.cos(angleInRadians) );
-            endpoint.y = nextTargetData.center.y - ( (nextTargetData.size.height / 2) * Math.sin(angleInRadians) );
-            Imgproc.line(mat, nextTargetData.center, endpoint,  new Scalar(255, 0, 255), 1, Imgproc.LINE_4);
-            Mat bestContour = Mat.zeros(mat.rows(), mat.cols(), CvType.CV_8UC1); // blank Mat to draw the best Contour on
-            Imgproc.drawContours(bestContour, filteredContours, bestContourIndex, new Scalar(255), 1, Imgproc.LINE_4);
-            */
-
         } // end of processing all contours in this camera frame
-        }
     }
 }
+
+// // Enhance Image if useful - not associated with the Hough Lines below
+// // Convert to YUV
+// // Apply histogram equalization
+// // Convert Back To BGR
+// Mat Image_yuv = new Mat(mat.rows(), mat.cols(), CvType.CV_8UC3);
+// List<Mat> yuvPlanes = new ArrayList<>();
+// Imgproc.cvtColor(mat, Image_yuv, Imgproc.COLOR_BGR2YUV);
+// Core.split(Image_yuv, yuvPlanes);
+// Imgproc.equalizeHist(yuvPlanes.get(0), yuvPlanes.get(0));
+// Core.merge(yuvPlanes, Image_yuv);
+// Imgproc.cvtColor(Image_yuv, mat, Imgproc.COLOR_YUV2BGR);
+
+
 
 // Hough Lines example in case that is useful to determine target location
 // but it is slow so check the frame rates

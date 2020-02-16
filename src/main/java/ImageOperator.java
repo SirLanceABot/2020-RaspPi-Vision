@@ -1,13 +1,12 @@
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.lang.model.util.ElementScanner6;
-
 import java.util.ArrayList;
 
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
+import org.opencv.core.Size;
 import org.opencv.core.Scalar;
 import org.opencv.core.CvType;
 import org.opencv.core.MatOfPoint;
@@ -81,7 +80,7 @@ public class ImageOperator implements Runnable {
             try {
                 // DRAW HERE
                 int portDistance, angleToTurn;
-
+                //TODO: consider black & white mat to save network bandwidth
                 mat = Mat.zeros(45, 640, CvType.CV_8UC3); // blank color Mat to draw on
 
                 synchronized (Main.tapeLock)
@@ -95,6 +94,7 @@ public class ImageOperator implements Runnable {
                     portDistance = Main.tapeDistance;
                     angleToTurn = Main.tapeAngle;
                     Main.isDistanceAngleFresh = false;
+                    //TODO: add is-target-found
                 }
 
                  // Draw shapes
@@ -106,6 +106,7 @@ public class ImageOperator implements Runnable {
                 // Red hexagon:
                 int offset;
                 
+                //TODO:  combine <-15 and >+15 and also the variable is-target-found
                 if(angleToTurn <= -15)
                 {
                     Imgproc.putText(mat, String.format("Target not found"), new Point(15, 35),
@@ -115,17 +116,26 @@ public class ImageOperator implements Runnable {
                 {
                     offset = (int)
                     ( ((double)mat.width()/30.0)*angleToTurn + (double)mat.width()/2.0 );
+                    //TODO: fix the unchecked conversion error
                     ArrayList<MatOfPoint> listOfHexagonPoints = new ArrayList();
-                    listOfHexagonPoints.add(new MatOfPoint(
+                    listOfHexagonPoints.add(new MatOfPoint
+                                (
                                 new Point(      offset, mat.height() / 2 + 20),
                                 new Point( 20 + offset, mat.height() / 2 + 10), 
                                 new Point( 20 + offset, mat.height() / 2 - 10), 
                                 new Point(      offset, mat.height() / 2 - 20), 
                                 new Point(-20 + offset, mat.height() / 2 - 10), 
                                 new Point(-20 + offset, mat.height() / 2 + 10)  
-                                            )
+                                )
                             );
-                    Imgproc.polylines(mat, listOfHexagonPoints, true, new Scalar(0, 0, 255), 2, 1); 
+                    Imgproc.polylines(mat, listOfHexagonPoints, true, new Scalar(0, 0, 255), 2, 1);
+
+                    //TODO: rotate the hexagon and NOT this way
+                    Mat subMat = mat.submat(mat.height() / 2 - 21, mat.height() / 2 + 21, -21 + offset, 21 + offset);
+                    //Creating the transformation matrix M
+                    Mat rotationMatrix = Imgproc.getRotationMatrix2D(new Point(offset, mat.height() /2), 30, 1);
+                    //Rotating the given image
+                    Imgproc.warpAffine(subMat, subMat,rotationMatrix, new Size(42, 42));
 
                     // if(angleToTurn > -15 && angleToTurn < 0)
                     // {

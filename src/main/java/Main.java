@@ -1,5 +1,11 @@
 /*
 
+If this program fails in away that prevents uploading a new version then temporarily rename the /boot/frc.json to something else
+and restart the program.  If this cannot be done by login to the RPi then put the micro SD boot flash drive in a PC and rename
+the file.
+
+The program will exit immediately failing to read the frc.json.  Then the RPi should be functional enough to upload a new version.
+
 Note there are some settable parameters located below the SKULL in the right wide scroller.
 
 The change from the standard FRCVISION example project is:
@@ -42,13 +48,13 @@ Program starts execution in Main.java - main.java
 Threads are spawned (optionally) for
     CameraProcessB (TurretB camera)
     CameraProcessE (IntakeE camera)
-    ImageMerge (show picture in picture from the 2 cameras)
     UdpReceive (test receive data if no roboRIO - note that the PowerShell UDP monitor can also be used)
 
 Image processing threads are then spawned for
     PipelineProcessB
     PipelineProcessE
- --
+    ImageOperator (show cartoon of the location of the high target)
+--
 
 Some of this project is based on the frc provided example thus:
 */
@@ -69,8 +75,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicIntegerArray;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
@@ -225,9 +229,10 @@ public final class Main
     static ShuffleboardTab cameraTab;
 
     static int tapeDistance = -1, tapeAngle = -1;
+    //TODO: add is-target-found
     static Object tapeLock;
-
     static boolean isDistanceAngleFresh = false;
+
 // Settable parameters for some outputs listed below the skull
 
 
@@ -257,6 +262,17 @@ public final class Main
     // ____"$$$$$"______________________""$$$$""__
 
 
+    static String version = "2020 RPi Vision 2/15/20";
+
+
+// Settable parameters for some outputs listed below
+// Settable parameters for some outputs listed below
+// Settable parameters for some outputs listed below
+
+    static boolean runTestUDPreceiver = false; // self run UDP testor or pick another computer to send the target data to
+
+// URL where driving messages are to be sent
+// This should be the roboRIO except if testing
 // Choices fror sending driving messages.  Add to the list as desired.  Select which one is used a few lines below.
     static String JW = "jwoodard-hp16.local";
     static String RT = "RKT-LapTop.local";
@@ -264,15 +280,6 @@ public final class Main
     static String roboRIO = "roborio-4237-frc.local";
     static String Self = "frcvision.local";
 
-// Settable parameters for some outputs listed below
-// Settable parameters for some outputs listed below
-// Settable parameters for some outputs listed below
-
-    static String version = "2020 RPi Vision 2/11/20";
-    static boolean runTestUDPreceiver = false;
-
-// URL where driving messages are to be sent
-// This should be the roboRIO except if testing
     static String UDPreceiverName = Team1;
  
     // static String UDPreceiverName = "0.0.0.0";
@@ -284,9 +291,9 @@ public final class Main
     static boolean displayTurretContours = true;
     static boolean displayIntakeContours = true;
 
-// Shuffleboard display video streams commented out for contour images and merged images
+// Shuffleboard display video streams commented out for contour images
 // No settable variables here for that
-// See the code to uncomment 
+// See the TargetSelection codes to uncomment
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
     static boolean logImage = false;
@@ -298,7 +305,6 @@ public final class Main
  
     private Main()
     {
-
     }
 
     /**

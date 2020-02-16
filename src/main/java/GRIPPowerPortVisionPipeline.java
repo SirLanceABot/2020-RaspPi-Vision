@@ -51,6 +51,7 @@ public class GRIPPowerPortVisionPipeline {
 		double[] hsvThresholdHue = {63.12949640287769, 98.60068259385666};
 		double[] hsvThresholdSaturation = {0.0, 255.0};
 		// double[] hsvThresholdValue = {16.052158273381295, 220.1877133105802};
+		//TODO: use unchanged GRIP - redo GRIP if necessary
 		double[] hsvThresholdValue = {27.51798561151079, 255.0};
 		hsvThreshold(hsvThresholdInput, hsvThresholdHue, hsvThresholdSaturation, hsvThresholdValue, hsvThresholdOutput);
 
