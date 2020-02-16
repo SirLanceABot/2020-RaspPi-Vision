@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
-import org.opencv.core.Size;
 import org.opencv.core.Scalar;
 import org.opencv.core.CvType;
 import org.opencv.core.MatOfPoint;
@@ -14,7 +13,6 @@ import org.opencv.imgproc.Imgproc;
 
 import edu.wpi.cscore.CvSource;
 import edu.wpi.first.cameraserver.CameraServer;
-import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 
@@ -76,8 +74,8 @@ public class ImageOperator implements Runnable {
         }
         //////////////////
 
-        while (true) {
-            try {
+        while(true){
+            try{
                 // DRAW HERE
                 int portDistance, angleToTurn;
                 //TODO: consider black & white mat to save network bandwidth
@@ -95,20 +93,21 @@ public class ImageOperator implements Runnable {
                     portDistance = Main.tapeDistance;
                     angleToTurn = Main.tapeAngle;
                     Main.isDistanceAngleFresh = false;
-                    //TODO: add is-target-found
+                    Main.isTargetFound = false;
                 }
 
-                 // Draw shapes
+                // Draw the green cross representing the center of the camera frame.
                 Imgproc.drawMarker(mat, new Point(mat.width() / 2.0, mat.height() / 2.0), 
-                 new Scalar(0, 255, 0), Imgproc.MARKER_CROSS, 40);// green cross representing center of camera frame
+                    new Scalar(0, 255, 0), Imgproc.MARKER_CROSS, 40);
+                // Draw a green circle around the green cross
                 Imgproc.circle(mat, new Point(mat.width() / 2.0, mat.height() / 2.0), 20, 
-                 new Scalar(0, 255, 0), 2); // green circle surrounding green cross
+                    new Scalar(0, 255, 0), 2);
 
                 // Red hexagon:
                 int offset;
                 
-                //TODO:  combine <-15 and >+15 and also the variable is-target-found
-                if(angleToTurn <= -15)
+                //TODO:  combine the variable is-target-found
+                if(angleToTurn <= -15 || angleToTurn >= 15)
                 {
                     Imgproc.putText(mat, String.format("Target not found"), new Point(15, 35),
                             Core.FONT_HERSHEY_SIMPLEX, .6, new Scalar(255, 255, 255), 1);
@@ -154,22 +153,17 @@ public class ImageOperator implements Runnable {
                     //         Core.FONT_HERSHEY_SIMPLEX, .4, new Scalar(255, 255, 255), 1);
                     // }
                 }
-                else
-                {
-                    Imgproc.putText(mat, String.format("Target not found"), new Point(15, 35),
-                            Core.FONT_HERSHEY_SIMPLEX, .8, new Scalar(255, 255, 255), 1);
-                }
 
-             // Draw distance text and text
-             Imgproc.putText(mat, String.format("%d", portDistance), new Point(15, 15),
-                 Core.FONT_HERSHEY_SIMPLEX, 1., new Scalar(255, 255, 255), 1);
+                // Draw distance text.
+                Imgproc.putText(mat, String.format("%d", portDistance), new Point(15, 15),
+                    Core.FONT_HERSHEY_SIMPLEX, 1., new Scalar(255, 255, 255), 1);
 
                 outputStream.putFrame(mat);
 
-             } catch (Exception exception)
+             }  catch (Exception exception)
                 {
-                System.out.println(pId + " error " + exception);
-                exception.printStackTrace();
+                    System.out.println(pId + " error " + exception);
+                    exception.printStackTrace();
                 } 
             }
         }

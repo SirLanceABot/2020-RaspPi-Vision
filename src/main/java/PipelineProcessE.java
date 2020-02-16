@@ -1,6 +1,4 @@
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
@@ -14,9 +12,7 @@ import edu.wpi.cscore.CvSink;
 import edu.wpi.cscore.CvSource;
 import edu.wpi.cscore.VideoSource;
 import edu.wpi.first.cameraserver.CameraServer;
-import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 
 /**
  * This class creates a camera thread to process camera frames. DO NOT MODIFY

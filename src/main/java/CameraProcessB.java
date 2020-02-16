@@ -2,6 +2,7 @@ import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
 
+//TODO: import Main.CameraConfig;
 import edu.wpi.cscore.CvSink;
 import edu.wpi.cscore.VideoSource;
 import edu.wpi.first.wpilibj.Timer;
@@ -19,6 +20,8 @@ public class CameraProcessB implements Runnable
 	private static final String pId = new String("[BCameraProcess]");
 
 	private String cameraName;// = "Turret Camera";
+	private int cameraExposure; // = 0;
+	private boolean cameraAutoExposure;
 	private int cameraWidth;// = 160;
 	private int cameraHeight;// = 120;
 	private PipelineProcessB pipelineProcessB;
@@ -48,6 +51,8 @@ public class CameraProcessB implements Runnable
 	{
 		this.camera = camera;
 		this.cameraName = cameraConfig.name;
+		// this.cameraExposure = CameraConfig.exposure;
+		// this.cameraAutoExposure = CameraConfig.autoExposure;
 		this.cameraWidth = cameraConfig.width;
 		this.cameraHeight = cameraConfig.height;
 
@@ -88,13 +93,11 @@ public class CameraProcessB implements Runnable
 	// TODO: write the method
 	public void setExposure(int exposure)
 	{
-
 	}
 
 	// TODO: write the method
 	public void setAutoExposure(boolean enabled)
 	{
-
 	}
 
 	public void run()

@@ -1,3 +1,5 @@
+//TODO: import Main.CameraConfig;
+
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
@@ -19,6 +21,8 @@ public class CameraProcessE implements Runnable
 	private static final String pId = new String("[CameraProcessE]");
 
 	private String cameraName;// = "Intake Camera";
+	private int cameraExposure; // = 0;
+	private boolean cameraAutoExposure;
 	private int cameraWidth;// = 320;
 	private int cameraHeight;// = 240;
 	private PipelineProcessE pipelineProcessE;
@@ -48,6 +52,8 @@ public class CameraProcessE implements Runnable
 	{
 		this.camera = camera;
 		this.cameraName = cameraConfig.name;
+		// this.cameraExposure = CameraConfig.exposure;
+		// this.cameraAutoExposure = CameraConfig.autoExposure;
 		this.cameraWidth = cameraConfig.width;
 		this.cameraHeight = cameraConfig.height;
 
@@ -88,13 +94,11 @@ public class CameraProcessE implements Runnable
 	// TODO: write the method
 	public void setExposure(int exposure)
 	{
-
 	}
 
 	// TODO: write the method
 	public void setAutoExposure(boolean enabled)
 	{
-
 	}
 
 	public void run()

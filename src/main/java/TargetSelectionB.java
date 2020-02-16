@@ -7,9 +7,7 @@
 // Suggest getting this value in Main infinite loop at the end using Network Table value entered on th Shuffleboard.
 import java.util.ArrayList;
 import java.util.List;
-
 import org.opencv.core.Core;
-import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
@@ -132,7 +130,7 @@ public class TargetSelectionB
 				// convert MatofPoint to an array of those Points and iterate (could do list of Points but no need for this)
 				//for(Point aPoint : aContour.toArray())System.out.print(" " + aPoint); // print each point
 
-                MatOfPoint2f  NewMtx = new MatOfPoint2f(contour.toArray());
+                MatOfPoint2f NewMtx = new MatOfPoint2f(contour.toArray());
 
                 // for(int idx = 0; idx < contour.toArray().length; idx++)
                 // {
@@ -214,7 +212,7 @@ public class TargetSelectionB
                 Main.tapeDistance = (int)(nextTargetData.portDistance+0.5);
                 Main.tapeAngle = (int)(nextTargetData.angleToTurn+0.5);
                 Main.isDistanceAngleFresh = true;
-                //TODO: add is-target-found
+                Main.isTargetFound = true;
                 Main.tapeLock.notify();
                 }
 

@@ -89,7 +89,6 @@ import edu.wpi.cscore.UsbCamera;
 import edu.wpi.cscore.VideoSource;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.networktables.EntryListenerFlags;
-import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -229,7 +228,7 @@ public final class Main
     static ShuffleboardTab cameraTab;
 
     static int tapeDistance = -1, tapeAngle = -1;
-    //TODO: add is-target-found
+    static boolean isTargetFound = false;
     static Object tapeLock;
     static boolean isDistanceAngleFresh = false;
 
