@@ -93,8 +93,8 @@ public class TargetSelectionB
                         new Scalar(0, 0, 0), 1);
             }
 
-            nextTargetData.portDistance = -1;
-            nextTargetData.angleToTurn = -1;
+            nextTargetData.portDistance = -1.;
+            nextTargetData.angleToTurn = -1.;
             nextTargetData.isFreshData = true;
             nextTargetData.isTargetFound = false;
         }
@@ -191,10 +191,10 @@ public class TargetSelectionB
                 nextTargetData.angleToTurn = (VERTICAL_CAMERA_ANGLE_OF_VIEW / nextTargetData.imageSize.height) * ((nextTargetData.imageSize.height / 2.0) -
                                                 ((nextTargetData.boundingBoxPts[1].y + nextTargetData.boundingBoxPts[2].y) / 2.0)) + Main.calibrateAngle;
                 
-                if(nextTargetData.angleToTurn <= -VERTICAL_CAMERA_ANGLE_OF_VIEW / 2 * .9 || nextTargetData.angleToTurn >= VERTICAL_CAMERA_ANGLE_OF_VIEW / 2 * .9)
+                if(nextTargetData.angleToTurn <= -VERTICAL_CAMERA_ANGLE_OF_VIEW / 2. || nextTargetData.angleToTurn >= VERTICAL_CAMERA_ANGLE_OF_VIEW / 2.)
                 {
-                    nextTargetData.portDistance = -1;
-                    nextTargetData.angleToTurn = -1;
+                    nextTargetData.portDistance = -1.;
+                    nextTargetData.angleToTurn = -1.;
                     nextTargetData.isFreshData = true;
                     nextTargetData.isTargetFound = false;
                 }
@@ -215,10 +215,10 @@ public class TargetSelectionB
         {
             synchronized(Main.tapeLock)
             {
-                Main.tapeDistance = -1;
-                Main.tapeAngle = -1;
-                Main.isDistanceAngleFresh = true;
+                Main.tapeDistance = -1.;
+                Main.tapeAngle = -1.;
                 Main.isTargetFound = false;
+                Main.isDistanceAngleFresh = true;
                 Main.tapeLock.notify();
             }
         }
@@ -226,10 +226,10 @@ public class TargetSelectionB
         {
             synchronized(Main.tapeLock)
             {
-                Main.tapeDistance = (int)(nextTargetData.portDistance + .5);
-                Main.tapeAngle = (int)(nextTargetData.angleToTurn + .5);
-                Main.isDistanceAngleFresh = true;
+                Main.tapeDistance = nextTargetData.portDistance;
+                Main.tapeAngle = nextTargetData.angleToTurn;
                 Main.isTargetFound = true;
+                Main.isDistanceAngleFresh = true;
                 Main.tapeLock.notify();
             }
         }

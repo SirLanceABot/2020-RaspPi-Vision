@@ -78,7 +78,8 @@ public class ImageOperator implements Runnable {
         while(true){
             try{
                 // DRAW HERE
-                int portDistance, angleToTurn;
+                double portDistance;
+                double angleToTurn;
                 boolean isTargetFound;
                 //TODO: consider black & white mat to save network bandwidth
                 //TODO: consider compression to save network bandwidth
@@ -86,7 +87,7 @@ public class ImageOperator implements Runnable {
 
                 synchronized (Main.tapeLock)
                 {
-                    // get the 2 data points to draw the "cartoon" image
+                    // get the 3 data points to draw the "cartoon" image
                     if (!Main.isDistanceAngleFresh)
                     {
                        Main.tapeLock.wait();
@@ -95,6 +96,7 @@ public class ImageOperator implements Runnable {
                     portDistance = Main.tapeDistance;
                     angleToTurn = Main.tapeAngle;
                     isTargetFound = Main.isTargetFound;
+                    Main.isDistanceAngleFresh = false; // these data captured to be processed so mark them as used
                 }
 
                 // Draw the green cross representing the center of the camera frame.
@@ -109,15 +111,14 @@ public class ImageOperator implements Runnable {
                 
                 if(!isTargetFound)
                 {
-                    Imgproc.putText(mat, String.format("Target not found"), new Point(15, 35),
-                            Core.FONT_HERSHEY_SIMPLEX, .6, new Scalar(255, 255, 255), 1);
+                    Imgproc.putText(mat, "Target not found", new Point(25, 32),
+                            Core.FONT_HERSHEY_SIMPLEX, 1., new Scalar(255, 255, 255), 2);
                 }
                 else
                 {
-                    offset = (int)
-                    ( ((double)mat.width()/VERTICAL_CAMERA_ANGLE_OF_VIEW * .9)*angleToTurn + (double)mat.width()/2.0 );
-                    //TODO: fix the unchecked conversion error
-                    ArrayList<MatOfPoint> listOfHexagonPoints = new ArrayList();
+                    offset = (int) // where to place the hexagon "target" image
+                    ( ((double)mat.width()/VERTICAL_CAMERA_ANGLE_OF_VIEW)*angleToTurn + (double)mat.width()/2.0 );
+                    ArrayList<MatOfPoint> listOfHexagonPoints = new ArrayList<MatOfPoint>();
                     listOfHexagonPoints.add(new MatOfPoint
                                 (
                                 new Point(      offset, mat.height() / 2 + 20),
@@ -128,7 +129,7 @@ public class ImageOperator implements Runnable {
                                 new Point(-20 + offset, mat.height() / 2 + 10)  
                                 )
                             );
-                    Imgproc.polylines(mat, listOfHexagonPoints, true, new Scalar(0, 0, 255), 2, 1);
+                    Imgproc.polylines(mat, listOfHexagonPoints, true, new Scalar(0, 0, 255), 5, 1);
 
                     //TODO: rotate the hexagon and NOT this way
                     //Mat subMat = mat.submat(mat.height() / 2 - 21, mat.height() / 2 + 21, -21 + offset, 21 + offset);
@@ -155,8 +156,19 @@ public class ImageOperator implements Runnable {
                 }
 
                 // Draw distance text.
-                Imgproc.putText(mat, String.format("%d", portDistance), new Point(5, 30),
-                    Core.FONT_HERSHEY_SIMPLEX, 1.0, new Scalar(255, 255, 255), 1);
+                String printDistance = String.format("%d", (int)(portDistance+.5));
+
+                Imgproc.putText(mat, printDistance, new Point(5, 27),
+                    Core.FONT_HERSHEY_SIMPLEX, 1.0, new Scalar(255, 255, 255), 2);
+
+                    Imgproc.putText(mat, printDistance, new Point(mat.width() - 85, 27),
+                    Core.FONT_HERSHEY_SIMPLEX, 1.0, new Scalar(255, 255, 255), 2);
+
+                    Imgproc.putText(mat, "inches", new Point(5, 39),
+                    Core.FONT_HERSHEY_SIMPLEX, .6, new Scalar(255, 255, 255), 1);
+
+                    Imgproc.putText(mat, "inches", new Point(mat.width() - 85, 39),
+                    Core.FONT_HERSHEY_SIMPLEX, .6, new Scalar(255, 255, 255), 1);
 
                 outputStream.putFrame(mat);
 

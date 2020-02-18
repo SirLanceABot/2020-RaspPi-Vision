@@ -230,7 +230,8 @@ public final class Main
     static Object tabLock;
     static ShuffleboardTab cameraTab;
 
-    static int tapeDistance = -1, tapeAngle = -1;
+    static double tapeDistance = -1.;
+    static double tapeAngle = -1.;
     static boolean isTargetFound = false;
     static Object tapeLock;
     static boolean isDistanceAngleFresh = false;

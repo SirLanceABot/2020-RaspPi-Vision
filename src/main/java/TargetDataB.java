@@ -29,26 +29,23 @@ public class TargetDataB
 
     // These fields are used to track the validity of the data.
     int frameNumber; // Number of the camera frame
+
+    // Variable isFreshData means whether the roboRIO has seen the current data from the Raspberry Pi already.
     boolean isFreshData; // Is the data fresh?
     boolean isTargetFound;
 
-   /**
+    /**
      * Default contructor - resets all of the target data.
      */
-     public TargetDataB()
+    public TargetDataB()
     {
         boundingBoxPts = new Point[4];
-        imageSize = new Size();
-        
-        // center = new Point();
-        // size = new Size();
         reset();
         frameNumber = 0;
     }
 
     /**
-     * This method resets all of the target data, except the frameNumber. The user
-     * MUST MODIFY
+     * This method resets all of the target data, except the frameNumber. The user MUST MODIFY.
      */
     public synchronized void reset()
     {
@@ -59,19 +56,12 @@ public class TargetDataB
         imageSize = new Size(-1.0, -1.0);
         portPositionInFrame = -1.0;
         portDistance = -1.0;
-        angleToTurn = 0;
-
-        // center.x = -1.0;
-        // center.y = -1.0;
-        // size.width = -1.0;
-        // size.height = -1.0;
-        // angle = -1.0;
-        // fixedAngle = -1.0;
+        angleToTurn = 0.;
         isTargetFound = false;
 
         // DO NOT reset the frameNumber
         isFreshData = true;
-        }
+    }
 
      /**
      * This method stores all of the target data.
