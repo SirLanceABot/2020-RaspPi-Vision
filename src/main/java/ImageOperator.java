@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 
 public class ImageOperator implements Runnable {
     private static final String pId = new String("[ImageOperator]");
+    private static final double VERTICAL_CAMERA_ANGLE_OF_VIEW = 35.0;
 
     // This object is used to send the image to the Dashboard
     private CvSource outputStream;
@@ -78,6 +79,7 @@ public class ImageOperator implements Runnable {
             try{
                 // DRAW HERE
                 int portDistance, angleToTurn;
+                boolean isTargetFound;
                 //TODO: consider black & white mat to save network bandwidth
                 //TODO: consider compression to save network bandwidth
                 mat = Mat.zeros(45, 640, CvType.CV_8UC3); // blank color Mat to draw on
@@ -92,10 +94,7 @@ public class ImageOperator implements Runnable {
 
                     portDistance = Main.tapeDistance;
                     angleToTurn = Main.tapeAngle;
-                    Main.isDistanceAngleFresh = false;
-//FIXME: isTargetFound error
-//TODO: isTargetFound is NOT to be set by ImageOperator - it is to be USED by ImageOperator
-                    Main.isTargetFound = false;
+                    isTargetFound = Main.isTargetFound;
                 }
 
                 // Draw the green cross representing the center of the camera frame.
@@ -108,16 +107,15 @@ public class ImageOperator implements Runnable {
                 // Red hexagon:
                 int offset;
                 
-                //TODO:  combine the variable is-target-found
-                if(angleToTurn <= -15 || angleToTurn >= 15)
+                if(!isTargetFound)
                 {
                     Imgproc.putText(mat, String.format("Target not found"), new Point(15, 35),
                             Core.FONT_HERSHEY_SIMPLEX, .6, new Scalar(255, 255, 255), 1);
                 }
-                else if(angleToTurn > -15 && angleToTurn < 15)
+                else
                 {
                     offset = (int)
-                    ( ((double)mat.width()/30.0)*angleToTurn + (double)mat.width()/2.0 );
+                    ( ((double)mat.width()/VERTICAL_CAMERA_ANGLE_OF_VIEW * .9)*angleToTurn + (double)mat.width()/2.0 );
                     //TODO: fix the unchecked conversion error
                     ArrayList<MatOfPoint> listOfHexagonPoints = new ArrayList();
                     listOfHexagonPoints.add(new MatOfPoint
@@ -157,8 +155,8 @@ public class ImageOperator implements Runnable {
                 }
 
                 // Draw distance text.
-                Imgproc.putText(mat, String.format("%d", portDistance), new Point(15, 15),
-                    Core.FONT_HERSHEY_SIMPLEX, 1., new Scalar(255, 255, 255), 1);
+                Imgproc.putText(mat, String.format("%d", portDistance), new Point(5, 30),
+                    Core.FONT_HERSHEY_SIMPLEX, 1.0, new Scalar(255, 255, 255), 1);
 
                 outputStream.putFrame(mat);
 

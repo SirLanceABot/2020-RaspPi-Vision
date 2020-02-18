@@ -1,15 +1,3 @@
-//TODO: either use the best contour of more than one or abandon trying to find the best
-// current code seems to be mixed up on this aspect.  TargetData is set even if not seemingly the best.
-
-//TODO: use is-target-found here and pass through to Operator Image
-//FIXME: especially all the ImageOperator destined variables need to be set apporproately for NO target found AND target found.
-
-//TODO: Include an additive "calibration" adjustment to the alignment.  If Power Cell going left of aim then subtract that from angle
-// to turn so OperatorImage forced to align to that value and adjustment sent to roboRIO.  Similarly for error to the right.
-// This behaves as if the camera is pointing incorrectly or Power Cells take off incorrectly.
-// Suggest getting this value in Main infinite loop at the end using Network Table value entered on the Shuffleboard.
-// That coding has been started but not completed.
-
 import java.util.ArrayList;
 import java.util.List;
 import org.opencv.core.Core;
@@ -32,6 +20,8 @@ import org.opencv.imgproc.Imgproc;
 public class TargetSelectionB
 {
     private static final String pId = new String("[TargetSelectionB]");
+
+    private static final double VERTICAL_CAMERA_ANGLE_OF_VIEW = 35.0;
 
 	// This object is used to run the gripPowerCellIntakeVisionPipeline
     private GRIPPowerPortVisionPipeline gripPowerPortVisionPipeline = new GRIPPowerPortVisionPipeline();
@@ -102,9 +92,19 @@ public class TargetSelectionB
                 Imgproc.putText(mat, "No Contours", new Point(20, 20), Core.FONT_HERSHEY_SIMPLEX, 0.25,
                         new Scalar(0, 0, 0), 1);
             }
+
+            nextTargetData.portDistance = -1;
+            nextTargetData.angleToTurn = -1;
+            nextTargetData.isFreshData = true;
+            nextTargetData.isTargetFound = false;
         }
         else // if contours were found ...
         {
+            if(filteredContours.size() > 1)
+            {
+                System.err.println(pId + " More than one contour found");
+            }
+
             Rect boundRect;
 
             if (debuggingEnabled)
@@ -116,11 +116,9 @@ public class TargetSelectionB
 				Imgproc.drawContours(mat, filteredContours, -1, new Scalar(255, 0, 0), 1);
 			}
 
-            // Loop through all contours to find the best contour
-            // Each contour is reduced to a single point - the COG x, y of the contour
+            // Loop through all contours and just remember the last one
             
             int contourIndex = -1;
-            int bestContourIndex = -1;
 
             for (MatOfPoint contour : filteredContours)
             {
@@ -151,14 +149,6 @@ public class TargetSelectionB
                 boxPts[1] = new Point(boundRect.br().x, boundRect.tl().y);
                 boxPts[2] = boundRect.br();
                 boxPts[3] = new Point(boundRect.tl().x, boundRect.br().y);
-                
-                // Determine if this is the best contour using center.y
-                // TODO: Review this
-                // if (nextTargetData.center.y < boundRect.center.y)
-                // {
-                    bestContourIndex = contourIndex;
-
-                //System.out.println(boundRect);
                 
                 // draw edges of minimum rotated rectangle    
                 List<MatOfPoint> listMidContour = new ArrayList<MatOfPoint>();
@@ -196,37 +186,53 @@ public class TargetSelectionB
                 nextTargetData.imageSize.width = mat.width();
                 nextTargetData.imageSize.height = mat.height();
                 nextTargetData.portPositionInFrame = 0.0;
-                // Find the shortest distance from the left of the frame to the box
-                // Use a linear equation to convert the distance in pixels to the distance in inches
-                // a better way will be to use geometry to calculate the distance in inches to the power port with a sinusoidal equation
-                nextTargetData.portDistance = pixelsToInchesTable.lookup(boundRect.br().x);
-                //System.out.println("Distance in pixels = " + boundRect.br().x);
-                //System.out.println("Distance in inches = " + nextTargetData.portDistance);
-                // Find the degrees to turn by finding the difference between the horizontal center of the camera frame and the horizontal center of the target.
-                //TODO: document 35.0 - make it a constant somewhere obvious
-                nextTargetData.angleToTurn = (35.0 / nextTargetData.imageSize.height) * ((nextTargetData.imageSize.height / 2.0) -
-                                                ((nextTargetData.boundingBoxPts[1].y + nextTargetData.boundingBoxPts[2].y) / 2.0));
 
-                //Update the target
-                nextTargetData.isFreshData = true;
-                nextTargetData.isTargetFound = true;
+                // Find the degrees to turn by finding the difference between the horizontal center of the camera frame and the horizontal center of the target.
+                nextTargetData.angleToTurn = (VERTICAL_CAMERA_ANGLE_OF_VIEW / nextTargetData.imageSize.height) * ((nextTargetData.imageSize.height / 2.0) -
+                                                ((nextTargetData.boundingBoxPts[1].y + nextTargetData.boundingBoxPts[2].y) / 2.0)) + Main.calibrateAngle;
                 
-                synchronized(Main.tapeLock)
+                if(nextTargetData.angleToTurn <= -VERTICAL_CAMERA_ANGLE_OF_VIEW / 2 * .9 || nextTargetData.angleToTurn >= VERTICAL_CAMERA_ANGLE_OF_VIEW / 2 * .9)
                 {
-                // save the 2 data points to pass through Main to the "cartoon" image maker/presenter
-                Main.tapeDistance = (int)(nextTargetData.portDistance+0.5);
-                Main.tapeAngle = (int)(nextTargetData.angleToTurn+0.5);
+                    nextTargetData.portDistance = -1;
+                    nextTargetData.angleToTurn = -1;
+                    nextTargetData.isFreshData = true;
+                    nextTargetData.isTargetFound = false;
+                }
+                else
+                {
+                    nextTargetData.portDistance = pixelsToInchesTable.lookup(boundRect.br().x);
+                    nextTargetData.isFreshData = true;
+                    nextTargetData.isTargetFound = true;
+                }
+            }
+
+            // draw the selected contour
+            Imgproc.drawContours(mat, filteredContours, contourIndex, new Scalar(0, 0, 255), 1);
+
+        } // end of processing all contours in this camera frame
+
+        if(!nextTargetData.isTargetFound)
+        {
+            synchronized(Main.tapeLock)
+            {
+                Main.tapeDistance = -1;
+                Main.tapeAngle = -1;
+                Main.isDistanceAngleFresh = true;
+                Main.isTargetFound = false;
+                Main.tapeLock.notify();
+            }
+        }
+        else
+        {
+            synchronized(Main.tapeLock)
+            {
+                Main.tapeDistance = (int)(nextTargetData.portDistance + .5);
+                Main.tapeAngle = (int)(nextTargetData.angleToTurn + .5);
                 Main.isDistanceAngleFresh = true;
                 Main.isTargetFound = true;
                 Main.tapeLock.notify();
-                }
-
-                //System.out.println("Angle to turn in degrees = " + nextTargetData.angleToTurn);
             }
-            // draw the best - selected - contour
-            Imgproc.drawContours(mat, filteredContours, bestContourIndex, new Scalar(0, 0, 255), 1);
-
-        } // end of processing all contours in this camera frame
+        }
     }
 }
 

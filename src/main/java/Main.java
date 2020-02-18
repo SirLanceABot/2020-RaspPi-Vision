@@ -94,7 +94,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 /*
    JSON format:
    {
@@ -140,6 +140,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public final class Main
 {
+    public static double calibrateAngle;
+
     { // sleep needed for early version of this code in 2020.  Linux or JVM allowed this program to start before
       // Linux or JVM was fully functional to run correctly the threads spawned by this program
         try
@@ -263,6 +265,7 @@ public final class Main
 
 
     static String version = "2020 RPi Vision 2/16/20";
+    static final int MAXIMUM_MESSAGE_LENGTH = 1024;
 
 
 // Settable parameters for some outputs listed below
@@ -280,7 +283,7 @@ public final class Main
     static String roboRIO = "roborio-4237-frc.local";
     static String Self = "frcvision.local";
 
-    static String UDPreceiverName = Team1;
+    static String UDPreceiverName = roboRIO;
  
     // static String UDPreceiverName = "0.0.0.0";
     // "0.0.0.0" should be any computer but doesn't work for other computers - they don't see any packets
@@ -805,7 +808,7 @@ public final class Main
         calibrate =
             cameraTab.add("Turret Calibration", 0.0)
             .withSize(4, 2)
-            .withPosition(20, 12)
+            .withPosition(20, 10)
            .getEntry();
         
         Shuffleboard.update();
@@ -827,7 +830,7 @@ public final class Main
                     sendMessage.Connect(); // keep trying to connect if it isn't
                     }
  
-                double calibrateAngle = calibrate.getDouble(0.0);
+                calibrateAngle = calibrate.getDouble(0.0);
 
                 System.out.println("calibrateAngle = " + calibrateAngle);
 

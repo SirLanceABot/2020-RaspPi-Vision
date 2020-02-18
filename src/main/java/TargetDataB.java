@@ -156,7 +156,8 @@ public class TargetDataB
         targetData.isFreshData = isFreshData;
 
         // Indicate that the data is no longer fresh data.
-        isFreshData = false;
+        // It is not until the set() method gets called that isFreshData changes.
+        this.isFreshData = false;
 
         // System.out.println(pId + " " + center.x + " " + center.y);
 
