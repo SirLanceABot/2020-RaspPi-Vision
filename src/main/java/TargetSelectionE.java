@@ -1,3 +1,4 @@
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 
 import org.opencv.core.Core;
@@ -18,6 +19,8 @@ import org.opencv.imgproc.Imgproc;
  */
 public class TargetSelectionE
 {
+	static {System.out.println("Starting class: " + MethodHandles.lookup().lookupClass().getCanonicalName());}
+
 	private static final String pId = new String("[TargetSelectionE]");
 
 	// This object is used to run the gripPowerCellIntakeVisionPipeline

@@ -2,6 +2,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import java.util.ArrayList;
+import java.lang.invoke.MethodHandles;
 
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
@@ -17,6 +18,8 @@ import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 
 public class ImageOperator implements Runnable {
+    static {System.out.println("Starting class: " + MethodHandles.lookup().lookupClass().getCanonicalName());}
+    
     private static final String pId = new String("[ImageOperator]");
     private static final double VERTICAL_CAMERA_ANGLE_OF_VIEW = 35.0;
 

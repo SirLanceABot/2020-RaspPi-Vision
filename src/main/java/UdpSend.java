@@ -1,6 +1,7 @@
 // UDP send program
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -9,6 +10,8 @@ import java.net.UnknownHostException;
 
 public class UdpSend
 {
+    static {System.out.println("Starting class: " + MethodHandles.lookup().lookupClass().getCanonicalName());}
+
     private static final String pId = new String("[UdpSend]");
 
     private InetAddress address;

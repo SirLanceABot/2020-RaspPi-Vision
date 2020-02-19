@@ -1,3 +1,5 @@
+import java.lang.invoke.MethodHandles;
+
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
@@ -17,6 +19,8 @@ import edu.wpi.first.wpilibj.Timer;
  */
 public class CameraProcessB implements Runnable
 {
+	static {System.out.println("Starting class: " + MethodHandles.lookup().lookupClass().getCanonicalName());}
+
 	private static final String pId = new String("[BCameraProcess]");
 
 	private String cameraName;// = "Turret Camera";

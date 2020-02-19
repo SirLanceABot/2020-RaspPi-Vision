@@ -69,6 +69,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.invoke.MethodHandles;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -96,31 +97,31 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 
 /*
-   JSON format:
+   JSON format:  Note that the < and > are not entered in the file
    {
        "team": <team number>,
-       "ntmode": <"client" or "server", "client" if unspecified>
+       "ntmode": <"client" or "server", "client" if unspecified>,
        "cameras": [
            {
-               "name": <camera name>
-               "path": <path, e.g. "/dev/video0">
-               "pixel format": <"MJPEG", "YUYV", etc>   // optional
-               "width": <video mode width>              // optional
-               "height": <video mode height>            // optional
-               "fps": <video mode fps>                  // optional
-               "brightness": <percentage brightness>    // optional
-               "white balance": <"auto", "hold", value> // optional
-               "exposure": <"auto", "hold", value>      // optional
-               "properties": [                          // optional
+               "name": <camera name>,
+               "path": <path, e.g. "/dev/video0">,
+               "pixel format": <"MJPEG", "YUYV", etc>,   // optional
+               "width": <video mode width>,              // optional
+               "height": <video mode height>,            // optional
+               "fps": <video mode fps>,                  // optional
+               "brightness": <percentage brightness>,    // optional
+               "white balance": <"auto", "hold", value>, // optional
+               "exposure": <"auto", "hold", value>,      // optional
+               "properties": [                           // optional
                    {
-                       "name": <property name>
+                       "name": <property name>,
                        "value": <property value>
                    }
                ],
-               "stream": {                              // optional
+               "stream": {                               // optional
                    "properties": [
                        {
-                           "name": <stream property name>
+                           "name": <stream property name>,
                            "value": <stream property value>
                        }
                    ]
@@ -140,6 +141,8 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 
 public final class Main
 {
+    static {System.out.println("Starting class: " + MethodHandles.lookup().lookupClass().getCanonicalName());}
+
     public static double calibrateAngle;
 
     { // sleep needed for early version of this code in 2020.  Linux or JVM allowed this program to start before
@@ -295,6 +298,7 @@ public final class Main
     static boolean runImageOperator = true;
     static boolean displayTurretContours = true;
     static boolean displayIntakeContours = true;
+    static boolean displayTurretHistogram = true;
 
     static boolean debug = false;
     
@@ -732,7 +736,7 @@ public final class Main
         {
             // assume each camera name appears only once in the list - that is a requirement
             System.out.println(pId + " Checking for " + config.name + " camera");
-            if (config.name.equalsIgnoreCase("TurretB"))
+            if (config.name.equalsIgnoreCase("Turret"))
             {
                 System.out.println(pId + " Starting TurretB camera");
                 VideoSource Bcamera = startCamera(config);
@@ -751,7 +755,7 @@ public final class Main
                 // start thread using the class' run() method (just saying run() won't start a thread - that just runs run() once)
                 visionThreadB.start(); 
             }
-            else if (config.name.equalsIgnoreCase("IntakeE"))
+            else if (config.name.equalsIgnoreCase("Intake"))
             {
                 System.out.println(pId + " Starting IntakeE camera");
                 VideoSource Ecamera = startCamera(config);

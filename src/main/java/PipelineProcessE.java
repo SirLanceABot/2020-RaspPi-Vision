@@ -1,4 +1,5 @@
 import java.io.File;
+import java.lang.invoke.MethodHandles;
 
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
@@ -24,6 +25,8 @@ import edu.wpi.first.wpilibj.Timer;
  */
 public class PipelineProcessE implements Runnable
 {
+	static {System.out.println("Starting class: " + MethodHandles.lookup().lookupClass().getCanonicalName());}
+
 	private static final String pId = new String("[EPipelineProcess]");
 
 	// This object is used to call its process() method if a target is found in the

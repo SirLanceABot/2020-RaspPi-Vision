@@ -19,6 +19,7 @@
 */
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
@@ -26,6 +27,8 @@ import java.net.SocketTimeoutException;
 
 public class UdpReceive implements Runnable
 {
+    static {System.out.println("Starting class: " + MethodHandles.lookup().lookupClass().getCanonicalName());}
+
     private static final String pId = new String("[UdpReceive]");
 
     private static String lastDataReceived = "";

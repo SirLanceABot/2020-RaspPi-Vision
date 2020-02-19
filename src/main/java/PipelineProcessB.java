@@ -1,4 +1,5 @@
 import java.io.File;
+import java.lang.invoke.MethodHandles;
 
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
@@ -24,6 +25,8 @@ import edu.wpi.first.wpilibj.Timer;
  */
 public class PipelineProcessB implements Runnable
 {
+	static {System.out.println("Starting class: " + MethodHandles.lookup().lookupClass().getCanonicalName());}
+
 	private static final String pId = new String("[BPipelineProcess]");
 
 	// This object is used to call its process() method if a target is found in the
@@ -199,13 +202,13 @@ public class PipelineProcessB implements Runnable
 				loopWaitTime = Timer.getFPGATimestamp() - loopWaitTime;
 			}
 
-			if (mat == null) // threads start at different times so skip problems expected at the beginning
+			if (mat == null) // threads start at different times so skip problems that might happen at the beginning
 			{
 				System.out.println(pId + " Skipping null mat");
 				continue;
 			}
 			
-			if (mat.empty()) // threads start at different times so skip problems expected at the beginning
+			if (mat.empty()) // threads start at different times so skip problems that might happen at the beginning
 			{
 				System.out.println(pId + " Skipping empty mat");
 				continue;

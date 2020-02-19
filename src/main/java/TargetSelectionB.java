@@ -1,5 +1,7 @@
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
@@ -8,7 +10,6 @@ import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
-
 import org.opencv.core.CvType;
 import org.opencv.core.MatOfFloat;
 import org.opencv.core.MatOfInt;
@@ -23,6 +24,8 @@ import org.opencv.core.MatOfInt;
  */
 public class TargetSelectionB
 {
+    static {System.out.println("Starting class: " + MethodHandles.lookup().lookupClass().getCanonicalName());}
+
     private static final String pId = new String("[TargetSelectionB]");
 
     private static final double VERTICAL_CAMERA_ANGLE_OF_VIEW = 35.0;
@@ -42,6 +45,7 @@ public class TargetSelectionB
 	{
         // Enter more data points for more accuracy. The equation should model some sort of sinusoidal function.
         // The x coordinate is pixels and the y coordinate is the horizontal distance to the target in inches.
+        // TODO: Notice the LUT CTOR argument is maximum table size - change it if it needs to be larger
         pixelsToInchesTable.add(0.0, 38.0); // enter (x, y) coordinates x ascending order, must add at least 2 data points
         pixelsToInchesTable.add(510.0, 116.0);
         pixelsToInchesTable.add(640.0, 232.0);
@@ -75,7 +79,10 @@ public class TargetSelectionB
 	 */
     public void process(Mat mat, TargetDataB nextTargetData)
     {
+        Mat histImage = new Mat();
 
+        if(Main.displayTurretHistogram)
+        {
 //////////////////////////////////////
 // RGB HISTOGRAM OF IMAGE
 //
@@ -115,7 +122,7 @@ public class TargetSelectionB
 
         int histW = 128;
         int histH = 50;
-        Mat histImage = new Mat( histH, histW, CvType.CV_8UC3, new Scalar( 0,0,0) );
+        histImage = new Mat( histH, histW, CvType.CV_8UC3, new Scalar( 0,0,0) );
 
         int binW = (int) Math.round((double) histW / histSize);
 
@@ -154,12 +161,15 @@ public class TargetSelectionB
 //
 // END RGB HISTOGRAM OF IMAGE - except the presentation of it a couple of lines below
 //////////////////////////////////////
-
+        }
 
   		// Let the gripPowerCellIntakeVisionPipeline filter through the camera frame
         gripPowerPortVisionPipeline.process(mat);
       
-        Core.addWeighted(subMat, .20, histImage, .80, 0, subMat);
+        if( ! histImage.empty() )
+        {
+            Core.addWeighted(subMat, .20, histImage, .80, 0, subMat);
+        }
   
         // The gripPowerCellIntakeVisionPipeline creates an array of contours that must be searched to find
         // the target.
@@ -189,7 +199,7 @@ public class TargetSelectionB
         {
             if(filteredContours.size() > 1)
             {
-                System.err.println(pId + " More than one contour found");
+                System.err.println(pId + " " + filteredContours.size() + " Contours found");
             }
 
             Rect boundRect;

@@ -1,3 +1,5 @@
+import java.lang.invoke.MethodHandles;
+
 /*
 
 Table lookup of X, Y co-ordinates
@@ -32,6 +34,8 @@ Example usage:
 
 public class LUT
 {
+    static {System.out.println("Starting class: " + MethodHandles.lookup().lookupClass().getCanonicalName());}
+
     Point LUT[];
 
     private int capacity=0;
