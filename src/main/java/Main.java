@@ -143,7 +143,7 @@ public final class Main
 {
     static {System.out.println("Starting class: " + MethodHandles.lookup().lookupClass().getCanonicalName());}
 
-    public static double calibrateAngle;
+
 
     { // sleep needed for early version of this code in 2020.  Linux or JVM allowed this program to start before
       // Linux or JVM was fully functional to run correctly the threads spawned by this program
@@ -235,9 +235,11 @@ public final class Main
 
     static double tapeDistance = -1.;
     static double tapeAngle = -1.;
+    static int tapeContours = -1;
     static boolean isTargetFound = false;
     static Object tapeLock;
     static boolean isDistanceAngleFresh = false;
+    static double calibrateAngle;
 
 // Settable parameters for some outputs listed below the skull
 
@@ -268,13 +270,14 @@ public final class Main
     // ____"$$$$$"______________________""$$$$""__
 
 
-    static String version = "2020 RPi Vision 2/16/20";
-    static final int MAXIMUM_MESSAGE_LENGTH = 1024;
-
 
 // Settable parameters for some outputs listed below
 // Settable parameters for some outputs listed below
 // Settable parameters for some outputs listed below
+
+    static String version = "2020 RPi Vision 2/20/20"; // change this everytime
+
+    static final int MAXIMUM_MESSAGE_LENGTH = 1024; // max length (or more) of UDP message from RPi to roboRIO.  Not normally changed but here for visibility
 
     static boolean runTestUDPreceiver = false; // self run UDP testor or pick another computer to send the target data to
 
@@ -290,15 +293,16 @@ public final class Main
     static String UDPreceiverName = roboRIO;
  
     // static String UDPreceiverName = "0.0.0.0";
-    // "0.0.0.0" should be any computer but doesn't work for other computers - they don't see any packets
-    // 
+    // "0.0.0.0" should be any computer but doesn't work anymore for other computers - they don't see any packets
 
     // camera streams already available from the FRCVISION server
     // generated video streams switched on/off here
     static boolean runImageOperator = true;
     static boolean displayTurretContours = true;
     static boolean displayIntakeContours = true;
-    static boolean displayTurretHistogram = true;
+
+    static boolean displayTurretPixelDistance = true; // calibration info for pixels to inches distance to target
+    //static boolean displayTurretHistogram = true; // a small insert for turrent contours - experiment with white balance - suggest using about 3500K then forget it.  Run GRIP after setting.
 
     static boolean debug = false;
     

@@ -83,6 +83,7 @@ public class ImageOperator implements Runnable {
                 // DRAW HERE
                 double portDistance;
                 double angleToTurn;
+                int contourIndex;
                 boolean isTargetFound;
                 //TODO: consider black & white mat to save network bandwidth
                 //TODO: consider compression to save network bandwidth
@@ -98,6 +99,7 @@ public class ImageOperator implements Runnable {
 
                     portDistance = Main.tapeDistance;
                     angleToTurn = Main.tapeAngle;
+                    contourIndex = Main.tapeContours;
                     isTargetFound = Main.isTargetFound;
                     Main.isDistanceAngleFresh = false; // these data captured to be processed so mark them as used
                 }
@@ -134,6 +136,11 @@ public class ImageOperator implements Runnable {
                             );
                     Imgproc.polylines(mat, listOfHexagonPoints, true, new Scalar(0, 0, 255), 5, 1);
 
+                    if(contourIndex > 0) // 0 is the index of the first contour; should be the only one
+                    {
+                        Imgproc.putText(mat, String.format("%d", contourIndex+1), new Point(offset-8, mat.height() / 2 + 8),
+                        Core.FONT_HERSHEY_SIMPLEX, 0.8, new Scalar(0, 0, 255), 3);
+                    }
                     //TODO: rotate the hexagon and NOT this way
                     //Mat subMat = mat.submat(mat.height() / 2 - 21, mat.height() / 2 + 21, -21 + offset, 21 + offset);
                     //Creating the transformation matrix M
@@ -164,13 +171,13 @@ public class ImageOperator implements Runnable {
                 Imgproc.putText(mat, printDistance, new Point(5, 27),
                     Core.FONT_HERSHEY_SIMPLEX, 1.0, new Scalar(255, 255, 255), 2);
 
-                    Imgproc.putText(mat, printDistance, new Point(mat.width() - 85, 27),
+                    Imgproc.putText(mat, printDistance, new Point(mat.width() - 67, 27),
                     Core.FONT_HERSHEY_SIMPLEX, 1.0, new Scalar(255, 255, 255), 2);
 
                     Imgproc.putText(mat, "inches", new Point(5, 39),
                     Core.FONT_HERSHEY_SIMPLEX, .6, new Scalar(255, 255, 255), 1);
 
-                    Imgproc.putText(mat, "inches", new Point(mat.width() - 85, 39),
+                    Imgproc.putText(mat, "inches", new Point(mat.width() - 67, 39),
                     Core.FONT_HERSHEY_SIMPLEX, .6, new Scalar(255, 255, 255), 1);
 
                 outputStream.putFrame(mat);

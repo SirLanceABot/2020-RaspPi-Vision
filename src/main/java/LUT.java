@@ -36,6 +36,8 @@ public class LUT
 {
     static {System.out.println("Starting class: " + MethodHandles.lookup().lookupClass().getCanonicalName());}
 
+    private static final String pId = new String("[LUT]");
+
     Point LUT[];
 
     private int capacity=0;
@@ -51,7 +53,7 @@ public class LUT
     LUT(int capacity)
     {
         try{
-        if (capacity < 2) throw new Exception("Must have at least 2 data points; you tried to use " + capacity);
+        if (capacity < 2) throw new Exception(pId + "Must have at least 2 data points; you tried to use " + capacity);
         this.capacity = capacity;
         LUT = new Point[capacity];
         }
@@ -62,8 +64,8 @@ public class LUT
     {
         try
         {
-        if (next >= capacity) throw new Exception("Too many entries attempted to be added to LUT; max is " + capacity);
-        if (next >= 1 && X <= LUT[next-1].X) throw new Exception("X not entered in ascending order");
+        if (next >= capacity) throw new Exception(pId + "Too many entries attempted to be added to LUT; max is " + capacity);
+        if (next >= 1 && X <= LUT[next-1].X) throw new Exception(pId + "X not entered in ascending order");
         LUT[next++] = new Point(X, Y);
         }
         catch(Exception e){System.err.println(e);}
@@ -78,7 +80,7 @@ public class LUT
         final int tableMax = next - 1;
         int i;
 
-        if (tableMax < 1) throw new Exception("Must have at least 2 data points; number of points is " + next);
+        if (tableMax < 1) throw new Exception(pId + "Must have at least 2 data points; number of points is " + next);
 
         if (X < LUT[tableMin].X)
             {Y = LUT[tableMin].Y;} // below table
@@ -100,7 +102,7 @@ public class LUT
 
     public String toString()
     {
-        String str = "{";
+        String str = pId + " {";
         for (int idx = 0; idx < next; idx++)
         str = str + "{" + LUT[idx].X + ", " + LUT[idx].Y + "}";
         str = str + "}";

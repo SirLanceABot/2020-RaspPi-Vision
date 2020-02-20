@@ -49,7 +49,7 @@ public class TargetSelectionB
         pixelsToInchesTable.add(0.0, 38.0); // enter (x, y) coordinates x ascending order, must add at least 2 data points
         pixelsToInchesTable.add(510.0, 116.0);
         pixelsToInchesTable.add(640.0, 232.0);
-        //System.out.println(pixelsToInchesTable); // print the whole table
+        System.out.println(pId + " pixelsToInchesTable" + pixelsToInchesTable); // print the whole table
         // Questionable testing data of Pixel-Inches Readings:
         // horizontal distance is HD and angled distance is AD
         // (110, HD = 128.5 and AD = 143)
@@ -79,102 +79,121 @@ public class TargetSelectionB
 	 */
     public void process(Mat mat, TargetDataB nextTargetData)
     {
-        Mat histImage = new Mat();
+//         Mat histImage = new Mat();
 
-        if(Main.displayTurretHistogram)
-        {
-//////////////////////////////////////
-// RGB HISTOGRAM OF IMAGE
-//
-        //  histogram of image mat before any other drawing on mat
-        //! [Separate the image in 3 places ( B, G and R )]
-        List<Mat> bgrPlanes = new ArrayList<>();
-        // try converts
-        //Imgproc.cvtColor(mat, mat, Imgproc.COLOR_BGR2GRAY);
-        //Imgproc.cvtColor(mat, mat, Imgproc.COLOR_BGR2HLS);
-        Core.split(mat, bgrPlanes);
-        //! [Separate the image in 3 places ( B, G and R )]
+//         if(Main.displayTurretHistogram)
+//         {
+// //////////////////////////////////////
+// // RGB HISTOGRAM OF IMAGE
+// // May be better to try the HSV histogram
+// //
+//         //  histogram of image mat before any other drawing on mat
+//         //! [Separate the image in 3 places ( B, G and R )]
+//         List<Mat> bgrPlanes = new ArrayList<>();
+//         // try converts
+//         //Imgproc.cvtColor(mat, mat, Imgproc.COLOR_BGR2GRAY);
+//         //Imgproc.cvtColor(mat, mat, Imgproc.COLOR_BGR2HLS);
+//         Core.split(mat, bgrPlanes);
+//         //! [Separate the image in 3 places ( B, G and R )]
 
-        //! [Establish the number of bins]
-        int histSize = 128;
-        //! [Establish the number of bins]
+//         //! [Establish the number of bins]
+//         int histSize = 128;
+//         //! [Establish the number of bins]
 
-        //! [Set the ranges ( for B,G,R) )]
-        float[] range = {0, 256}; //the upper boundary is exclusive
-        MatOfFloat histRange = new MatOfFloat(range);
-        //! [Set the ranges ( for B,G,R) )]
+//         //! [Set the ranges ( for B,G,R) )]
+//         float[] range = {0, 256}; //the upper boundary is exclusive
+//         MatOfFloat histRange = new MatOfFloat(range);
+//         //! [Set the ranges ( for B,G,R) )]
 
-        //! [Set histogram param]
-        boolean accumulate = false;
-        //! [Set histogram param]
+//         //! [Set histogram param]
+//         boolean accumulate = false;
+//         //! [Set histogram param]
 
-        //! [Compute the histograms]
-        Mat bHist = new Mat(), gHist = new Mat(), rHist = new Mat();
+//         //! [Compute the histograms]
+//         Mat bHist = new Mat(), gHist = new Mat(), rHist = new Mat();
 
-        Imgproc.calcHist(bgrPlanes, new MatOfInt(0), new Mat(), bHist, new MatOfInt(histSize), histRange, accumulate);
-        Imgproc.calcHist(bgrPlanes, new MatOfInt(1), new Mat(), gHist, new MatOfInt(histSize), histRange, accumulate);
-        Imgproc.calcHist(bgrPlanes, new MatOfInt(2), new Mat(), rHist, new MatOfInt(histSize), histRange, accumulate);
+//         Imgproc.calcHist(bgrPlanes, new MatOfInt(0), new Mat(), bHist, new MatOfInt(histSize), histRange, accumulate);
+//         Imgproc.calcHist(bgrPlanes, new MatOfInt(1), new Mat(), gHist, new MatOfInt(histSize), histRange, accumulate);
+//         Imgproc.calcHist(bgrPlanes, new MatOfInt(2), new Mat(), rHist, new MatOfInt(histSize), histRange, accumulate);
 
-        //System.out.println("bHist = " + bHist + "gHist = " + gHist + "rHist = " + rHist);
-        //! [Compute the histograms]
+//         //System.out.println("bHist = " + bHist + "gHist = " + gHist + "rHist = " + rHist);
+//         //! [Compute the histograms]
 
-        //! [Draw the histograms for B, G and R]
+//         //! [Draw the histograms for B, G and R]
 
-        int histW = 128;
-        int histH = 50;
-        histImage = new Mat( histH, histW, CvType.CV_8UC3, new Scalar( 0,0,0) );
+//         int histW = 128;
+//         int histH = 50;
+//         histImage = new Mat( histH, histW, CvType.CV_8UC3, new Scalar( 0,0,0) );
 
-        int binW = (int) Math.round((double) histW / histSize);
+//         int binW = (int) Math.round((double) histW / histSize);
 
-        //! [Draw the histograms for B, G and R]
+//         //! [Draw the histograms for B, G and R]
 
-        //! [Normalize the result to ( 0, histImage.rows )]
-        Core.normalize(bHist, bHist, 0, histImage.rows(), Core.NORM_MINMAX);
-        Core.normalize(gHist, gHist, 0, histImage.rows(), Core.NORM_MINMAX);
-        Core.normalize(rHist, rHist, 0, histImage.rows(), Core.NORM_MINMAX);
-        //! [Normalize the result to ( 0, histImage.rows )]
+//         //! [Normalize the result to ( 0, histImage.rows )]
+//         Core.normalize(bHist, bHist, 0, histImage.rows(), Core.NORM_MINMAX);
+//         Core.normalize(gHist, gHist, 0, histImage.rows(), Core.NORM_MINMAX);
+//         Core.normalize(rHist, rHist, 0, histImage.rows(), Core.NORM_MINMAX);
+//         //! [Normalize the result to ( 0, histImage.rows )]
 
-        //! [Draw for each channel]
-        float[] bHistData = new float[(int) (bHist.total() * bHist.channels())];
-        bHist.get(0, 0, bHistData);
-        float[] gHistData = new float[(int) (gHist.total() * gHist.channels())];
-        gHist.get(0, 0, gHistData);
-        float[] rHistData = new float[(int) (rHist.total() * rHist.channels())];
-        rHist.get(0, 0, rHistData);
+//         //! [Draw for each channel]
+//         float[] bHistData = new float[(int) (bHist.total() * bHist.channels())];
+//         bHist.get(0, 0, bHistData);
+//         float[] gHistData = new float[(int) (gHist.total() * gHist.channels())];
+//         gHist.get(0, 0, gHistData);
+//         float[] rHistData = new float[(int) (rHist.total() * rHist.channels())];
+//         rHist.get(0, 0, rHistData);
 
 
-        for( int i = 1; i < histSize; i++ ) {
-            Imgproc.line(histImage, new Point(binW * (i - 1), histH - Math.round(bHistData[i - 1])),
-                    new Point(binW * (i), histH - Math.round(bHistData[i])), new Scalar(255, 255, 0), 2, Imgproc.LINE_4);
-            Imgproc.line(histImage, new Point(binW * (i - 1), histH - Math.round(gHistData[i - 1])),
-                    new Point(binW * (i), histH - Math.round(gHistData[i])), new Scalar(0, 255, 255), 2, Imgproc.LINE_4);
-            Imgproc.line(histImage, new Point(binW * (i - 1), histH - Math.round(rHistData[i - 1])),
-                    new Point(binW * (i), histH - Math.round(rHistData[i])), new Scalar(255, 0, 255), 2, Imgproc.LINE_4);
-        // System.out.print(
-        //     binW * (i - 1) + " " +
-        //     (histH - Math.round(rHistData[i - 1])) + "   ");
-         }
-        //! [Draw for each channel]
-        // end histogram of image mat before any other drawing on mat
+//         for( int i = 1; i < histSize; i++ ) {
+//             Imgproc.line(histImage, new Point(binW * (i - 1), histH - Math.round(bHistData[i - 1])),
+//                     new Point(binW * (i), histH - Math.round(bHistData[i])), new Scalar(255, 255, 0), 2, Imgproc.LINE_4);
+//             Imgproc.line(histImage, new Point(binW * (i - 1), histH - Math.round(gHistData[i - 1])),
+//                     new Point(binW * (i), histH - Math.round(gHistData[i])), new Scalar(0, 255, 255), 2, Imgproc.LINE_4);
+//             Imgproc.line(histImage, new Point(binW * (i - 1), histH - Math.round(rHistData[i - 1])),
+//                     new Point(binW * (i), histH - Math.round(rHistData[i])), new Scalar(255, 0, 255), 2, Imgproc.LINE_4);
+//         // System.out.print(
+//         //     binW * (i - 1) + " " +
+//         //     (histH - Math.round(rHistData[i - 1])) + "   ");
+//          }
+//         //! [Draw for each channel]
+//         // end histogram of image mat before any other drawing on mat
 
-        subMat = mat.submat(0, histImage.rows(), 0, histImage.cols()); // define the insert area on the main image
-//
-// END RGB HISTOGRAM OF IMAGE - except the presentation of it a couple of lines below
-//////////////////////////////////////
-        }
+//         subMat = mat.submat(0, histImage.rows(), 0, histImage.cols()); // define the insert area on the main image
+// //
+// // END RGB HISTOGRAM OF IMAGE - except the presentation of it a couple of lines below
+// //////////////////////////////////////
+//         }
 
   		// Let the gripPowerCellIntakeVisionPipeline filter through the camera frame
         gripPowerPortVisionPipeline.process(mat);
-      
-        if( ! histImage.empty() )
-        {
-            Core.addWeighted(subMat, .20, histImage, .80, 0, subMat);
-        }
+
+        // hopeful that GRIP pipeline found the one and only one target object
+
+        // //could add additional filters if multiple objects found such as Moments or Hu moments
+        // //risk in that, too, since the target is significantly distorted at the edges of the camera range - close and far, left and right
+        // //see various tutorials such as https://www.learnopencv.com/shape-matching-using-hu-moments-c-python/
+        //
+        // //start of moment example code hacked from various sources so to use fix it up
+        // //look at reference to finish with matchShapes, etc
+        // Moments p = Imgproc.moments(contour);
+        // Point centerOfMass = new Point(moments.m10 / moments.m00, moments.m01 / moments.m00, 0);
+	    // int x = (int) (p.get_m10() / p.get_m00());
+        // int y = (int) (p.get_m01() / p.get_m00());
+        // //add 1e-5 to avoid division by zero
+        // mc.add(new Point(mu.get(i).m10 / (mu.get(i).m00 + 1e-5), mu.get(i).m01 / (mu.get(i).m00 + 1e-5)));
+        // //draw the COM as a circle
+        // Core.circle(smallFrame, new Point(x, y), 4, colors[handIndex]);
+
+        // if( ! histImage.empty() )
+        // {
+        //     Core.addWeighted(subMat, .20, histImage, .80, 0, subMat);
+        // }
   
         // The gripPowerCellIntakeVisionPipeline creates an array of contours that must be searched to find
         // the target.
         ArrayList<MatOfPoint> filteredContours;
-        filteredContours = new ArrayList<MatOfPoint>(gripPowerPortVisionPipeline.filterContoursOutput());
+        filteredContours = new ArrayList<MatOfPoint>(gripPowerPortVisionPipeline.filterContoursOutput());                
+        int contourIndex = -1;
 
         // gripPowerPortVisionPipeline.maskOutput();
 
@@ -214,8 +233,6 @@ public class TargetSelectionB
 			}
 
             // Loop through all contours and just remember the last one
-            
-            int contourIndex = -1;
 
             for (MatOfPoint contour : filteredContours)
             {
@@ -284,26 +301,33 @@ public class TargetSelectionB
                 nextTargetData.imageSize.height = mat.height();
                 nextTargetData.portPositionInFrame = 0.0;
 
-                // Find the degrees to turn by finding the difference between the horizontal center of the camera frame and the horizontal center of the target.
+                // Find the degrees to turn the turret by finding the difference between the horizontal center of the camera frame 
+                // and the horizontal center of the target.
+                // calibrateAngle is the difference between what the camera sees as the retroreflective tape target and where
+                // the Power Cells actually hit - the skew of the shooting process or camera misalignment.
                 nextTargetData.angleToTurn = (VERTICAL_CAMERA_ANGLE_OF_VIEW / nextTargetData.imageSize.height) * ((nextTargetData.imageSize.height / 2.0) -
                                                 ((nextTargetData.boundingBoxPts[1].y + nextTargetData.boundingBoxPts[2].y) / 2.0)) + Main.calibrateAngle;
                 
                 if(nextTargetData.angleToTurn <= -VERTICAL_CAMERA_ANGLE_OF_VIEW / 2. || nextTargetData.angleToTurn >= VERTICAL_CAMERA_ANGLE_OF_VIEW / 2.)
-                {
+                { // target not actually "seen" after the calibrateAngle offset was applied
                     nextTargetData.portDistance = -1.;
                     nextTargetData.angleToTurn = -1.;
                     nextTargetData.isFreshData = true;
                     nextTargetData.isTargetFound = false;
                 }
                 else
-                {
+                { // target still in view
                     nextTargetData.portDistance = pixelsToInchesTable.lookup(boundRect.br().x);
                     nextTargetData.isFreshData = true;
                     nextTargetData.isTargetFound = true;
+                    if(Main.displayTurretPixelDistance)
+                    {
+                        System.out.println(pId + "pixels:" + boundRect.br().x + ", LUT inches:" + nextTargetData.portDistance);
+                    }
                 }
-            }
+            } // end of looping through all contours
 
-            // draw the selected contour
+            // draw the selected contour - the last one wins
             Imgproc.drawContours(mat, filteredContours, contourIndex, new Scalar(0, 0, 255), 1);
 
         } // end of processing all contours in this camera frame
@@ -315,6 +339,7 @@ public class TargetSelectionB
                 Main.tapeDistance = -1.;
                 Main.tapeAngle = -1.;
                 Main.isTargetFound = false;
+                Main.tapeContours = contourIndex;
                 Main.isDistanceAngleFresh = true;
                 Main.tapeLock.notify();
             }
@@ -326,6 +351,7 @@ public class TargetSelectionB
                 Main.tapeDistance = nextTargetData.portDistance;
                 Main.tapeAngle = nextTargetData.angleToTurn;
                 Main.isTargetFound = true;
+                Main.tapeContours = contourIndex;
                 Main.isDistanceAngleFresh = true;
                 Main.tapeLock.notify();
             }
