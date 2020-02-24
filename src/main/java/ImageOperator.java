@@ -13,6 +13,8 @@ import org.opencv.core.MatOfPoint;
 import org.opencv.imgproc.Imgproc;
 
 import edu.wpi.cscore.CvSource;
+import edu.wpi.cscore.MjpegServer;
+import edu.wpi.cscore.VideoMode;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -45,22 +47,33 @@ public class ImageOperator implements Runnable {
 
         this.setDebuggingEnabled(Main.debug);
 
+        int height = 24;
+        int width = 320;
+        int fps = 10; // it paces itself to match contours for the process but server goes at this speed
+        int jpegQuality = 10; // lower is more compression - less quality, 100 is no compression, -1 is default compression
+
         Mat mat; // Mat to draw on
 
-        outputStream = CameraServer.getInstance().putVideo("OperatorImage", 640, 45);
+        // The following single statement does correctly define a camera server for the OpenCV image to be displayrd in ShuffleBoard
+        // The limitation is there is no visibility to the MjpegSever parametrs such as Quailty (compression)
+        // outputStream = CameraServer.getInstance().putVideo("OperatorImage", 640, 45);
 
-        // starting the video stream could look like this but then it isn't shown by its
-        // "nice" name
-        // but we then do have control over the port used
-        // CvSource outputStream = new CvSource("DriverView",
-        // VideoMode.PixelFormat.kMJPEG, 320, 240, 30);
-        // // CvSource cvsource = new CvSource("cvsource", VideoMode.PixelFormat.kMJPEG,
-        // width, height, frames_per_sec);
-        // MjpegServer mjpegServer = new MjpegServer("serve_DriverView", 1185);
+        // Or start the video stream this way but then it isn't shown by its "nice" name and ShuffleBoard does display it
+        // We have control over the port used, Quality (compression) parameters and more
+        // CvSource outputStream = new CvSource("OperatorImage", VideoMode.PixelFormat.kMJPEG, 640, 45, 30);
+        // MjpegServer mjpegServer = new MjpegServer("serve_OperatorImage", 1186);
+        // mjpegServer.setCompression(50);
         // mjpegServer.setSource(outputStream);
 
+        // The following will display the image on ShuffleBoard and reveal the MjpegServer parameters
+        CvSource outputStream = new CvSource("OperatorImage", VideoMode.PixelFormat.kMJPEG, width, height, fps);
+        MjpegServer mjpegServer = CameraServer.getInstance().startAutomaticCapture(outputStream);
+        mjpegServer.setResolution(width, height);
+        mjpegServer.setFPS(fps);
+        mjpegServer.setCompression(jpegQuality);
+
         //////////////////
-        ////////////////// put to the Shuffleboard now
+        // put to the Shuffleboard now
         // Widget in Shuffleboard Tab
         Map<String, Object> cameraWidgetProperties = new HashMap<String, Object>();
         cameraWidgetProperties.put("Show crosshair", false);
@@ -76,6 +89,7 @@ public class ImageOperator implements Runnable {
 
             Shuffleboard.update();
         }
+        //
         //////////////////
 
         while(true){
@@ -85,9 +99,8 @@ public class ImageOperator implements Runnable {
                 double angleToTurn;
                 int contourIndex;
                 boolean isTargetFound;
-                //TODO: consider black & white mat to save network bandwidth
-                //TODO: consider compression to save network bandwidth
-                mat = Mat.zeros(45, 640, CvType.CV_8UC3); // blank color Mat to draw on
+                // could consider black & white mat to save network bandwidth but it's pretty small even with color
+                mat = Mat.zeros(height, width, CvType.CV_8UC3); // blank color Mat to draw on
 
                 synchronized (Main.tapeLock)
                 {
@@ -108,7 +121,7 @@ public class ImageOperator implements Runnable {
                 Imgproc.drawMarker(mat, new Point(mat.width() / 2.0, mat.height() / 2.0), 
                     new Scalar(0, 255, 0), Imgproc.MARKER_CROSS, 40);
                 // Draw a green circle around the green cross
-                Imgproc.circle(mat, new Point(mat.width() / 2.0, mat.height() / 2.0), 20, 
+                Imgproc.circle(mat, new Point(mat.width() / 2.0, mat.height() / 2.0), (int)(mat.height() / 2.0), 
                     new Scalar(0, 255, 0), 2);
 
                 // Red hexagon:
@@ -116,8 +129,8 @@ public class ImageOperator implements Runnable {
                 
                 if(!isTargetFound)
                 {
-                    Imgproc.putText(mat, "Target not found", new Point(25, 32),
-                            Core.FONT_HERSHEY_SIMPLEX, 1., new Scalar(255, 255, 255), 2);
+                    Imgproc.putText(mat, "Target not found", new Point(14, 13),
+                            Core.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(255, 255, 255), 2);
                 }
                 else
                 {
@@ -126,20 +139,20 @@ public class ImageOperator implements Runnable {
                     ArrayList<MatOfPoint> listOfHexagonPoints = new ArrayList<MatOfPoint>();
                     listOfHexagonPoints.add(new MatOfPoint
                                 (
-                                new Point(      offset, mat.height() / 2 + 20),
-                                new Point( 20 + offset, mat.height() / 2 + 10), 
-                                new Point( 20 + offset, mat.height() / 2 - 10), 
-                                new Point(      offset, mat.height() / 2 - 20), 
-                                new Point(-20 + offset, mat.height() / 2 - 10), 
-                                new Point(-20 + offset, mat.height() / 2 + 10)  
+                                new Point(              offset, mat.height()), // bottom
+                                new Point( height*0.5 + offset, mat.height()*0.667), // lower right
+                                new Point( height*0.5 + offset, mat.height()*0.333), // upper right
+                                new Point(              offset, 0.),                 // top
+                                new Point( -height*0.5+ offset, mat.height()*0.333), // upper left
+                                new Point( -height*0.5+ offset, mat.height()*0.667)  // lower left
                                 )
                             );
-                    Imgproc.polylines(mat, listOfHexagonPoints, true, new Scalar(0, 0, 255), 5, 1);
+                    Imgproc.polylines(mat, listOfHexagonPoints, true, new Scalar(0, 0, 255), 2, 1);
 
                     if(contourIndex > 0) // 0 is the index of the first contour; should be the only one
                     {
-                        Imgproc.putText(mat, String.format("%d", contourIndex+1), new Point(offset-8, mat.height() / 2 + 8),
-                        Core.FONT_HERSHEY_SIMPLEX, 0.8, new Scalar(0, 0, 255), 3);
+                        Imgproc.putText(mat, String.format("%d", contourIndex+1), new Point(offset-3, mat.height() / 2 + 4),
+                        Core.FONT_HERSHEY_SIMPLEX, 0.4, new Scalar(0, 0, 255), 2);
                     }
                     //TODO: rotate the hexagon and NOT this way
                     //Mat subMat = mat.submat(mat.height() / 2 - 21, mat.height() / 2 + 21, -21 + offset, 21 + offset);
@@ -168,17 +181,17 @@ public class ImageOperator implements Runnable {
                 // Draw distance text.
                 String printDistance = String.format("%d", (int)(portDistance+.5));
 
-                Imgproc.putText(mat, printDistance, new Point(5, 27),
-                    Core.FONT_HERSHEY_SIMPLEX, 1.0, new Scalar(255, 255, 255), 2);
+                Imgproc.putText(mat, printDistance, new Point(5, 13),
+                    Core.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(255, 255, 255), 2);
 
-                    Imgproc.putText(mat, printDistance, new Point(mat.width() - 67, 27),
-                    Core.FONT_HERSHEY_SIMPLEX, 1.0, new Scalar(255, 255, 255), 2);
+                    Imgproc.putText(mat, printDistance, new Point(mat.width() - 37, 13),
+                    Core.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(255, 255, 255), 2);
 
-                    Imgproc.putText(mat, "inches", new Point(5, 39),
-                    Core.FONT_HERSHEY_SIMPLEX, .6, new Scalar(255, 255, 255), 1);
+                    Imgproc.putText(mat, "inches", new Point(5, 22),
+                    Core.FONT_HERSHEY_SIMPLEX, .3, new Scalar(255, 255, 255), 1);
 
-                    Imgproc.putText(mat, "inches", new Point(mat.width() - 67, 39),
-                    Core.FONT_HERSHEY_SIMPLEX, .6, new Scalar(255, 255, 255), 1);
+                    Imgproc.putText(mat, "inches", new Point(mat.width() - 37, 22),
+                    Core.FONT_HERSHEY_SIMPLEX, .3, new Scalar(255, 255, 255), 1);
 
                 outputStream.putFrame(mat);
 

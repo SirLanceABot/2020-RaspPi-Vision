@@ -35,6 +35,10 @@ Add auto mount of our camera image log USB flash drive to /etc/fstab
     # USB flash drive mounted for logging. Requires directory mount point [sudo mkdir /mnt/usb]
     /dev/sda1	/mnt/usb	vfat	auto,users,rw,uid=1000,gid=100,umask=0002,nofail	0	0
 
+Add enable UART serial terminal usage connected to the GPIO in /boot/config.txt (add after the last line)
+    enable_uart=1
+
+
 Make camera image log directory mount point [sudo mkdir /mnt/usb]
 
 Directories for the camera images on the flash drive are automatically made if the flash drive is inserted before our program runs
@@ -275,7 +279,7 @@ public final class Main
 // Settable parameters for some outputs listed below
 // Settable parameters for some outputs listed below
 
-    static String version = "2020 RPi Vision 2/20/20"; // change this everytime
+    static String version = "2020 RPi Vision 2/24/20"; // change this everytime
 
     static final int MAXIMUM_MESSAGE_LENGTH = 1024; // max length (or more) of UDP message from RPi to roboRIO.  Not normally changed but here for visibility
 
