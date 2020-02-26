@@ -146,13 +146,17 @@ public class ImageOperator implements Runnable {
                                 new Point( -height*0.5+ offset, mat.height()*0.333), // upper left
                                 new Point( -height*0.5+ offset, mat.height()*0.667)  // lower left
                                 )
-                            );
-                    Imgproc.polylines(mat, listOfHexagonPoints, true, new Scalar(0, 0, 255), 2, 1);
+                            ); 
 
                     if(contourIndex > 0) // 0 is the index of the first contour; should be the only one
                     {
-                        Imgproc.putText(mat, String.format("%d", contourIndex+1), new Point(offset-3, mat.height() / 2 + 4),
-                        Core.FONT_HERSHEY_SIMPLEX, 0.4, new Scalar(0, 0, 255), 2);
+                        Imgproc.fillConvexPoly(mat, listOfHexagonPoints.get(0), new Scalar(0, 0, 255), 1, 0);
+                        // Imgproc.putText(mat, String.format("%d", contourIndex+1), new Point(offset-3, mat.height() / 2 + 4),
+                        //     Core.FONT_HERSHEY_SIMPLEX, 0.4, new Scalar(50, 50, 50), 2);
+                    }
+                    else
+                    {
+                        Imgproc.polylines(mat, listOfHexagonPoints, true, new Scalar(192, 192, 192), 2, 1); // #aaa9ad rgb
                     }
                     //TODO: rotate the hexagon and NOT this way
                     //Mat subMat = mat.submat(mat.height() / 2 - 21, mat.height() / 2 + 21, -21 + offset, 21 + offset);
