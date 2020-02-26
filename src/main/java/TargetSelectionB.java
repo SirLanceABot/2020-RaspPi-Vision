@@ -47,8 +47,8 @@ public class TargetSelectionB
         // The x coordinate is pixels and the y coordinate is the horizontal distance to the target in inches.
         // TODO: Notice the LUT CTOR argument is maximum table size - change it if it needs to be larger
         pixelsToInchesTable.add(0.0, 38.0); // enter (x, y) coordinates x ascending order, must add at least 2 data points
-        pixelsToInchesTable.add(510.0, 116.0);
-        pixelsToInchesTable.add(640.0, 232.0);
+        //pixelsToInchesTable.add(510.0, 116.0);
+        pixelsToInchesTable.add(596.0, 240.0);
         System.out.println(pId + " pixelsToInchesTable" + pixelsToInchesTable); // print the whole table
         // Questionable testing data of Pixel-Inches Readings:
         // horizontal distance is HD and angled distance is AD

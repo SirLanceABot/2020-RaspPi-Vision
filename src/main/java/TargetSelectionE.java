@@ -113,7 +113,7 @@ public class TargetSelectionE
         Mat circles = new Mat();
         Imgproc.blur(input, input, new Size(7, 7), new Point(2, 2));
         //Imgproc.HoughCircles(input, circles, Imgproc.CV_HOUGH_GRADIENT, 2, 100, 100, 90, 0, 1000);
-        Imgproc.HoughCircles(input, circles, Imgproc.CV_HOUGH_GRADIENT, 1, input.rows()/8, 50, 30, 30, 100);
+        Imgproc.HoughCircles(input, circles, Imgproc.CV_HOUGH_GRADIENT, 1, input.rows()/8, 50, 30, 10, 38);
         
         //System.out.println(String.valueOf("size: " + circles.cols()) + ", " + String.valueOf(circles.rows()));
         //System.out.println("size: " + circles.cols() + ", " + circles.rows());

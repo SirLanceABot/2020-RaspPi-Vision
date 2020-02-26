@@ -129,7 +129,7 @@ public class ImageOperator implements Runnable {
                 
                 if(!isTargetFound)
                 {
-                    Imgproc.putText(mat, "Target not found", new Point(14, 13),
+                    Imgproc.putText(mat, "NO TARGET", new Point(34, 13),
                             Core.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(255, 255, 255), 2);
                 }
                 else
@@ -156,7 +156,7 @@ public class ImageOperator implements Runnable {
                     }
                     else
                     {
-                        Imgproc.polylines(mat, listOfHexagonPoints, true, new Scalar(192, 192, 192), 2, 1); // #aaa9ad rgb
+                        Imgproc.polylines(mat, listOfHexagonPoints, true, new Scalar(0xad, 0xa9, 0xaa), 2, 1);
                     }
                     //TODO: rotate the hexagon and NOT this way
                     //Mat subMat = mat.submat(mat.height() / 2 - 21, mat.height() / 2 + 21, -21 + offset, 21 + offset);
