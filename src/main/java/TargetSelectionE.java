@@ -112,6 +112,16 @@ public class TargetSelectionE
         desaturate(input, input);
         Mat circles = new Mat();
         Imgproc.blur(input, input, new Size(7, 7), new Point(2, 2));
+		
+	// Tuning HoughCircles is tricky - read the help by hovering over the method name to set circle size to search for
+	// and how close together they can be.
+	// Additional explanation of param1 and 2:
+	// param1: sensitivity of strength of edge
+	//	too high - no edges detected
+	//	too low - too much clutter
+	// param2: how many edge points needed to find a circle
+	//	too low and everything is a circle.  It's related to circumference. Accumulator Threshold
+
         //Imgproc.HoughCircles(input, circles, Imgproc.CV_HOUGH_GRADIENT, 2, 100, 100, 90, 0, 1000);
         Imgproc.HoughCircles(input, circles, Imgproc.CV_HOUGH_GRADIENT, 1, input.rows()/8, 50, 30, 10, 38);
         
