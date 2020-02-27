@@ -34,18 +34,19 @@ Download frcvision image (from some WPI Github repository)
 
 Load image on Micro SD card with balenaEtcher [or others]
 
-Add auto mount of our camera image log USB flash drive to /etc/fstab
-    # USB flash drive mounted for logging. Requires directory mount point [sudo mkdir /mnt/usb]
-    /dev/sda1	/mnt/usb	vfat	auto,users,rw,uid=1000,gid=100,umask=0002,nofail	0	0
+Add auto mount of our camera image log USB flash drive to /etc/fstab:
+# USB flash drive mounted for logging. Requires directory mount point [sudo mkdir /mnt/usb]
+/dev/sda1	/mnt/usb	vfat	auto,users,rw,uid=1000,gid=100,umask=0002,nofail	0	0
 
 Optionally add enable UART serial terminal usage connected to the GPIO in /boot/config.txt (add after the last line).
 This could be useful for some troubleshooting but performance may be degraded - benchmarks were inconclusive.
-    enable_uart=1
+enable_uart=1
 
-Make camera image log directory mount point [sudo mkdir /mnt/usb]
+Make camera image log directory mount point:
+sudo mkdir /mnt/usb
 
 Directories for the camera images on the flash drive are automatically made if the flash drive is inserted before our program runs
-   [mkdir /mnt/usb/B; mkdir /mnt/usb/BR; mkdir /mnt/usb/E; mkdir /mnt/usb/ER]
+   [program does this for you: mkdir /mnt/usb/B; mkdir /mnt/usb/BR; mkdir /mnt/usb/E; mkdir /mnt/usb/ER]
 
 Configure cameras [browser frcvision.local/]
 The configuration file is then saved in /boot/frc.json
