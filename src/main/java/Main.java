@@ -30,14 +30,17 @@ RaspBerry Pi setup:
 RaspBerry Pi setup:
 
 Download frcvision image (from some WPI Github repository)
-Load image on SD card with balena Etcher [or others]
+(currently https://github.com/wpilibsuite/FRCVision-pi-gen/releases)
+
+Load image on Micro SD card with balenaEtcher [or others]
+
 Add auto mount of our camera image log USB flash drive to /etc/fstab
     # USB flash drive mounted for logging. Requires directory mount point [sudo mkdir /mnt/usb]
     /dev/sda1	/mnt/usb	vfat	auto,users,rw,uid=1000,gid=100,umask=0002,nofail	0	0
 
-Add enable UART serial terminal usage connected to the GPIO in /boot/config.txt (add after the last line)
+Optionally add enable UART serial terminal usage connected to the GPIO in /boot/config.txt (add after the last line).
+This could be useful for some troubleshooting but performance may be degraded - benchmarks were inconclusive.
     enable_uart=1
-
 
 Make camera image log directory mount point [sudo mkdir /mnt/usb]
 
@@ -47,7 +50,11 @@ Directories for the camera images on the flash drive are automatically made if t
 Configure cameras [browser frcvision.local/]
 The configuration file is then saved in /boot/frc.json
 
-Program starts execution in Main.java - main.java
+Make a backup of the frc.json by copying it somewhere (example below is to the current working directory)
+Windows command line:
+scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no pi@frcvision.local:/boot/frc.json frc.json
+
+This program below starts execution in Main.java - main.java
 
 Threads are spawned (optionally) for
     CameraProcessB (TurretB camera)
@@ -147,8 +154,7 @@ public final class Main
 {
     static {System.out.println("Starting class: " + MethodHandles.lookup().lookupClass().getCanonicalName());}
 
-
-
+    static
     { // sleep needed for early version of this code in 2020.  Linux or JVM allowed this program to start before
       // Linux or JVM was fully functional to run correctly the threads spawned by this program
         try
@@ -157,7 +163,7 @@ public final class Main
         }
         catch (InterruptedException ex) 
         { }
-    } 
+    }
 
     private static final String pId = new String("[Main]");
 
@@ -279,7 +285,7 @@ public final class Main
 // Settable parameters for some outputs listed below
 // Settable parameters for some outputs listed below
 
-    static String version = "2020 RPi Vision 2/26/20"; // change this everytime
+    static String version = "2020 RPi Vision 2/27/20"; // change this everytime
 
     static final int MAXIMUM_MESSAGE_LENGTH = 1024; // max length (or more) of UDP message from RPi to roboRIO.  Not normally changed but here for visibility
 
@@ -845,9 +851,9 @@ public final class Main
  
                 calibrateAngle = calibrate.getDouble(0.0);
 
-                System.out.println("calibrateAngle = " + calibrateAngle);
+                //System.out.println("calibrateAngle = " + calibrateAngle);
 
-                 // Map<String, String> env = System.getenv(); // or get just one - String myEnv = System.getenv("env_name");
+                // Map<String, String> env = System.getenv(); // or get just one - String myEnv = System.getenv("env_name");
                 // for (String envName : env.keySet()) {
                 //     System.out.format("%s=%s%n",
                 //               envName,
