@@ -8,6 +8,7 @@ import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
+import org.opencv.core.RotatedRect;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.core.CvType;
@@ -46,9 +47,9 @@ public class TargetSelectionB
         // Enter more data points for more accuracy. The equation should model some sort of sinusoidal function.
         // The x coordinate is pixels and the y coordinate is the horizontal distance to the target in inches.
         // TODO: Notice the LUT CTOR argument is maximum table size - change it if it needs to be larger
-        pixelsToInchesTable.add(0.0, 38.0); // enter (x, y) coordinates x ascending order, must add at least 2 data points
+        pixelsToInchesTable.add(66.0, 38.0); // enter (x, y) coordinates x ascending order, must add at least 2 data points
         //pixelsToInchesTable.add(510.0, 116.0);
-        pixelsToInchesTable.add(596.0, 240.0);
+        pixelsToInchesTable.add(596.0, 238.0);
         System.out.println(pId + " pixelsToInchesTable" + pixelsToInchesTable); // print the whole table
         // Questionable testing data of Pixel-Inches Readings:
         // horizontal distance is HD and angled distance is AD
@@ -221,7 +222,8 @@ public class TargetSelectionB
                 System.err.println(pId + " " + filteredContours.size() + " Contours found");
             }
 
-            Rect boundRect;
+            Rect boundRect; // upright rectangle
+            RotatedRect boundRectAngled; // min area rotated rectangle
 
             if (debuggingEnabled)
 			{
@@ -256,6 +258,10 @@ public class TargetSelectionB
                 
                 // Create a bounding upright rectangle for the contour's points
                 boundRect = Imgproc.boundingRect(NewMtx);
+                boundRectAngled = Imgproc.minAreaRect(NewMtx); // measurement of the perspective distortion from being off center
+                double angleInnerPort = boundRectAngled.angle;
+                if (angleInnerPort < -45.) angleInnerPort += 90.; // making assumptions about the width/height ratio
+                System.out.println("minAreaRect angle:" + angleInnerPort);
 
                 // Draw a Rect, using lines, that represents the Rect
                 Point boxPts[] = new Point[4];
@@ -264,7 +270,7 @@ public class TargetSelectionB
                 boxPts[2] = boundRect.br();
                 boxPts[3] = new Point(boundRect.tl().x, boundRect.br().y);
                 
-                // draw edges of minimum rotated rectangle    
+                // draw edges of bounding rectangle    
                 List<MatOfPoint> listMidContour = new ArrayList<MatOfPoint>();
                 listMidContour.add(
                     new MatOfPoint (boxPts[0], boxPts[1], boxPts[2], boxPts[3])
