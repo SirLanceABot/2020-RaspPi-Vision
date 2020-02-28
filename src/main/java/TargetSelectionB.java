@@ -223,7 +223,7 @@ public class TargetSelectionB
             }
 
             Rect boundRect; // upright rectangle
-            RotatedRect boundRectAngled; // min area rotated rectangle
+            //RotatedRect boundRectAngled; // min area rotated rectangle
 
             if (debuggingEnabled)
 			{
@@ -258,10 +258,10 @@ public class TargetSelectionB
                 
                 // Create a bounding upright rectangle for the contour's points
                 boundRect = Imgproc.boundingRect(NewMtx);
-                boundRectAngled = Imgproc.minAreaRect(NewMtx); // measurement of the perspective distortion from being off center
-                double angleInnerPort = boundRectAngled.angle;
-                if (angleInnerPort < -45.) angleInnerPort += 90.; // making assumptions about the width/height ratio
-                System.out.println("minAreaRect angle:" + angleInnerPort);
+                //   = Imgproc.minAreaRect(NewMtx); // measurement of the perspective distortion from being off center
+                //double angleInnerPort = boundRectAngled.angle;
+                //if (angleInnerPort < -45.) angleInnerPort += 90.; // making assumptions about the width/height ratio
+                //System.out.println("minAreaRect angle:" + angleInnerPort);
 
                 // Draw a Rect, using lines, that represents the Rect
                 Point boxPts[] = new Point[4];
