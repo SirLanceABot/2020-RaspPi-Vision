@@ -328,7 +328,7 @@ public class TargetSelectionB
                     nextTargetData.isTargetFound = true;
                     if(Main.displayTurretPixelDistance)
                     {
-                        System.out.println(pId + "pixels:" + boundRect.br().x + ", LUT inches:" + nextTargetData.portDistance);
+                        System.out.println(pId + " pixels:" + boundRect.br().x + ", LUT inches:" + nextTargetData.portDistance);
                     }
                 }
             } // end of looping through all contours
