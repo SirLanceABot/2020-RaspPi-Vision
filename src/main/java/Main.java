@@ -312,7 +312,7 @@ public final class Main
     static boolean displayTurretContours = true;
     static boolean displayIntakeContours = true;
 
-    static boolean displayTurretPixelDistance = true; // calibration info for pixels to inches distance to target
+    static boolean displayTurretPixelDistance = false; // calibration info for pixels to inches distance to target
     //static boolean displayTurretHistogram = true; // a small insert for turrent contours - experiment with white balance - suggest using about 3500K then forget it.  Run GRIP after setting.
 
     static boolean debug = false;
