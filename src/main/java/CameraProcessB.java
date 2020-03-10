@@ -1,10 +1,10 @@
 import java.lang.invoke.MethodHandles;
 
+import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
 
-//TODO: import Main.CameraConfig;
 import edu.wpi.cscore.CvSink;
 import edu.wpi.cscore.VideoSource;
 import edu.wpi.first.wpilibj.Timer;
@@ -97,6 +97,8 @@ public class CameraProcessB implements Runnable
 	// TODO: write the method
 	public void setExposure(int exposure)
 	{
+		System.out.println(pId + " setting exposure to " + exposure);
+		Main.cameraB.setExposureManual(exposure);
 	}
 
 	// TODO: write the method
@@ -120,7 +122,15 @@ public class CameraProcessB implements Runnable
 		pipelineProcessB = new PipelineProcessB(this, config);
 		pipeline = new Thread(pipelineProcessB, "4237Bpipeline");
 
-        this.setDebuggingEnabled(Main.debug);
+		this.setDebuggingEnabled(Main.debug);
+		
+		//test timer
+		//Timer testTimer = new Timer();
+		//testTimer.start();
+
+		int light = 38, dark = 4, currentExposure = dark;
+
+		setExposure(currentExposure); // once in awhile the exposure isn't set on camera start up so make sure here
 
 		// This is the thread loop. It can be stopped by calling the interrupt() method.
 		while (!Thread.interrupted())
@@ -154,6 +164,19 @@ public class CameraProcessB implements Runnable
 					firstTime = false;
 				}
 			}
+
+			//if(turn up exposure so driver can see for example to climb)
+			// {
+			// 	if(first time) currentExposure = light;
+			// 	setExposure(currentExposure);
+			//  first time = false
+			// }
+
+			// if(currentExposure == light) or use the same logic as above to know to set exposure
+			// {
+			// 	Core.transpose(cameraFrameTemp, cameraFrameTemp);
+			// 	Core.flip(cameraFrameTemp, cameraFrameTemp, 0);
+			// }
 
 			this.cameraFrame.setImage(cameraFrameTemp);
 

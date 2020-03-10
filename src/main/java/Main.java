@@ -225,6 +225,9 @@ public final class Main
         }
     }
 
+    static UsbCamera cameraB;
+    static UsbCamera cameraE;
+
     private static CameraProcessB cpB;
     private static CameraProcessE cpE;
     private static ImageOperator imageOperator;
@@ -286,7 +289,7 @@ public final class Main
 // Settable parameters for some outputs listed below
 // Settable parameters for some outputs listed below
 
-    static String version = "RPi Vision 3/4/2020"; // change this everytime
+    static String version = "RPi Vision 3/10/2020"; // change this everytime
 
     static final int MAXIMUM_MESSAGE_LENGTH = 1024; // max length (or more) of UDP message from RPi to roboRIO.  Not normally changed but here for visibility
 
@@ -301,7 +304,9 @@ public final class Main
     static String roboRIO = "roborio-4237-frc.local";
     static String Self = "frcvision.local";
 
-    static String UDPreceiverName = roboRIO;
+    static String roboRIOIP = "10.42.37.2";
+
+    static String UDPreceiverName = roboRIOIP;
  
     // static String UDPreceiverName = "0.0.0.0";
     // "0.0.0.0" should be any computer but doesn't work anymore for other computers - they don't see any packets
@@ -534,7 +539,7 @@ public final class Main
     /**
      * Start running the camera.
      */
-    public static VideoSource startCamera(CameraConfig config) 
+    public static UsbCamera startCamera(CameraConfig config) 
     {
         System.out.println(pId + " Starting camera '" + config.name + "' on path " + config.path);
 
@@ -558,6 +563,8 @@ public final class Main
             server.setConfigJson(gson.toJson(config.streamConfig));
         }
 
+        System.out.println(pId + " " + config.name + " camera configJson " + camera.getConfigJson());
+        
         return camera;
     }
 
@@ -648,6 +655,48 @@ public final class Main
         catch (Exception ex2)
         {
             System.out.println(pId + " Error in mount process " + ex2);
+        }
+    }
+    private static void checkThrottled()
+    {
+        /*
+        throttled return code
+        0: under-voltage 0x00001
+        1: arm frequency capped 0x00002
+        2: currently throttled 0x00004
+        16: under-voltage has occurred 0x10000
+        17: arm frequency capped has occurred 0x20000
+        18: throttling has occurred 0x40000
+        */
+        try
+        {
+            // execute command to check for flash drive mounted
+            List<String> command = new ArrayList<String>(); // build my command as a list of strings
+            command.add("bash");
+            command.add("-c");
+            command.add("vcgencmd get_throttled ; echo $?");
+
+            ProcessBuilder pb1 = new ProcessBuilder(command);
+            Process process1 = pb1.start();
+            int errCode1 = process1.waitFor();
+            command.clear();
+            
+            String checkOutput = output(process1.getInputStream());
+            //System.out.println(pId + " get_throttled output:\n" + checkOutput);
+
+            if(errCode1 != 0)
+            {
+                System.out.println(pId + " get_throttled errors:\n" + output(process1.getErrorStream()));
+            }
+
+            if (checkOutput.indexOf("throttled=0x50005") >= 0) //TODO: parse the bits correctly - don't hardcode 50005
+            {
+                System.out.println(pId + " RPi low voltage");
+            }
+        }
+        catch (Exception ex2)
+        {
+            System.out.println(pId + " Error in checkThrottled process " + ex2);
         }
     }
 
@@ -754,8 +803,9 @@ public final class Main
             if (config.name.equalsIgnoreCase("Turret"))
             {
                 System.out.println(pId + " Starting TurretB camera");
-                VideoSource Bcamera = startCamera(config);
 
+                cameraB = startCamera(config);
+                VideoSource Bcamera = cameraB;
                 // Widget in Shuffleboard Tab
                 CameraWidget cw = new CameraWidget();
                 cw.name = config.name;
@@ -773,8 +823,9 @@ public final class Main
             else if (config.name.equalsIgnoreCase("Intake"))
             {
                 System.out.println(pId + " Starting IntakeE camera");
-                VideoSource Ecamera = startCamera(config);
 
+                cameraE = startCamera(config);
+                VideoSource Ecamera = cameraE;
                 // Widget in Shuffleboard Tab
                 CameraWidget cw = new CameraWidget();
                 cw.name = config.name;
@@ -782,10 +833,11 @@ public final class Main
                 cw.setProperties(false, "white", false, "NONE");
                 createCameraShuffleboardWidget(Ecamera, cw);
 
-                cpE = new CameraProcessE(Ecamera, config);
-                visionThreadE = new Thread(cpE, "4237IntakeECamera");
-                // start thread using the class' run() method (just saying run() won't start a thread - that just runs run() once)
-                visionThreadE.start();
+                // TODO: INTAKE TARGETING TURNED OFF - uncomment these statements to run it.  Targeting still needs a lot of work, though
+                // cpE = new CameraProcessE(Ecamera, config);
+                // visionThreadE = new Thread(cpE, "4237IntakeECamera");
+                // // start thread using the class' run() method (just saying run() won't start a thread - that just runs run() once)
+                // visionThreadE.start();
             }
             else
             {
@@ -841,7 +893,7 @@ public final class Main
             {
                 System.out.println(pId + " Program Version " + version + "  current time ms " + System.currentTimeMillis());
 
-                if (UDPreceiverName != roboRIO)
+                if (UDPreceiverName != roboRIOIP)
                     System.out.println(pId + " Warning - robot driving messages not being sent to roboRIO");
                 
                 if(!sendMessage.isConnected())
@@ -860,6 +912,8 @@ public final class Main
                 //               envName,
                 //               env.get(envName));
                 // }
+
+                checkThrottled();
 
                 Thread.sleep(5000);
             }

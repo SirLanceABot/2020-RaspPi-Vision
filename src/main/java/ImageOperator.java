@@ -54,8 +54,8 @@ public class ImageOperator implements Runnable {
 
         Mat mat; // Mat to draw on
 
-        // The following single statement does correctly define a camera server for the OpenCV image to be displayrd in ShuffleBoard
-        // The limitation is there is no visibility to the MjpegSever parametrs such as Quailty (compression)
+        // The following single statement does correctly define a camera server for the OpenCV image to be displayed in ShuffleBoard
+        // The limitation is there is no visibility to the MjpegSever parameters such as Quailty (compression)
         // outputStream = CameraServer.getInstance().putVideo("OperatorImage", 640, 45);
 
         // Or start the video stream this way but then it isn't shown by its "nice" name and ShuffleBoard does display it
