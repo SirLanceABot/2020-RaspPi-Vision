@@ -107,6 +107,10 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import edu.wpi.first.wpilibj.smartdashboard.SendableRegistry;
+import edu.wpi.first.wpilibj.GyroBase;
+import edu.wpi.first.wpilibj.Sendable;
+import edu.wpi.first.wpilibj.interfaces.Gyro;
 
 /*
    JSON format:  Note that the < and > are not entered in the file
@@ -888,7 +892,7 @@ public final class Main
         calibrate =
             cameraTab.add("Turret Calibration", 0.0)
             .withSize(4, 2)
-            .withPosition(20, 10)
+            .withPosition(20, 14)
            .getEntry();
         
         Shuffleboard.update();
@@ -900,11 +904,29 @@ public final class Main
         RPiThrottle =
             cameraTab.add("RPi Throttle", "not throttled")
             .withSize(4, 2)
-            .withPosition(25, 10)
+            .withPosition(25, 14)
            .getEntry();
         
         Shuffleboard.update();
         }
+
+        // Gyro gyro = new myGyro();
+        
+        // synchronized(tabLock)
+        // {
+
+        // //Shuffleboard.getTab("Camera")
+        // cameraTab.add("Turret Field Angle", (Sendable) gyro)
+        // .withWidget(BuiltInWidgets.kGyro).withPosition(22, 7).withSize(7, 7);
+        // // .withProperties(Map.of("min", 0.0, "max", 1.0))  not really the properties of a gyro widget - just an example
+        // // Gyro's Custom properties:
+        // // Name	Type	Default Value	Notes
+        // // Major tick spacing	Number	45	Degrees
+        // // Starting angle	Number	180	How far to rotate the entire dial, in degrees
+        // // Show tick mark ring	Boolean	true
+
+        // Shuffleboard.update();
+        // }
         
         // loop forever
         while(true)
@@ -946,4 +968,17 @@ public final class Main
             }
         }
     }
+    // static class myGyro extends GyroBase implements Gyro, Sendable, AutoCloseable 
+    // {
+    //     @Override
+    //     public double getAngle(){return 23.45;}
+    //     @Override
+    //     public void reset(){}
+    //     @Override
+    //     public double getRate(){return 12.34;}
+    //     @Override
+    //     public void calibrate(){}
+    //     @Override
+    //     public void close(){}
+    // }
 }
