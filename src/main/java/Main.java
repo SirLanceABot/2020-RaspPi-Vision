@@ -289,7 +289,7 @@ public final class Main
 // Settable parameters for some outputs listed below
 // Settable parameters for some outputs listed below
 
-    static String version = "RPi Vision 3/10/2020"; // change this everytime
+    static String version = "RPi Vision 3/11/2020"; // change this everytime
 
     static final int MAXIMUM_MESSAGE_LENGTH = 1024; // max length (or more) of UDP message from RPi to roboRIO.  Not normally changed but here for visibility
 
@@ -657,7 +657,7 @@ public final class Main
             System.out.println(pId + " Error in mount process " + ex2);
         }
     }
-    private static void checkThrottled()
+    private static String checkThrottled()
     {
         /*
         throttled return code
@@ -670,11 +670,11 @@ public final class Main
         */
         try
         {
-            // execute command to check for flash drive mounted
+            // execute command to check for throttled
             List<String> command = new ArrayList<String>(); // build my command as a list of strings
             command.add("bash");
             command.add("-c");
-            command.add("vcgencmd get_throttled ; echo $?");
+            command.add("vcgencmd get_throttled");
 
             ProcessBuilder pb1 = new ProcessBuilder(command);
             Process process1 = pb1.start();
@@ -682,21 +682,29 @@ public final class Main
             command.clear();
             
             String checkOutput = output(process1.getInputStream());
-            //System.out.println(pId + " get_throttled output:\n" + checkOutput);
-
+ 
             if(errCode1 != 0)
             {
-                System.out.println(pId + " get_throttled errors:\n" + output(process1.getErrorStream()));
+                System.err.print(pId + " get_throttled errors: " + output(process1.getErrorStream()));
             }
 
-            if (checkOutput.indexOf("throttled=0x50005") >= 0) //TODO: parse the bits correctly - don't hardcode 50005
+            checkOutput = checkOutput.substring(0, checkOutput.length()-1); // a crlf of sorts at the end to get rid of
+
+            if (checkOutput.equals("throttled=0x0"))
             {
-                System.out.println(pId + " RPi low voltage");
+                checkOutput = "OK";
             }
+            else
+            {
+                System.out.println(pId + " RPi " + checkOutput);
+            }
+
+            return checkOutput;          
         }
         catch (Exception ex2)
         {
             System.out.println(pId + " Error in checkThrottled process " + ex2);
+            return "error";
         }
     }
 
@@ -886,6 +894,18 @@ public final class Main
         Shuffleboard.update();
         }
         
+        NetworkTableEntry RPiThrottle;
+        synchronized(tabLock)
+        {
+        RPiThrottle =
+            cameraTab.add("RPi Throttle", "not throttled")
+            .withSize(4, 2)
+            .withPosition(25, 10)
+           .getEntry();
+        
+        Shuffleboard.update();
+        }
+        
         // loop forever
         while(true)
         {
@@ -893,16 +913,21 @@ public final class Main
             {
                 System.out.println(pId + " Program Version " + version + "  current time ms " + System.currentTimeMillis());
 
-                if (UDPreceiverName != roboRIOIP)
+                // Note that there a limit to what can be checked here
+                // We know if the name was resolved to a number but with static IP usage we already have a number
+                // We cannot know if the roboRIO is actually listening - just that we seem capable of sending
+                if (UDPreceiverName != roboRIOIP && UDPreceiverName != roboRIO)
                     System.out.println(pId + " Warning - robot driving messages not being sent to roboRIO");
                 
-                if(!sendMessage.isConnected())
+                if(!sendMessage.isConnected()) // if using an IP number address, this will not fail
                     {
                     System.out.println(pId + " Warning - robot driving messages not being sent anywhere - trying to connect");
                     sendMessage.Connect(); // keep trying to connect if it isn't
                     }
  
                 calibrateAngle = calibrate.getDouble(0.0);
+
+                RPiThrottle.setString(checkThrottled());
 
                 //System.out.println("calibrateAngle = " + calibrateAngle);
 
@@ -912,8 +937,6 @@ public final class Main
                 //               envName,
                 //               env.get(envName));
                 // }
-
-                checkThrottled();
 
                 Thread.sleep(5000);
             }
