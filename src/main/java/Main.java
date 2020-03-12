@@ -107,10 +107,6 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
-// import edu.wpi.first.wpilibj.smartdashboard.SendableRegistry;
-// import edu.wpi.first.wpilibj.GyroBase;
-// import edu.wpi.first.wpilibj.Sendable;
-// import edu.wpi.first.wpilibj.interfaces.Gyro;
 
 /*
    JSON format:  Note that the < and > are not entered in the file
