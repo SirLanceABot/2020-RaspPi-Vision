@@ -107,10 +107,10 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
-import edu.wpi.first.wpilibj.smartdashboard.SendableRegistry;
-import edu.wpi.first.wpilibj.GyroBase;
-import edu.wpi.first.wpilibj.Sendable;
-import edu.wpi.first.wpilibj.interfaces.Gyro;
+// import edu.wpi.first.wpilibj.smartdashboard.SendableRegistry;
+// import edu.wpi.first.wpilibj.GyroBase;
+// import edu.wpi.first.wpilibj.Sendable;
+// import edu.wpi.first.wpilibj.interfaces.Gyro;
 
 /*
    JSON format:  Note that the < and > are not entered in the file
@@ -293,7 +293,7 @@ public final class Main
 // Settable parameters for some outputs listed below
 // Settable parameters for some outputs listed below
 
-    static String version = "RPi Vision 3/11/2020"; // change this everytime
+    static String version = "RPi Vision 3/12/2020"; // change this everytime
 
     static final int MAXIMUM_MESSAGE_LENGTH = 1024; // max length (or more) of UDP message from RPi to roboRIO.  Not normally changed but here for visibility
 
@@ -663,15 +663,6 @@ public final class Main
     }
     private static String checkThrottled()
     {
-        /*
-        throttled return code
-        0: under-voltage 0x00001
-        1: arm frequency capped 0x00002
-        2: currently throttled 0x00004
-        16: under-voltage has occurred 0x10000
-        17: arm frequency capped has occurred 0x20000
-        18: throttling has occurred 0x40000
-        */
         try
         {
             // execute command to check for throttled
@@ -700,7 +691,44 @@ public final class Main
             }
             else
             {
-                System.out.println(pId + " RPi " + checkOutput);
+                System.out.print(pId + " RPi " + checkOutput);
+                // interpret the bits since it's throttled 
+                String hexThrottleCode = checkOutput.substring(12); // just the throttle code after the "throttled=0x"
+                int intThrottleCode = Integer.parseInt(hexThrottleCode, 16); // no 0x at the beginning
+                // int intThrottleCode = Integer.decode(hexThrottleCode); works to parse with the 0x first but it's slow
+                // valueOf(hexThrottleCode, 16) also works similarly returning an Integer  
+
+                // throttled return code
+                // 0: under-voltage 0x00000001
+                // 1: arm frequency capped 0x00000002
+                // 2: currently throttled 0x00000004
+                // 16: under-voltage has occurred 0x00010000
+                // 17: arm frequency capped has occurred 0x00020000
+                // 18: throttling has occurred 0x00040000
+
+                int under_voltage = 0x00000001;
+                int arm_frequency_capped = 0x00000002;
+                int currently_throttled = 0x00000004;
+                int under_voltage_has_occurred = 0x00010000;
+                int arm_frequency_capped_has_occurred = 0x00020000;
+                int throttling_has_occurred = 0x00040000;
+                // most interested in under-voltage so give those errors precedence for operator display
+                if((intThrottleCode & under_voltage_has_occurred) != 0)
+                {
+                    System.out.print(" under-voltage has occurred;");
+                    checkOutput = "under-voltage has occurred";
+                }
+
+                if((intThrottleCode & under_voltage) != 0)
+                {
+                    System.out.print(" under-voltage;");
+                    checkOutput = "under-voltage";
+                }
+                if((intThrottleCode & arm_frequency_capped) != 0) System.out.print(" arm frequency capped;");
+                if((intThrottleCode & currently_throttled) != 0) System.out.print(" currently throttled;");
+                if((intThrottleCode & arm_frequency_capped_has_occurred) != 0) System.out.print(" arm frequency capped has occurred;");
+                if((intThrottleCode & throttling_has_occurred) != 0) System.out.print(" throttling has occurred;");
+                System.out.println();
             }
 
             return checkOutput;          
@@ -823,7 +851,8 @@ public final class Main
                 cw.name = config.name;
                 cw.setLocation(0, 20, 13, 13);
                 cw.setProperties(false, "white", false, "NONE");
-                // comment or not Shuffleboard Widget to display Turret Camera
+                // comment or not this Shuffleboard Widget to display automatically Turret Camera
+                // It can still be displayed manually by dragging from Sources to the Shuffleboard display area
                 // Normally this camera shows only the reflected tape rotated 90 deg - confusing to humans
                 // createCameraShuffleboardWidget(Bcamera, cw);                
 
@@ -893,7 +922,7 @@ public final class Main
             cameraTab.add("Turret Calibration", 0.0)
             .withSize(4, 2)
             .withPosition(20, 14)
-           .getEntry();
+            .getEntry();
         
         Shuffleboard.update();
         }
@@ -905,29 +934,11 @@ public final class Main
             cameraTab.add("RPi Throttle", "not throttled")
             .withSize(4, 2)
             .withPosition(25, 14)
-           .getEntry();
+            .getEntry();
         
         Shuffleboard.update();
         }
-
-        // Gyro gyro = new myGyro();
-        
-        // synchronized(tabLock)
-        // {
-
-        // //Shuffleboard.getTab("Camera")
-        // cameraTab.add("Turret Field Angle", (Sendable) gyro)
-        // .withWidget(BuiltInWidgets.kGyro).withPosition(22, 7).withSize(7, 7);
-        // // .withProperties(Map.of("min", 0.0, "max", 1.0))  not really the properties of a gyro widget - just an example
-        // // Gyro's Custom properties:
-        // // Name	Type	Default Value	Notes
-        // // Major tick spacing	Number	45	Degrees
-        // // Starting angle	Number	180	How far to rotate the entire dial, in degrees
-        // // Show tick mark ring	Boolean	true
-
-        // Shuffleboard.update();
-        // }
-        
+      
         // loop forever
         while(true)
         {
@@ -941,25 +952,18 @@ public final class Main
                 if (UDPreceiverName != roboRIOIP && UDPreceiverName != roboRIO)
                     System.out.println(pId + " Warning - robot driving messages not being sent to roboRIO");
                 
-                if(!sendMessage.isConnected()) // if using an IP number address, this will not fail
+                if(!sendMessage.isConnected()) // if using an IP number address, this will not fail; only checking name resolution
                     {
                     System.out.println(pId + " Warning - robot driving messages not being sent anywhere - trying to connect");
                     sendMessage.Connect(); // keep trying to connect if it isn't
                     }
  
-                calibrateAngle = calibrate.getDouble(0.0);
+                calibrateAngle = calibrate.getDouble(0.0); // get the camera calibration form the Shuffleboard
 
-                RPiThrottle.setString(checkThrottled());
+                RPiThrottle.setString(checkThrottled()); // display on Shuffleboard any throttled message
 
                 //System.out.println("calibrateAngle = " + calibrateAngle);
-
-                // Map<String, String> env = System.getenv(); // or get just one - String myEnv = System.getenv("env_name");
-                // for (String envName : env.keySet()) {
-                //     System.out.format("%s=%s%n",
-                //               envName,
-                //               env.get(envName));
-                // }
-
+ 
                 Thread.sleep(5000);
             }
             catch (InterruptedException ex) 
@@ -968,17 +972,12 @@ public final class Main
             }
         }
     }
-    // static class myGyro extends GyroBase implements Gyro, Sendable, AutoCloseable 
-    // {
-    //     @Override
-    //     public double getAngle(){return 23.45;}
-    //     @Override
-    //     public void reset(){}
-    //     @Override
-    //     public double getRate(){return 12.34;}
-    //     @Override
-    //     public void calibrate(){}
-    //     @Override
-    //     public void close(){}
-    // }
 }
+
+// PARKING LOT FOR INTERESTING STUFF
+// Map<String, String> env = System.getenv(); // or get just one - String myEnv = System.getenv("env_name");
+// for (String envName : env.keySet()) {
+//     System.out.format("%s=%s%n",
+//               envName,
+//               env.get(envName));
+// }
