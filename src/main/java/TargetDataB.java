@@ -2,6 +2,8 @@ import com.google.gson.Gson;
 import org.opencv.core.Point;
 import org.opencv.core.Size;
 
+// Expected usage documented at the bottom of the code
+
 /**
  * This class is used to store the target data. The user MUST MODIFY the
  * process() method. The user must create a new GripPipeline class using GRIP,
@@ -230,3 +232,51 @@ public class TargetDataB
             imageSize.width, imageSize.height, portPositionInFrame, portDistance, angleToTurn, isFreshData ? "FRESH" : "stale");
     }
 }
+/*
+Here's how to use the TargetDataB class (and TargetDataE).
+(If we want to make improvements for next year, this is a good model to start with and tweak.)
+
+In the Vision Process define two TargetDataB objects say TargetData and newTargetData.
+
+The intention is another thread - UDPreceive - stuffs the latest data into newTargetData as fast as it can. This is expected to be relatively
+slowly as it's data from the camera.
+
+The method fromJSON() is used to put the UDP message into the newTargetData object and it's marked fresh.
+
+The Vision Process pulls (with get()) the data from newTargetData into TargetData when it sees that newTargetDtata is fresh.
+
+Vision Process runs relatively fast and often so mostly it sees that newTargetData is not fresh.
+
+Note that newTargetData is marked fresh or not fresh in reasonable, expected, predictable times but TargetData may not behave that
+way - read on for the restriction.
+
+When UDPreceive puts data into newTargetData it's fresh; the first time Vision Process gets that data from newTargetData
+into TargetData it's still fresh.  At that time newTargetData is marked not fresh and TargetData, being fresh is marked fresh.
+
+Subsequent checks using isFreshData() on newTargetData from Vision Process see stale data until such time new data is put in by UDPreceive.
+
+Vision Process may get again from newTargetData into TargetData before newTargetDtaa is updated and the not fresh of newTargetData will be
+set in the TargetData.
+
+However, TargetData remains marked as fresh as long as the not fresh newTargetData isn't copied into it so if stale newTargetData is not
+copied into TargetData then TargetData remains appearing as fresh.
+
+Thus if you check newTargetData for fresh and skip copying it if it's not fresh, then TargetData remains unchanged - old data but fresh indicator.
+
+There is no mechanism other than get newTargetData to change the fresh indicator for TargetData.  (But that could be changed.)
+
+The intention is to either:
+    get() from newTargetData into TargetData every Vision Process iteration and then TargetData is marked fresh/not fresh as expected
+    or
+    only check newTargetData for fresh or not fresh and act on that indicator only.
+
+The methods of TargetDataB are all synchronized so the data cannot be accessed and potentially corrupted by two threads setting and getting at
+the same time.  However the get methods for angle and distance and others like isFresh are separate and there could be an update between getting
+the angle and getting the distance thus that data pair would not be atomic in this design if there was only one object that can be accessed and
+updated by more than one thread.  That is why there are two copies of TargetdataB - TargetData and new TargetData so Vision Process controls
+when the now atomic object of TargetData is updated from newTargetData.
+
+[I see some potential for changing/improving the methods and process of TargetDataB class.  Make set() method private as it's really for the
+fromJSON() to use.  Use the name clone() instead of get() if that better describes what's happening.  Also, other methods may be devised or
+changed to perform better in other circumstances.]
+*/
