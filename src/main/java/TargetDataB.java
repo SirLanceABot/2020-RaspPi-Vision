@@ -236,14 +236,22 @@ public class TargetDataB
 Here's how to use the TargetDataB class (and TargetDataE).
 (If we want to make improvements for next year, this is a good model to start with and tweak.)
 
-In the Vision Process define two TargetDataB objects say TargetData and newTargetData.
+In the Vision Process (class VisionProcess{}) define two TargetDataB objects say TargetData and newTargetData
+(public TargetDataB TargetData, newTargetData;).
 
-The intention is another thread - UDPreceive - stuffs the latest data into newTargetData as fast as it can. This is expected to be relatively
+The intention is another thread - UDPreceive (class UDPreceive implements Runnable{}) - stuffs the latest data into newTargetData as fast as it can. This is expected to be relatively
 slowly as it's data from the camera.
 
-The method fromJSON() is used to put the UDP message into the newTargetData object and it's marked fresh.
+The method fromJSON() is used to put the UDP message into the newTargetData object and it's marked fresh
+(VisionProcess.receivedTargetB.fromJson(message);).
 
-The Vision Process pulls (with get()) the data from newTargetData into TargetData when it sees that newTargetDtata is fresh.
+The Vision Process pulls the data from newTargetData into TargetData when it sees that newTargetDtata is fresh
+(if(newTargetData.isFresh() Targetdata = newTargetData.get();).
+
+Use the data in TargetData
+(if(TargetData.isTargetFound()) {double a=TargetData.getAngleToTurn(); double d = TargetData.getPortDistance();}
+
+If the newTargetData is not fresh then reuse the old data or skip that loop.
 
 Vision Process runs relatively fast and often so mostly it sees that newTargetData is not fresh.
 
