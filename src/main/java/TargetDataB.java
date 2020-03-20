@@ -284,7 +284,5 @@ the angle and getting the distance thus that data pair would not be atomic in th
 updated by more than one thread.  That is why there are two copies of TargetdataB - TargetData and new TargetData so Vision Process controls
 when the now atomic object of TargetData is updated from newTargetData.
 
-[I see some potential for changing/improving the methods and process of TargetDataB class.  Make set() method private as it's really for the
-fromJSON() to use.  Use the name clone() instead of get() if that better describes what's happening.  Also, other methods may be devised or
-changed to perform better in other circumstances.]
+The UdpReceive class has an example of receiving the UDP message, putting it into TargetData and using it.
 */

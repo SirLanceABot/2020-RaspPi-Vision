@@ -16,6 +16,7 @@
     UDPreceiveThread = new Thread(UDPreceive, "4237UDPreceive");
     UDPreceiveThread.start();
 
+    This class contains an example of using the TargetData as it might be on the roboRIO TimedRobot
 */
 
 import java.io.IOException;
@@ -25,24 +26,53 @@ import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 
-public class UdpReceive implements Runnable
-{
-    static {System.out.println("Starting class: " + MethodHandles.lookup().lookupClass().getCanonicalName());}
+import java.util.Timer;
+import java.util.TimerTask;
+
+public class UdpReceive implements Runnable {
+    static {
+        System.out.println("Starting class: " + MethodHandles.lookup().lookupClass().getCanonicalName());
+    }
 
     private static final String pId = new String("[UdpReceive]");
 
     private static String lastDataReceived = "";
     private DatagramSocket socket = null;
 
-    public UdpReceive(int port)
+
+    // example process to use the Target Data
+    //
+    public UseTargetData useTargetData = new UseTargetData();
+
+    class UseTargetData extends TimerTask // something like a TimedRobot class
     {
-        try
+
+        public TargetDataB newTargetDataTurret = new TargetDataB();
+        private TargetDataB TargetDataTurret = new TargetDataB();
+
+        public TargetDataE newTargetDataIntake = new TargetDataE();
+        private TargetDataE TargetDataIntake = new TargetDataE();
+
+        public void run()
         {
+            System.out.print(pId + System.currentTimeMillis());
+            if (newTargetDataTurret.isFreshData) // see if there is new data
+            {
+                TargetDataTurret = newTargetDataTurret.get(); // new data so copy it to private storage for the loop to use
+                System.out.println(" Turret " + TargetDataTurret); // new data to be used appropriately; call various getters as needed
+            }
+            else
+                System.out.println(" Stale Turret"); // no new data so do something appropriate with the old data
+        }
+    }
+    //
+    // end example process to use the Target Data
+
+    public UdpReceive(int port) {
+        try {
             socket = new DatagramSocket(port);
             socket.setSoTimeout(500); // set receive timeout in milliseconds in case RPi is dead
-        }
-        catch (SocketException e)
-        {
+        } catch (SocketException e) {
             // do something when something bad happens
             e.printStackTrace();
         }
@@ -55,39 +85,40 @@ public class UdpReceive implements Runnable
         // there can be a socket exception if Reuse isn't set.
         // Example: socket = new DatagramSocket(port);
         // Example: socket.setReuseAddress(true);
+
+        // define a Timed Process to simulate the 20 millisecond loop of the roboRIO TimedRobot
+        Timer timer = new Timer();
+        timer.schedule(
+                useTargetData, // example process to use the Target Data
+                 0, // initial delay
+                20); // subsequent rate
     }
 
-    public void run()
-    {
+    public void run() {
         System.out.println(pId + " packet listener thread started");
         byte[] bufferMessage = new byte[Main.MAXIMUM_MESSAGE_LENGTH];
         final int bufferMessageLength = bufferMessage.length; // save original length because length property is changed with usage
         DatagramPacket packet = new DatagramPacket(bufferMessage, bufferMessageLength);
 
-        while (true)
-        {
-            try
-            {
+        while (true) {
+            try {
                 // receive request
                 packet.setLength(bufferMessageLength);
                 socket.receive(packet); // always receive the packets
                 byte[] data = packet.getData();
                 lastDataReceived = new String(data, 0, packet.getLength());
-                System.out.println(pId + " >" + lastDataReceived + "<");
+                //System.out.println(pId + System.currentTimeMillis() + " >" + lastDataReceived + "<");
 
-                if (lastDataReceived.startsWith("Turret "))
-                {
+                if (lastDataReceived.startsWith("Turret ")) {
                     String message = new String(lastDataReceived.substring("Turret ".length()));
-                    TargetDataB receivedTargetB = new TargetDataB();
-                    receivedTargetB.fromJson(message);
-                    System.out.println(pId + " Turret " + receivedTargetB);   
+                    useTargetData.newTargetDataTurret.fromJson(message);
+                    //System.out.println(pId + " Turret " + receivedTargetB);   
                 }
                 else if (lastDataReceived.startsWith("Intake "))
                 {
                     String message = new String(lastDataReceived.substring("Intake ".length()));
-                    TargetDataE receivedTargetE = new TargetDataE();
-                    receivedTargetE.fromJson(message);
-                    System.out.println(pId + " Intake " + receivedTargetE);   
+                    useTargetData.newTargetDataIntake.fromJson(message);
+                    //System.out.println(pId + " Intake " + receivedTargetE);   
                 }
                 else
                 {
