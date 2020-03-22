@@ -4,7 +4,9 @@ import com.google.gson.Gson;
  * This class is used to store the target data. The user MUST MODIFY the
  * process() method. The user must create a new GripPipeline class using GRIP,
  * modify the TargetSelection class, and modify this class.
- * 
+ *
+ * See the TargetDataB class for usage documentation - the two schemes are identical.
+ 
  * @author FRC Team 4237
  * @version 2019.01.28.14.20
  */
