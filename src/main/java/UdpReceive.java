@@ -58,11 +58,12 @@ public class UdpReceive implements Runnable {
             System.out.print(pId + System.currentTimeMillis());
             if (newTargetDataTurret.isFreshData) // see if there is new data
             {
-                TargetDataTurret = newTargetDataTurret.get(); // new data so copy it to private storage for the loop to use
+                TargetDataTurret = newTargetDataTurret.get(); // new data available so copy it to private storage for the loop to use
+                // The Vision Process now has its own "Atomic" copy of the targeting data that is protected from being updated during this iteration
                 System.out.println(" Turret " + TargetDataTurret); // new data to be used appropriately; call various getters as needed
             }
             else
-                System.out.println(" Stale Turret"); // no new data so do something appropriate with the old data
+                System.out.println(" Stale Turret"); // no new data so do something appropriate with the old TargetData - skip it or reuse it
         }
     }
     //
@@ -128,6 +129,10 @@ public class UdpReceive implements Runnable {
             catch (SocketTimeoutException e)
             {
                 // do something when no messages for awhile
+                // this could include setting another variable to tell the Vision Process the data aren't being updated
+                // the frame number could also be checked for increasing value to determine if the RPi was stuck or failed
+                // those ideas are not implemented - just ideas at this point and no fail-over code has been added to the roboRIO
+                // to implement a fail-over strategy the camera probably has to be served by the roboRIO (or maybe a 2nd camera)
                 System.out.println(pId + " hasn't heard from any vision pipeline for awhile");
             } 
             catch (IOException e)
