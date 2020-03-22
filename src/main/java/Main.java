@@ -153,8 +153,6 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 
 public final class Main
 {
-    static {System.out.println("Starting class: " + MethodHandles.lookup().lookupClass().getCanonicalName());}
-
     static
     { // sleep needed for early version of this code in 2020.  Linux or JVM allowed this program to start before
       // Linux or JVM was fully functional to run correctly the threads spawned by this program
@@ -165,7 +163,17 @@ public final class Main
         catch (InterruptedException ex) 
         { }
     }
-
+    static {System.out.println("Starting class: " + MethodHandles.lookup().lookupClass().getCanonicalName());}
+    static {System.loadLibrary(Core.NATIVE_LIBRARY_NAME);}
+    static
+    {
+        try
+        {
+            Thread.sleep(2000);
+        }
+        catch (InterruptedException ex) 
+        { }
+    }
     private static final String pId = new String("[Main]");
 
     private static String configFile = "/boot/frc.json";
@@ -289,7 +297,7 @@ public final class Main
 // Settable parameters for some outputs listed below
 // Settable parameters for some outputs listed below
 
-    static String version = "RPi Vision 3/12/2020"; // change this everytime
+    static String version = "RPi Vision 3/22/2020"; // change this everytime
 
     static final int MAXIMUM_MESSAGE_LENGTH = 1024; // max length (or more) of UDP message from RPi to roboRIO.  Not normally changed but here for visibility
 
@@ -771,8 +779,6 @@ public final class Main
         Thread.currentThread().setName("4237Main");
         System.out.println(pId + " ***** main() method starting *****");
 
-        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-
         if (args.length > 0) 
         {
             configFile = args[0];
@@ -788,8 +794,8 @@ public final class Main
         tabLock = new Object();
         tapeLock = new Object();
        
-        // // sleep needed on RPi 4 before datagram address resolution and also RPi 3 before mount
-        // // and for some other unknown reason after a power on boot up of the RPi 4
+        // sleep needed on RPi 4 before datagram address resolution and also RPi 3 before mount
+        // and maybe for some other unknown reason after a power on boot up of the RPi 4
         // try {
         //     Thread.sleep(5000);
         // } catch (InterruptedException e) {
@@ -893,8 +899,7 @@ public final class Main
             // start thread to process image for High Power Port Alignment "cartoon"
             try
             {
-                // Wait for other processes to make some images otherwise first time though gets
-                // an error
+                // Wait for other processes to make some images otherwise first time though gets an error
                 Thread.sleep(2000);
             }
             catch (InterruptedException ex)
@@ -935,7 +940,7 @@ public final class Main
         Shuffleboard.update();
         }
       
-        // loop forever
+        // loop forever to keep child threads alive, show a heart beat, and get camera calibration
         while(true)
         {
             try 
