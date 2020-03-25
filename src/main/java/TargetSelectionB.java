@@ -1,6 +1,7 @@
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.HashSet;
 
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
@@ -15,40 +16,51 @@ import org.opencv.core.CvType;
 import org.opencv.core.MatOfFloat;
 import org.opencv.core.MatOfInt;
 
+import lsd.LSD;
+import lsd.Line;
+
+import lut.LUT;
+
 /**
  * This class is used to select the target from the camera frame. The user MUST
- * MODIFY the process() method. The user must create a new gripPowerCellIntakeVisionPipeline class
- * using GRIP, modify the TargetData class, and modify this class.
+ * MODIFY the process() method. The user must create a new
+ * gripPowerCellIntakeVisionPipeline class using GRIP, modify the TargetData
+ * class, and modify this class.
  * 
  * @author FRC Team 4237
  * @version 2019.01.28.14.20
  */
-public class TargetSelectionB
-{
-    static {System.out.println("Starting class: " + MethodHandles.lookup().lookupClass().getCanonicalName());}
+public class TargetSelectionB {
+    static {
+        System.out.println("Starting class: " + MethodHandles.lookup().lookupClass().getCanonicalName());
+    }
 
     private static final String pId = new String("[TargetSelectionB]");
 
     private static final double VERTICAL_CAMERA_ANGLE_OF_VIEW = 35.0;
 
-	// This object is used to run the gripPowerCellIntakeVisionPipeline
+    // This object is used to run the gripPowerCellIntakeVisionPipeline
     private GRIPPowerPortVisionPipeline gripPowerPortVisionPipeline = new GRIPPowerPortVisionPipeline();
 
-	// This field is used to determine if debugging information should be displayed.
+    // This field is used to determine if debugging information should be displayed.
     private boolean debuggingEnabled = false;
 
-    Mat subMat = new Mat(); // place for small image inserted into large image
+    // Mat subMat = new Mat(); // place for small image inserted into large image
 
     // Pixels to Inches Data Table Lookup
-    LUT pixelsToInchesTable = new LUT(10); // allocate fixed size array with parameter at least as large as the number of data points - minimum of 2 points
+    LUT pixelsToInchesTable = new LUT(10); // allocate fixed size array with parameter at least as large as the number
+                                           // of data points - minimum of 2 points
 
-	TargetSelectionB()
-	{
-        // Enter more data points for more accuracy. The equation should model some sort of sinusoidal function.
-        // The x coordinate is pixels and the y coordinate is the horizontal distance to the target in inches.
-        // TODO: Notice the LUT CTOR argument is maximum table size - change it if it needs to be larger
-        pixelsToInchesTable.add(66.0, 38.0); // enter (x, y) coordinates x ascending order, must add at least 2 data points
-        //pixelsToInchesTable.add(510.0, 116.0);
+    TargetSelectionB() {
+        // Enter more data points for more accuracy. The equation should model some sort
+        // of sinusoidal function.
+        // The x coordinate is pixels and the y coordinate is the horizontal distance to
+        // the target in inches.
+        // TODO: Notice the LUT CTOR argument is maximum table size - change it if it
+        // needs to be larger
+        pixelsToInchesTable.add(66.0, 38.0); // enter (x, y) coordinates x ascending order, must add at least 2 data
+                                             // points
+        // pixelsToInchesTable.add(510.0, 116.0);
         pixelsToInchesTable.add(596.0, 238.0);
         System.out.println(pId + " pixelsToInchesTable" + pixelsToInchesTable); // print the whole table
         // Questionable testing data of Pixel-Inches Readings:
@@ -56,153 +68,164 @@ public class TargetSelectionB
         // (110, HD = 128.5 and AD = 143)
         // (30-60, HD = 38 and AD = 72)
         // (0, HD = 232 and AD = 240)
-	}
-
-	/**
-	 * This method sets the field to display debugging information.
-	 * 
-	 * @param enabled
-	 *                    Set to true to display debugging information.
-	 */
-	public void setDebuggingEnabled(boolean enabled)
-	{
-		debuggingEnabled = enabled;
-	}
+    }
 
     /**
-	 * This method is used to select the next target. The user MUST MODIFY this
-	 * method.
-	 * 
-	 * @param mat
-	 *                           The camera frame containing the image to process.
-	 * @param nextTargetData
-	 *                           The target data found in the camera frame.
-	 */
-    public void process(Mat mat, TargetDataB nextTargetData)
-    {
-//         Mat histImage = new Mat();
+     * This method sets the field to display debugging information.
+     * 
+     * @param enabled Set to true to display debugging information.
+     */
+    public void setDebuggingEnabled(boolean enabled) {
+        debuggingEnabled = enabled;
+    }
 
-//         if(Main.displayTurretHistogram)
-//         {
-// //////////////////////////////////////
-// // RGB HISTOGRAM OF IMAGE
-// // May be better to try the HSV histogram
-// //
-//         //  histogram of image mat before any other drawing on mat
-//         //! [Separate the image in 3 places ( B, G and R )]
-//         List<Mat> bgrPlanes = new ArrayList<>();
-//         // try converts
-//         //Imgproc.cvtColor(mat, mat, Imgproc.COLOR_BGR2GRAY);
-//         //Imgproc.cvtColor(mat, mat, Imgproc.COLOR_BGR2HLS);
-//         Core.split(mat, bgrPlanes);
-//         //! [Separate the image in 3 places ( B, G and R )]
+    /**
+     * This method is used to select the next target. The user MUST MODIFY this
+     * method.
+     * 
+     * @param mat            The camera frame containing the image to process.
+     * @param nextTargetData The target data found in the camera frame.
+     */
+    public void process(Mat mat, TargetDataB nextTargetData) {
+        // Mat histImage = new Mat();
 
-//         //! [Establish the number of bins]
-//         int histSize = 128;
-//         //! [Establish the number of bins]
+        // if(Main.displayTurretHistogram)
+        // {
+        // //////////////////////////////////////
+        // // RGB HISTOGRAM OF IMAGE
+        // // May be better to try the HSV histogram
+        // //
+        // // histogram of image mat before any other drawing on mat
+        // //! [Separate the image in 3 places ( B, G and R )]
+        // List<Mat> bgrPlanes = new ArrayList<>();
+        // // try converts
+        // //Imgproc.cvtColor(mat, mat, Imgproc.COLOR_BGR2GRAY);
+        // //Imgproc.cvtColor(mat, mat, Imgproc.COLOR_BGR2HLS);
+        // Core.split(mat, bgrPlanes);
+        // //! [Separate the image in 3 places ( B, G and R )]
 
-//         //! [Set the ranges ( for B,G,R) )]
-//         float[] range = {0, 256}; //the upper boundary is exclusive
-//         MatOfFloat histRange = new MatOfFloat(range);
-//         //! [Set the ranges ( for B,G,R) )]
+        // //! [Establish the number of bins]
+        // int histSize = 128;
+        // //! [Establish the number of bins]
 
-//         //! [Set histogram param]
-//         boolean accumulate = false;
-//         //! [Set histogram param]
+        // //! [Set the ranges ( for B,G,R) )]
+        // float[] range = {0, 256}; //the upper boundary is exclusive
+        // MatOfFloat histRange = new MatOfFloat(range);
+        // //! [Set the ranges ( for B,G,R) )]
 
-//         //! [Compute the histograms]
-//         Mat bHist = new Mat(), gHist = new Mat(), rHist = new Mat();
+        // //! [Set histogram param]
+        // boolean accumulate = false;
+        // //! [Set histogram param]
 
-//         Imgproc.calcHist(bgrPlanes, new MatOfInt(0), new Mat(), bHist, new MatOfInt(histSize), histRange, accumulate);
-//         Imgproc.calcHist(bgrPlanes, new MatOfInt(1), new Mat(), gHist, new MatOfInt(histSize), histRange, accumulate);
-//         Imgproc.calcHist(bgrPlanes, new MatOfInt(2), new Mat(), rHist, new MatOfInt(histSize), histRange, accumulate);
+        // //! [Compute the histograms]
+        // Mat bHist = new Mat(), gHist = new Mat(), rHist = new Mat();
 
-//         //System.out.println("bHist = " + bHist + "gHist = " + gHist + "rHist = " + rHist);
-//         //! [Compute the histograms]
+        // Imgproc.calcHist(bgrPlanes, new MatOfInt(0), new Mat(), bHist, new
+        // MatOfInt(histSize), histRange, accumulate);
+        // Imgproc.calcHist(bgrPlanes, new MatOfInt(1), new Mat(), gHist, new
+        // MatOfInt(histSize), histRange, accumulate);
+        // Imgproc.calcHist(bgrPlanes, new MatOfInt(2), new Mat(), rHist, new
+        // MatOfInt(histSize), histRange, accumulate);
 
-//         //! [Draw the histograms for B, G and R]
+        // //System.out.println("bHist = " + bHist + "gHist = " + gHist + "rHist = " +
+        // rHist);
+        // //! [Compute the histograms]
 
-//         int histW = 128;
-//         int histH = 50;
-//         histImage = new Mat( histH, histW, CvType.CV_8UC3, new Scalar( 0,0,0) );
+        // //! [Draw the histograms for B, G and R]
 
-//         int binW = (int) Math.round((double) histW / histSize);
+        // int histW = 128;
+        // int histH = 50;
+        // histImage = new Mat( histH, histW, CvType.CV_8UC3, new Scalar( 0,0,0) );
 
-//         //! [Draw the histograms for B, G and R]
+        // int binW = (int) Math.round((double) histW / histSize);
 
-//         //! [Normalize the result to ( 0, histImage.rows )]
-//         Core.normalize(bHist, bHist, 0, histImage.rows(), Core.NORM_MINMAX);
-//         Core.normalize(gHist, gHist, 0, histImage.rows(), Core.NORM_MINMAX);
-//         Core.normalize(rHist, rHist, 0, histImage.rows(), Core.NORM_MINMAX);
-//         //! [Normalize the result to ( 0, histImage.rows )]
+        // //! [Draw the histograms for B, G and R]
 
-//         //! [Draw for each channel]
-//         float[] bHistData = new float[(int) (bHist.total() * bHist.channels())];
-//         bHist.get(0, 0, bHistData);
-//         float[] gHistData = new float[(int) (gHist.total() * gHist.channels())];
-//         gHist.get(0, 0, gHistData);
-//         float[] rHistData = new float[(int) (rHist.total() * rHist.channels())];
-//         rHist.get(0, 0, rHistData);
+        // //! [Normalize the result to ( 0, histImage.rows )]
+        // Core.normalize(bHist, bHist, 0, histImage.rows(), Core.NORM_MINMAX);
+        // Core.normalize(gHist, gHist, 0, histImage.rows(), Core.NORM_MINMAX);
+        // Core.normalize(rHist, rHist, 0, histImage.rows(), Core.NORM_MINMAX);
+        // //! [Normalize the result to ( 0, histImage.rows )]
 
+        // //! [Draw for each channel]
+        // float[] bHistData = new float[(int) (bHist.total() * bHist.channels())];
+        // bHist.get(0, 0, bHistData);
+        // float[] gHistData = new float[(int) (gHist.total() * gHist.channels())];
+        // gHist.get(0, 0, gHistData);
+        // float[] rHistData = new float[(int) (rHist.total() * rHist.channels())];
+        // rHist.get(0, 0, rHistData);
 
-//         for( int i = 1; i < histSize; i++ ) {
-//             Imgproc.line(histImage, new Point(binW * (i - 1), histH - Math.round(bHistData[i - 1])),
-//                     new Point(binW * (i), histH - Math.round(bHistData[i])), new Scalar(255, 255, 0), 2, Imgproc.LINE_4);
-//             Imgproc.line(histImage, new Point(binW * (i - 1), histH - Math.round(gHistData[i - 1])),
-//                     new Point(binW * (i), histH - Math.round(gHistData[i])), new Scalar(0, 255, 255), 2, Imgproc.LINE_4);
-//             Imgproc.line(histImage, new Point(binW * (i - 1), histH - Math.round(rHistData[i - 1])),
-//                     new Point(binW * (i), histH - Math.round(rHistData[i])), new Scalar(255, 0, 255), 2, Imgproc.LINE_4);
-//         // System.out.print(
-//         //     binW * (i - 1) + " " +
-//         //     (histH - Math.round(rHistData[i - 1])) + "   ");
-//          }
-//         //! [Draw for each channel]
-//         // end histogram of image mat before any other drawing on mat
+        // for( int i = 1; i < histSize; i++ ) {
+        // Imgproc.line(histImage, new Point(binW * (i - 1), histH -
+        // Math.round(bHistData[i - 1])),
+        // new Point(binW * (i), histH - Math.round(bHistData[i])), new Scalar(255, 255,
+        // 0), 2, Imgproc.LINE_4);
+        // Imgproc.line(histImage, new Point(binW * (i - 1), histH -
+        // Math.round(gHistData[i - 1])),
+        // new Point(binW * (i), histH - Math.round(gHistData[i])), new Scalar(0, 255,
+        // 255), 2, Imgproc.LINE_4);
+        // Imgproc.line(histImage, new Point(binW * (i - 1), histH -
+        // Math.round(rHistData[i - 1])),
+        // new Point(binW * (i), histH - Math.round(rHistData[i])), new Scalar(255, 0,
+        // 255), 2, Imgproc.LINE_4);
+        // // System.out.print(
+        // // binW * (i - 1) + " " +
+        // // (histH - Math.round(rHistData[i - 1])) + " ");
+        // }
+        // //! [Draw for each channel]
+        // // end histogram of image mat before any other drawing on mat
 
-//         subMat = mat.submat(0, histImage.rows(), 0, histImage.cols()); // define the insert area on the main image
-// //
-// // END RGB HISTOGRAM OF IMAGE - except the presentation of it a couple of lines below
-// //////////////////////////////////////
-//         }
+        // subMat = mat.submat(0, histImage.rows(), 0, histImage.cols()); // define the
+        // insert area on the main image
+        // //
+        // // END RGB HISTOGRAM OF IMAGE - except the presentation of it a couple of
+        // lines below
+        // //////////////////////////////////////
+        // }
 
-  		// Let the gripPowerCellIntakeVisionPipeline filter through the camera frame
+        // Let the gripPowerCellIntakeVisionPipeline filter through the camera frame
         gripPowerPortVisionPipeline.process(mat);
 
         // hopeful that GRIP pipeline found the one and only one target object
 
-        // //could add additional filters if multiple objects found such as Moments or Hu moments
-        // //risk in that, too, since the target is significantly distorted at the edges of the camera range - close and far, left and right
-        // //see various tutorials such as https://www.learnopencv.com/shape-matching-using-hu-moments-c-python/
+        // //could add additional filters if multiple objects found such as Moments or
+        // Hu moments
+        // //risk in that, too, since the target is significantly distorted at the edges
+        // of the camera range - close and far, left and right
+        // //see various tutorials such as
+        // https://www.learnopencv.com/shape-matching-using-hu-moments-c-python/
         //
-        // //start of moment example code hacked from various sources so to use fix it up
+        // //start of moment example code hacked from various sources so to use fix it
+        // up
         // //look at reference to finish with matchShapes, etc
         // Moments p = Imgproc.moments(contour);
-        // Point centerOfMass = new Point(moments.m10 / moments.m00, moments.m01 / moments.m00, 0);
-	    // int x = (int) (p.get_m10() / p.get_m00());
+        // Point centerOfMass = new Point(moments.m10 / moments.m00, moments.m01 /
+        // moments.m00, 0);
+        // int x = (int) (p.get_m10() / p.get_m00());
         // int y = (int) (p.get_m01() / p.get_m00());
         // //add 1e-5 to avoid division by zero
-        // mc.add(new Point(mu.get(i).m10 / (mu.get(i).m00 + 1e-5), mu.get(i).m01 / (mu.get(i).m00 + 1e-5)));
+        // mc.add(new Point(mu.get(i).m10 / (mu.get(i).m00 + 1e-5), mu.get(i).m01 /
+        // (mu.get(i).m00 + 1e-5)));
         // //draw the COM as a circle
         // Core.circle(smallFrame, new Point(x, y), 4, colors[handIndex]);
 
         // if( ! histImage.empty() )
         // {
-        //     Core.addWeighted(subMat, .20, histImage, .80, 0, subMat);
+        // Core.addWeighted(subMat, .20, histImage, .80, 0, subMat);
         // }
-  
-        // The gripPowerCellIntakeVisionPipeline creates an array of contours that must be searched to find
+
+        // The gripPowerCellIntakeVisionPipeline creates an array of contours that must
+        // be searched to find
         // the target.
         ArrayList<MatOfPoint> filteredContours;
-        filteredContours = new ArrayList<MatOfPoint>(gripPowerPortVisionPipeline.filterContoursOutput());                
+        filteredContours = new ArrayList<MatOfPoint>(gripPowerPortVisionPipeline.filterContoursOutput());
         int contourIndex = -1;
 
         // gripPowerPortVisionPipeline.maskOutput();
 
-		// Check if no contours were found in the camera frame.
-        if (filteredContours.isEmpty())
-        {
-            if (debuggingEnabled)
-            {
+        // Check if no contours were found in the camera frame.
+        if (filteredContours.isEmpty()) {
+            if (debuggingEnabled) {
                 System.out.println(pId + " No Contours");
 
                 // Display a message if no contours are found.
@@ -214,54 +237,57 @@ public class TargetSelectionB
             nextTargetData.angleToTurn = -1.;
             nextTargetData.isFreshData = true;
             nextTargetData.isTargetFound = false;
-        }
-        else // if contours were found ...
+        } else // if contours were found ...
         {
-            if(filteredContours.size() > 1)
-            {
+            if (filteredContours.size() > 1) {
                 System.err.println(pId + " " + filteredContours.size() + " Contours found");
             }
 
-            Rect boundRect; // upright rectangle
-            //RotatedRect boundRectAngled; // min area rotated rectangle
+            Rect boundRect = null; // upright rectangle
+            // RotatedRect boundRectAngled; // min area rotated rectangle
 
-            if (debuggingEnabled)
-			{
-				System.out.println(pId + " " + filteredContours.size() + " contours");
+            if (debuggingEnabled) {
+                System.out.println(pId + " " + filteredContours.size() + " contours");
 
-				// Draw all contours at once (negative index).
-				// Positive thickness means not filled, negative thickness means filled.
-				Imgproc.drawContours(mat, filteredContours, -1, new Scalar(255, 0, 0), 1);
-			}
+                // Draw all contours at once (negative index).
+                // Positive thickness means not filled, negative thickness means filled.
+                Imgproc.drawContours(mat, filteredContours, -1, new Scalar(255, 0, 0), 1);
+            }
 
             // Loop through all contours and just remember the last one
 
-            for (MatOfPoint contour : filteredContours)
-            {
+            for (MatOfPoint contour : filteredContours) {
                 contourIndex++;
-                
+
                 // debug output Print all the contours
 
-                //System.out.println("Contour Index = " + contourIndex);
-                //System.out.println(contour.dump()); // OpenCV Mat dump one line string of numbers
+                // System.out.println("Contour Index = " + contourIndex);
+                // System.out.println(contour.dump()); // OpenCV Mat dump one line string of
+                // numbers
                 // or more control over formating with your own array to manipualte
-				//System.out.println(pId + " " + aContour.size() + " points in contour"); // a contour is a bunch of points
-				// convert MatofPoint to an array of those Points and iterate (could do list of Points but no need for this)
-				//for(Point aPoint : aContour.toArray())System.out.print(" " + aPoint); // print each point
+                // System.out.println(pId + " " + aContour.size() + " points in contour"); // a
+                // contour is a bunch of points
+                // convert MatofPoint to an array of those Points and iterate (could do list of
+                // Points but no need for this)
+                // for(Point aPoint : aContour.toArray())System.out.print(" " + aPoint); //
+                // print each point
 
                 MatOfPoint2f NewMtx = new MatOfPoint2f(contour.toArray());
 
                 // for(int idx = 0; idx < contour.toArray().length; idx++)
                 // {
-                //     System.out.println("(" + contour.toArray()[idx].x + ", " + contour.toArray()[idx].y + ")");
+                // System.out.println("(" + contour.toArray()[idx].x + ", " +
+                // contour.toArray()[idx].y + ")");
                 // }
-                
+
                 // Create a bounding upright rectangle for the contour's points
                 boundRect = Imgproc.boundingRect(NewMtx);
-                //   = Imgproc.minAreaRect(NewMtx); // measurement of the perspective distortion from being off center
-                //double angleInnerPort = boundRectAngled.angle;
-                //if (angleInnerPort < -45.) angleInnerPort += 90.; // making assumptions about the width/height ratio
-                //System.out.println("minAreaRect angle:" + angleInnerPort);
+                // = Imgproc.minAreaRect(NewMtx); // measurement of the perspective distortion
+                // from being off center
+                // double angleInnerPort = boundRectAngled.angle;
+                // if (angleInnerPort < -45.) angleInnerPort += 90.; // making assumptions about
+                // the width/height ratio
+                // System.out.println("minAreaRect angle:" + angleInnerPort);
 
                 // Draw a Rect, using lines, that represents the Rect
                 Point boxPts[] = new Point[4];
@@ -269,34 +295,36 @@ public class TargetSelectionB
                 boxPts[1] = new Point(boundRect.br().x, boundRect.tl().y);
                 boxPts[2] = boundRect.br();
                 boxPts[3] = new Point(boundRect.tl().x, boundRect.br().y);
-                
-                // draw edges of bounding rectangle    
-                List<MatOfPoint> listMidContour = new ArrayList<MatOfPoint>();
-                listMidContour.add(
-                    new MatOfPoint (boxPts[0], boxPts[1], boxPts[2], boxPts[3])
-                    );
 
-                Imgproc.polylines (
-                    mat,                      // Matrix obj of the image
-                    listMidContour,           // java.util.List<MatOfPoint> pts
-                    true,                     // isClosed
-                    new Scalar(0, 0, 255),  // Scalar object for color
-                    1,                        // Thickness of the line
-                    Imgproc.LINE_4           // line type
+                // draw edges of bounding rectangle
+                List<MatOfPoint> listMidContour = new ArrayList<MatOfPoint>();
+                listMidContour.add(new MatOfPoint(boxPts[0], boxPts[1], boxPts[2], boxPts[3]));
+
+                Imgproc.polylines(mat, // Matrix obj of the image
+                        listMidContour, // java.util.List<MatOfPoint> pts
+                        true, // isClosed
+                        new Scalar(0, 255, 255), // Scalar object for color
+                        1, // Thickness of the line
+                        Imgproc.LINE_4 // line type
                 );
 
                 // OR the point to point way
                 // for(int i = 0; i<4; i++)
                 // {
-                //     Imgproc.line(mat, boxPts[i], boxPts[(i+1)%4], new Scalar(255, 0, 255));
+                // Imgproc.line(mat, boxPts[i], boxPts[(i+1)%4], new Scalar(255, 0, 255));
                 // }
 
-                // draw stars at corners of minimum rotated rectangle
-                Imgproc.drawMarker(mat, new Point( boxPts[0].x, Math.min(boxPts[0].y,(double)mat.cols() - 10.) ),
-                     new Scalar(  0, 255,   0), Imgproc.MARKER_STAR, 7);// green - always max y - can be > image max y
-                Imgproc.drawMarker(mat, boxPts[1], new Scalar(255, 255,   0), Imgproc.MARKER_STAR, 7);// teal then cw from 0
-                Imgproc.drawMarker(mat, boxPts[2], new Scalar(  0, 255, 255), Imgproc.MARKER_STAR, 7);// yellow
-                Imgproc.drawMarker(mat, boxPts[3], new Scalar(255,   0, 255), Imgproc.MARKER_STAR, 7);// magenta
+                // // draw stars at corners of rectangle
+                // Imgproc.drawMarker(mat, new Point( boxPts[0].x,
+                // Math.min(boxPts[0].y,(double)mat.cols() - 10.) ),
+                // new Scalar( 0, 255, 0), Imgproc.MARKER_STAR, 7);// green - always max y - can
+                // be > image max y
+                // Imgproc.drawMarker(mat, boxPts[1], new Scalar(255, 255, 0),
+                // Imgproc.MARKER_STAR, 7);// teal then cw from 0
+                // Imgproc.drawMarker(mat, boxPts[2], new Scalar( 0, 255, 255),
+                // Imgproc.MARKER_STAR, 7);// yellow
+                // Imgproc.drawMarker(mat, boxPts[3], new Scalar(255, 0, 255),
+                // Imgproc.MARKER_STAR, 7);// magenta
 
                 // Find the corner points of the bounding rectangle and the image size
                 nextTargetData.boundingBoxPts[0] = boxPts[0];
@@ -307,28 +335,34 @@ public class TargetSelectionB
                 nextTargetData.imageSize.height = mat.height();
                 nextTargetData.portPositionInFrame = 0.0;
 
-                // Find the degrees to turn the turret by finding the difference between the horizontal center of the camera frame 
+                // Find the degrees to turn the turret by finding the difference between the
+                // horizontal center of the camera frame
                 // and the horizontal center of the target.
-                // calibrateAngle is the difference between what the camera sees as the retroreflective tape target and where
-                // the Power Cells actually hit - the skew of the shooting process or camera misalignment.
-                nextTargetData.angleToTurn = (VERTICAL_CAMERA_ANGLE_OF_VIEW / nextTargetData.imageSize.height) * ((nextTargetData.imageSize.height / 2.0) -
-                                                ((nextTargetData.boundingBoxPts[1].y + nextTargetData.boundingBoxPts[2].y) / 2.0)) + Main.calibrateAngle;
-                
-                if(nextTargetData.angleToTurn <= -VERTICAL_CAMERA_ANGLE_OF_VIEW / 2. || nextTargetData.angleToTurn >= VERTICAL_CAMERA_ANGLE_OF_VIEW / 2.)
-                { // target not actually "seen" after the calibrateAngle offset was applied
+                // calibrateAngle is the difference between what the camera sees as the
+                // retroreflective tape target and where
+                // the Power Cells actually hit - the skew of the shooting process or camera
+                // misalignment.
+                nextTargetData.angleToTurn = (VERTICAL_CAMERA_ANGLE_OF_VIEW / nextTargetData.imageSize.height)
+                        * ((nextTargetData.imageSize.height / 2.0)
+                                - ((nextTargetData.boundingBoxPts[1].y + nextTargetData.boundingBoxPts[2].y) / 2.0))
+                        + Main.calibrateAngle;
+
+                if (nextTargetData.angleToTurn <= -VERTICAL_CAMERA_ANGLE_OF_VIEW / 2.
+                        || nextTargetData.angleToTurn >= VERTICAL_CAMERA_ANGLE_OF_VIEW / 2.) { // target not actually
+                                                                                               // "seen" after the
+                                                                                               // calibrateAngle offset
+                                                                                               // was applied
                     nextTargetData.portDistance = -1.;
                     nextTargetData.angleToTurn = -1.;
                     nextTargetData.isFreshData = true;
                     nextTargetData.isTargetFound = false;
-                }
-                else
-                { // target still in view
+                } else { // target still in view
                     nextTargetData.portDistance = pixelsToInchesTable.lookup(boundRect.br().x);
                     nextTargetData.isFreshData = true;
                     nextTargetData.isTargetFound = true;
-                    if(Main.displayTurretPixelDistance)
-                    {
-                        System.out.println(pId + " pixels:" + boundRect.br().x + ", LUT inches:" + nextTargetData.portDistance);
+                    if (Main.displayTurretPixelDistance) {
+                        System.out.println(
+                                pId + " pixels:" + boundRect.br().x + ", LUT inches:" + nextTargetData.portDistance);
                     }
                 }
             } // end of looping through all contours
@@ -336,31 +370,87 @@ public class TargetSelectionB
             // draw the selected contour - the last one wins
             Imgproc.drawContours(mat, filteredContours, contourIndex, new Scalar(0, 0, 255), 1);
 
-        } // end of processing all contours in this camera frame
+            // ****************************************************************************************
+            //
+            // start experimental LSD - the old one converted to Java
+            // ****************************************************************************************
+            if (Main.turretTargetLSD) {
+                try {
+                    Mat threshold;
+                    // check limits of mat but really it's
+                    // gripPowerPortVisionPipeline.cvErode1Output() so it had better be based on mat
+                    // exception here 0 <= roi.x && 0 <= roi.width && roi.x + roi.width <= m.cols &&
+                    // 0 <= roi.y && 0 <= roi.height && roi.y + roi.height <= m.rows
+                    Rect lsdRect = new Rect(
+                            new Point(Math.max((int) boundRect.tl().x - 8, 0), Math.max((int) boundRect.tl().y - 8, 0)),
+                            new Point(Math.min((int) boundRect.br().x + 8, mat.cols()),
+                                    Math.min((int) boundRect.br().y + 8, mat.rows())));
 
-        if(!nextTargetData.isTargetFound)
-        {
-            synchronized(Main.tapeLock)
-            {
-                Main.tapeDistance = -1.;
-                Main.tapeAngle = -1.;
-                Main.isTargetFound = false;
-                Main.tapeContours = contourIndex;
-                Main.isDistanceAngleFresh = true;
-                Main.tapeLock.notify();
+                    threshold = gripPowerPortVisionPipeline.cvErode1Output().submat(lsdRect);
+
+                    // System.out.println(threshold.channels() + " " + threshold.total() + " " +
+                    // //threshold.toString() +
+                    // " " + threshold.cols() + " " + threshold.rows());
+
+                    // int t = threshold.type();
+                    // System.out.println(CvType.depth(t) + " " + CvType.CV_8U + " " +
+                    // CvType.CV_8S);
+
+                    // example process each pixel with conversion to double
+                    //
+                    // could stick with the conversion to byte instead of short to save memory but
+                    // that means the data are
+                    // in Java -128 to 127 signed byte - see example below
+                    // Mat temp = new Mat(mat.rows(), mat.cols(), CvType.CV_16SC3);
+                    // mat.convertTo(temp, CvType.CV_16SC3);
+                    // System.out.println(threshold.dump());
+
+                    byte[] flatMat = new byte[(int) threshold.total()];
+                    threshold.get(0, 0, flatMat);
+
+                    double[] flatmatLSD = new double[(int) threshold.total()];
+
+                    for (int idx = 0; idx < threshold.total(); idx++) {
+                        flatmatLSD[idx] = flatMat[idx] == 0 ? 0. : 255.;
+                    }
+
+                    LSD lsd = new LSD();
+
+                    double[] out = lsd.lsd(flatmatLSD, threshold.cols(), threshold.rows());
+                    // System.out.println(lsd.n_out + " " + out.length);
+
+                    HashSet<Line> lines = new HashSet<Line>();
+
+                    for (int i = 0; i < lsd.n_out; i++) {
+                        lines.add(new Line(out[7 * i + 0], out[7 * i + 1], out[7 * i + 2], out[7 * i + 3]));
+                    }
+
+                    for (Line l : lines) {
+                        // System.out.format("{(%f, %f),(%f, %f)}\n",l.x1,l.y1,l.x2,l.y2);
+                        Imgproc.line(mat, new Point((int) l.x1 + lsdRect.tl().x, (int) l.y1 + lsdRect.tl().y),
+                                new Point((int) l.x2 + lsdRect.tl().x, (int) l.y2 + lsdRect.tl().y),
+                                new Scalar(255, 255, 255), 1, Imgproc.LINE_AA, 0);
+                    }
+                } catch (Exception exception) {
+                    exception.printStackTrace();
+                }
             }
-        }
-        else
-        {
-            synchronized(Main.tapeLock)
-            {
-                Main.tapeDistance = nextTargetData.portDistance;
-                Main.tapeAngle = nextTargetData.angleToTurn;
-                Main.isTargetFound = true;
-                Main.tapeContours = contourIndex;
-                Main.isDistanceAngleFresh = true;
-                Main.tapeLock.notify();
-            }
+
+            // ****************************************************************************************
+            // end experimental LSD - the old one converted to Java
+            //
+            // ****************************************************************************************
+
+        } // end of processing all contours in this camera frames
+
+        // update the target information
+        synchronized (Main.tapeLock) {
+            Main.tapeDistance = nextTargetData.portDistance;
+            Main.tapeAngle = nextTargetData.angleToTurn;
+            Main.isTargetFound = nextTargetData.isTargetFound;
+            Main.tapeContours = contourIndex;
+            Main.isDistanceAngleFresh = nextTargetData.isFreshData;
+            Main.tapeLock.notify();
         }
     }
 }
@@ -469,3 +559,59 @@ public class TargetSelectionB
 //             linesP.release();
 //         }
 //     }
+
+    // // example process each pixel with conversion to short
+    // //
+    // // could stick with the conversion to byte instead of short to save memory but that means the data are
+    // // in Java -128 to 127 signed byte - see example below
+    // Mat temp = new Mat(mat.rows(), mat.cols(), CvType.CV_16SC3);
+    // mat.convertTo(temp, CvType.CV_16SC3);
+    // short[] flatMat = new short[(int)temp.total()*temp.channels()];
+    // temp.get(0, 0, flatMat);
+    
+    // for (int idx = 0; idx<mat.total()*mat.channels();idx=idx+mat.channels())
+    //  {
+    //      flatMat[idx] = 0; // B
+    //      flatMat[idx+1] = 0; // G
+    //      flatMat[idx+2] = 255; // R
+    // //     System.out.println(flatMat[idx] + " " + flatMat[idx+1] + " " + flatMat[idx+2]);
+    //  }
+    
+    //  temp.put(0, 0, flatMat);
+
+    //  temp.convertTo(mat, CvType.CV_8UC3);
+    // for (int idx = 0; idx<60 /*mat.total()*mat.channels()*/;idx=idx+mat.channels())
+    // {
+    //     System.out.println(flatMat[idx] + " " + flatMat[idx+1] + " " + flatMat[idx+2]);
+    // }
+    // //
+    // // end example process each pixel with conversion to short
+
+    // // example process each pixel with byte
+    // //
+    // // OpenCV data are 0 to 255, which is 0 to 127 then -128 to -1, 255 is -1 in Java, 254 is -2, etc
+    // byte[] flatMat = new byte[(int)mat.total()*mat.channels()];
+    // mat.get(0, 0, flatMat);
+    // int idx = 0;
+    // int red;
+    // for (int idxR = 0; idxR<mat.rows(); idxR++)
+    // for (int idxC = 0; idxC<mat.cols(); idxC++)
+    // {
+    //     smoothly increase red from 0 to almost 255 from top row to bottom row
+    //     same value of red across the whole row - all columns are the same red
+    //     flatMat[idx] = 0; // B
+    //     flatMat[idx+1] = 0; // G
+    //     red = idxR *2;
+    //     if (red > 127) red = red - 256;
+    //     if (red < -128) red = -128;
+    //     flatMat[idx+2] = (byte)red; // R -1 is actually 255, -2 is 254, etc. -128 medium dark
+    //     idx = idx + mat.channels();
+    //     //     System.out.println(flatMat[idx] + " " + flatMat[idx+1] + " " + flatMat[idx+2]);
+    //     }
+    // for (int idx2 = 0; idx2<mat.total()*mat.channels(); idx2=idx2+(mat.channels()*mat.cols()))
+    // {
+    //     System.out.println(flatMat[idx2] + " " + flatMat[idx2+1] + " " + flatMat[idx2+2]);
+    // }
+    // mat.put(0, 0, flatMat);
+    // //
+    // // end example process each pixel with byte

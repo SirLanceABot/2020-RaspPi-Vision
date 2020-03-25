@@ -297,7 +297,7 @@ public final class Main
 // Settable parameters for some outputs listed below
 // Settable parameters for some outputs listed below
 
-    static String version = "RPi Vision 3/22/2020"; // change this everytime
+    static String version = "RPi Vision 3/23/2020"; // change this everytime
 
     static final int MAXIMUM_MESSAGE_LENGTH = 1024; // max length (or more) of UDP message from RPi to roboRIO.  Not normally changed but here for visibility
 
@@ -323,6 +323,7 @@ public final class Main
     // generated video streams switched on/off here
     static boolean runImageOperator = true;
     static boolean displayTurretContours = true;
+    static boolean turretTargetLSD = false;  // compute line segments around a target
     static boolean displayIntakeContours = true;
 
     static boolean displayTurretPixelDistance = false; // calibration info for pixels to inches distance to target
@@ -877,10 +878,10 @@ public final class Main
                 createCameraShuffleboardWidget(Ecamera, cw);
 
                 // TODO: INTAKE TARGETING TURNED OFF - uncomment these statements to run it.  Targeting still needs a lot of work, though
-                // cpE = new CameraProcessE(Ecamera, config);
-                // visionThreadE = new Thread(cpE, "4237IntakeECamera");
-                // // start thread using the class' run() method (just saying run() won't start a thread - that just runs run() once)
-                // visionThreadE.start();
+                cpE = new CameraProcessE(Ecamera, config);
+                visionThreadE = new Thread(cpE, "4237IntakeECamera");
+                // start thread using the class' run() method (just saying run() won't start a thread - that just runs run() once)
+                visionThreadE.start();
             }
             else
             {

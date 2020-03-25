@@ -128,7 +128,7 @@ public class CameraProcessB implements Runnable
 		//Timer testTimer = new Timer();
 		//testTimer.start();
 
-		int light = 38, dark = 4, currentExposure = dark;
+		int light = 38, dark = 10, currentExposure = dark;
 
 		setExposure(currentExposure); // once in awhile the exposure isn't set on camera start up so make sure here
 
