@@ -114,6 +114,9 @@ public class ImageOperator implements Runnable {
                     angleToTurn = Main.tapeAngle;
                     contourIndex = Main.tapeContours;
                     isTargetFound = Main.isTargetFound;
+                    // Are we using the test shape or the real tape?
+                    // Look in TargetSelectionB for the definition of the shape
+                    System.out.println(pId + " test shape quality " + Main.shapeQuality); // TODO: display quality of shape on Shuffleboard?
                     Main.isDistanceAngleFresh = false; // these data captured to be processed so mark them as used
                 }
 

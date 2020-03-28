@@ -15,6 +15,9 @@ import org.opencv.imgproc.Imgproc;
 import org.opencv.core.CvType;
 import org.opencv.core.MatOfFloat;
 import org.opencv.core.MatOfInt;
+import org.opencv.imgproc.Moments;
+
+import edu.wpi.first.wpilibj.LinearFilter;
 
 import lsd.LSD;
 import lsd.Line;
@@ -51,6 +54,10 @@ public class TargetSelectionB {
     LUT pixelsToInchesTable = new LUT(10); // allocate fixed size array with parameter at least as large as the number
                                            // of data points - minimum of 2 points
 
+    LinearFilter f = LinearFilter.movingAverage(10); // factory method is self-instantiating; argument is number of samples to average
+    
+    MatOfPoint idealContour = new MatOfPoint();
+
     TargetSelectionB() {
         // Enter more data points for more accuracy. The equation should model some sort
         // of sinusoidal function.
@@ -68,6 +75,16 @@ public class TargetSelectionB {
         // (110, HD = 128.5 and AD = 143)
         // (30-60, HD = 38 and AD = 72)
         // (0, HD = 232 and AD = 240)
+
+        //setup ideal target shape to compare with camera image found contour
+        // this can vary greatly with perspective distortion so this might have to be dynamically generated
+        // based on distance, angles, etc.
+    
+        /**** CAUTION CAUTION CAUTION  TEST SHAPE FOR RKT'S BASEMENT SCRAP OF RETROREFLECTIVE TAPE */
+        /**** CAUTION CAUTION CAUTION  TEST SHAPE FOR RKT'S BASEMENT SCRAP OF RETROREFLECTIVE TAPE */
+        /**** CAUTION CAUTION CAUTION  TEST SHAPE FOR RKT'S BASEMENT SCRAP OF RETROREFLECTIVE TAPE */
+        /**** CAUTION CAUTION CAUTION  TEST SHAPE FOR RKT'S BASEMENT SCRAP OF RETROREFLECTIVE TAPE */
+        idealContour.fromArray(new Point(0., 0.), new Point(45., 0.), new Point(45., 20.), new Point(0., 20.));
     }
 
     /**
@@ -219,9 +236,8 @@ public class TargetSelectionB {
         // the target.
         ArrayList<MatOfPoint> filteredContours;
         filteredContours = new ArrayList<MatOfPoint>(gripPowerPortVisionPipeline.filterContoursOutput());
-        int contourIndex = -1;
-
-        // gripPowerPortVisionPipeline.maskOutput();
+        int contourIndex = -1; // initialize here - using same value to indicate no contours and count countours
+        double shapeMatchIndex = 111111111111.; // initialize here to quiet the compiler
 
         // Check if no contours were found in the camera frame.
         if (filteredContours.isEmpty()) {
@@ -237,10 +253,11 @@ public class TargetSelectionB {
             nextTargetData.angleToTurn = -1.;
             nextTargetData.isFreshData = true;
             nextTargetData.isTargetFound = false;
-        } else // if contours were found ...
-        {
-            if (filteredContours.size() > 1) {
+        } else {
+            // contours were found
+            if (filteredContours.size() > 1) { // not good if more than one contour
                 System.err.println(pId + " " + filteredContours.size() + " Contours found");
+                //TODO: select best contour as the target.  Currently the last one wins.
             }
 
             Rect boundRect = null; // upright rectangle
@@ -308,6 +325,90 @@ public class TargetSelectionB {
                         Imgproc.LINE_4 // line type
                 );
 
+//**************************************** */
+//* start match shape
+//**************************************** */
+                // Use moments to determine shape. Compare moments to moments of known shape.
+                // TODO: pick the best match if good enough match
+
+                // draw the contour
+                Imgproc.drawContours(mat, filteredContours, contourIndex, new Scalar(0, 0, 255), 1);
+
+                // find the simpler version of the contour - fewer points
+                MatOfPoint2f temp = new MatOfPoint2f(filteredContours.get(contourIndex).toArray());
+                MatOfPoint2f approxCurve = new MatOfPoint2f();
+                Imgproc.approxPolyDP(
+                    temp,
+                    approxCurve,
+                    0.01*Imgproc.arcLength(temp, true),
+                    true);
+
+            /*           
+                System.out.println(approxCurve + " " + approxCurve.dump());
+            Mat [ 7*1*CV_32FC2, isCont=true, isSubmat=false, nativeObj=0x59660870, dataAddr=0x59660900 ]
+            [388, 213;  384, 247;  434, 261;  443, 259;  449, 234;  447, 227;  396, 212]
+                System.out.println(temp + " " + temp.dump());
+            Mat [ 86*1*CV_32FC2, isCont=true, isSubmat=false, nativeObj=0x61c281b8, dataAddr=0x60ee1bc0 ]
+           [407, 211; 407, 212; 406, 213; 406, 221; 405, 222; 405, 225; 404, 226; 404, 229; 403, 230; 403, 234; 402, 235;
+            402, 241; 403, 242; 405, 242; 406, 243; 408, 243; 409, 244; 412, 244; 413, 245; 415, 245; 416, 246; 419, 246;
+            420, 247; 424, 247; 425, 248; 428, 248; 429, 249; 431, 249; 432, 250; 434, 250; 435, 251; 437, 251; 438, 252;
+            441, 252; 442, 253; 443, 253; 444, 254; 446, 254; 447, 255; 453, 255; 455, 253; 455, 252; 456, 251; 456, 250;
+            457, 249; 457, 247; 458, 246; 458, 244; 459, 243; 459, 241; 460, 240; 460, 237; 461, 236; 461, 233; 462, 232;
+            462, 226; 460, 226; 459, 225; 457, 225; 456, 224; 454, 224; 453, 223; 450, 223; 449, 222; 447, 222; 446, 221;
+            444, 221; 443, 220; 441, 220; 440, 219; 438, 219; 437, 218; 434, 218; 433, 217; 431, 217; 430, 216; 428, 216;
+            427, 215; 425, 215; 424, 214; 422, 214; 421, 213; 419, 213; 418, 212; 415, 212; 414, 211]
+            */
+                List<Point> listApprox = new ArrayList<Point>(approxCurve.toList());
+                
+                //System.out.println(temp.size() + " " + listApprox.size()); // 1x86 7
+
+                //listMidContour.add(new MatOfPoint(boxPts[0], boxPts[1], boxPts[2], boxPts[3]));
+                // draw the simple contour, too
+                for (int idx = 0; idx< listApprox.size(); idx++) 
+                {
+                    Imgproc.line(
+                        mat,
+                        listApprox.get(idx), // one end of the line
+                        idx+1==listApprox.size() ? listApprox.get(0): listApprox.get(idx+1), // other end - close the shape on the last point
+                        new Scalar(255, 255, 0),
+                        1,
+                        Imgproc.LINE_AA,
+                        0);
+                }
+
+                //System.out.println(moments);
+                //System.out.println(hu + hu.dump());
+
+                // // example of smoothing values - may help any jitters or maybe useless
+                // double[] huTemp = new double[7];
+                // hu.get(0, 0, huTemp);
+                // //System.out.println(huTemp[0] + ", smooth=" + f.calculate(huTemp[0]));
+                // //-np.sign(hu) * np.log10(np.abs(hu)) log of Hu may be an improvement (np is NumPy; use Math in Java)
+
+                // // compute moments and Hu moments.  Not needed since matchShapes() does it for us.
+                // Moments moments;
+                // Mat hu=Mat.zeros(7, 1, CvType.CV_64FC1); // initialize mat - need to quiet the compiler but this is likely overkill
+                // moments = Imgproc.moments(approxCurve);
+                // Imgproc.HuMoments(moments, hu);
+                //System.out.println(hu);
+
+                // this matching is rotation invariant so better eliminate incorrect aspect ratio first in filter contours
+                // because, for example, rectangles that are 2:1 are liked as well as those that are 1:2
+                shapeMatchIndex = Imgproc.matchShapes(idealContour, filteredContours.get(contourIndex), Imgproc.CONTOURS_MATCH_I1, 0.0);
+                //System.out.println(shapeMatchIndex); // TODO: display quality of shape on Shuffleboard?
+                // also TODO: use the comparison or absolute value of distance sensors to filter bad "targets"
+                // at St Joe 2020, Robot shot at a big green team sign in the bleachers thinking it was a small nearby target
+
+                // CONTOURS_MATCH_I1 
+                // I1(A,B)=∑i=1...7∣∣∣1mAi−1mBi∣∣∣ sum of difference of reciprical moments
+                // CONTOURS_MATCH_I2 
+                // I2(A,B)=∑i=1...7∣∣mAi−mBi∣∣ sum of difference of moments
+                // CONTOURS_MATCH_I3 
+                // I3(A,B)=maxi=1...7∣∣mAi−mBi∣∣∣∣mAi∣∣ maximum relative difference
+//**************************************** */
+//* end match shape
+//**************************************** */
+
                 // OR the point to point way
                 // for(int i = 0; i<4; i++)
                 // {
@@ -348,10 +449,8 @@ public class TargetSelectionB {
                         + Main.calibrateAngle;
 
                 if (nextTargetData.angleToTurn <= -VERTICAL_CAMERA_ANGLE_OF_VIEW / 2.
-                        || nextTargetData.angleToTurn >= VERTICAL_CAMERA_ANGLE_OF_VIEW / 2.) { // target not actually
-                                                                                               // "seen" after the
-                                                                                               // calibrateAngle offset
-                                                                                               // was applied
+                        || nextTargetData.angleToTurn >= VERTICAL_CAMERA_ANGLE_OF_VIEW / 2.) { // target not actually "seen" after the
+                                                                                               // calibrateAngle offset was applied
                     nextTargetData.portDistance = -1.;
                     nextTargetData.angleToTurn = -1.;
                     nextTargetData.isFreshData = true;
@@ -367,12 +466,9 @@ public class TargetSelectionB {
                 }
             } // end of looping through all contours
 
-            // draw the selected contour - the last one wins
-            Imgproc.drawContours(mat, filteredContours, contourIndex, new Scalar(0, 0, 255), 1);
-
             // ****************************************************************************************
             //
-            // start experimental LSD - the old one converted to Java
+            // start experimental LSD - the old one used in OpenCV converted to Java  - using the last contour
             // ****************************************************************************************
             if (Main.turretTargetLSD) {
                 try {
@@ -427,9 +523,11 @@ public class TargetSelectionB {
 
                     for (Line l : lines) {
                         // System.out.format("{(%f, %f),(%f, %f)}\n",l.x1,l.y1,l.x2,l.y2);
-                        Imgproc.line(mat, new Point((int) l.x1 + lsdRect.tl().x, (int) l.y1 + lsdRect.tl().y),
-                                new Point((int) l.x2 + lsdRect.tl().x, (int) l.y2 + lsdRect.tl().y),
-                                new Scalar(255, 255, 255), 1, Imgproc.LINE_AA, 0);
+                        Imgproc.line(
+                            mat,
+                            new Point(l.x1 + lsdRect.tl().x, l.y1 + lsdRect.tl().y),
+                            new Point(l.x2 + lsdRect.tl().x, l.y2 + lsdRect.tl().y),
+                            new Scalar(255, 255, 255), 1, Imgproc.LINE_AA, 0);
                     }
                 } catch (Exception exception) {
                     exception.printStackTrace();
@@ -437,18 +535,19 @@ public class TargetSelectionB {
             }
 
             // ****************************************************************************************
-            // end experimental LSD - the old one converted to Java
+            // end experimental LSD - the old one used in OpenCV converted to Java
             //
             // ****************************************************************************************
 
         } // end of processing all contours in this camera frames
 
-        // update the target information
+        // update the target information - last contour found wins
         synchronized (Main.tapeLock) {
             Main.tapeDistance = nextTargetData.portDistance;
             Main.tapeAngle = nextTargetData.angleToTurn;
             Main.isTargetFound = nextTargetData.isTargetFound;
             Main.tapeContours = contourIndex;
+            Main.shapeQuality = shapeMatchIndex;
             Main.isDistanceAngleFresh = nextTargetData.isFreshData;
             Main.tapeLock.notify();
         }

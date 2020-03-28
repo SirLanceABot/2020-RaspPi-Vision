@@ -107,11 +107,11 @@ public class CameraProcessE implements Runnable
 
 	public void run()
 	{
-		// first time through loop switch
-		boolean firstTime = true;
-
 		// This variable will be used to time each iteration of the thread loop.
 		double loopTotalTime = -999.0;
+
+		cameraFrameTemp.setTo(new Scalar(100, 100, 100)); // something to process if camera is little slow to start
+		this.cameraFrame.setImage(cameraFrameTemp);
 
 		// Set up the input stream to get frames from the camera.
 		// inputStream = CameraServer.getInstance().getVideo();
@@ -120,6 +120,15 @@ public class CameraProcessE implements Runnable
 
 		pipelineProcessE = new PipelineProcessE(this, config);
 		pipeline = new Thread(pipelineProcessE, "4237Epipeline");
+		try 
+		{
+			Thread.sleep(3000); // let things get settled before grabbing images and starting the pipeline process thread
+		} 
+		catch (InterruptedException e) 
+		{
+			e.printStackTrace();
+		}
+		pipeline.start();
 
         this.setDebuggingEnabled(Main.debug);
 
@@ -137,23 +146,7 @@ public class CameraProcessE implements Runnable
 			if (inputStream.grabFrame(cameraFrameTemp) == 0)
 			{
 				System.out.println(pId + " grabFrame error " + inputStream.getError());
-				cameraFrameTemp.setTo(new Scalar(100, 100, 100));
-			}
-			else
-			{ // good frame grab so see if pipeline should be started
-				if (firstTime)
-				{
-					try 
-					{
-						Thread.sleep(3000);
-					} 
-					catch (InterruptedException e) 
-					{
-						e.printStackTrace();
-					}
-					pipeline.start();
-					firstTime = false;
-				}
+				cameraFrameTemp.setTo(new Scalar(170, 170, 170)); // set a gray image if an error
 			}
 
 			this.cameraFrame.setImage(cameraFrameTemp);
