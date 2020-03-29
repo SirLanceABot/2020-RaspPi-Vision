@@ -258,7 +258,7 @@ public final class Main
     static double tapeDistance = -1.;
     static double tapeAngle = -1.;
     static int tapeContours = -1;
-    static double shapeQuality = 111111111111.;
+    static double shapeQuality = Double.MAX_VALUE;
     static boolean isTargetFound = false;
     static Object tapeLock;
     static boolean isDistanceAngleFresh = false;
@@ -298,7 +298,7 @@ public final class Main
 // Settable parameters for some outputs listed below
 // Settable parameters for some outputs listed below
 
-    static String version = "RPi Vision 3/23/2020"; // change this everytime
+    static String version = "RPi Vision 3/29/2020"; // change this everytime
 
     static final int MAXIMUM_MESSAGE_LENGTH = 1024; // max length (or more) of UDP message from RPi to roboRIO.  Not normally changed but here for visibility
 

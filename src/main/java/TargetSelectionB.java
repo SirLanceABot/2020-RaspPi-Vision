@@ -1,4 +1,5 @@
 import java.lang.invoke.MethodHandles;
+import java.lang.IllegalArgumentException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.HashSet;
@@ -57,7 +58,8 @@ public class TargetSelectionB {
     LinearFilter f = LinearFilter.movingAverage(10); // factory method is self-instantiating; argument is number of samples to average
     
     MatOfPoint idealContour = new MatOfPoint();
-
+    Mat idealHu=Mat.zeros(7, 1, CvType.CV_64FC1); // initialize mat - need to quiet the compiler but this is likely overkill
+    
     TargetSelectionB() {
         // Enter more data points for more accuracy. The equation should model some sort
         // of sinusoidal function.
@@ -85,6 +87,8 @@ public class TargetSelectionB {
         /**** CAUTION CAUTION CAUTION  TEST SHAPE FOR RKT'S BASEMENT SCRAP OF RETROREFLECTIVE TAPE */
         /**** CAUTION CAUTION CAUTION  TEST SHAPE FOR RKT'S BASEMENT SCRAP OF RETROREFLECTIVE TAPE */
         idealContour.fromArray(new Point(0., 0.), new Point(45., 0.), new Point(45., 20.), new Point(0., 20.));
+        Moments idealMoments = Imgproc.moments(idealContour);
+        Imgproc.HuMoments(idealMoments, idealHu);
     }
 
     /**
@@ -237,7 +241,7 @@ public class TargetSelectionB {
         ArrayList<MatOfPoint> filteredContours;
         filteredContours = new ArrayList<MatOfPoint>(gripPowerPortVisionPipeline.filterContoursOutput());
         int contourIndex = -1; // initialize here - using same value to indicate no contours and count countours
-        double shapeMatchIndex = 111111111111.; // initialize here to quiet the compiler
+        double shapeMatchIndex = Double.MAX_VALUE; // initialize here to quiet the compiler
 
         // Check if no contours were found in the camera frame.
         if (filteredContours.isEmpty()) {
@@ -358,44 +362,58 @@ public class TargetSelectionB {
             444, 221; 443, 220; 441, 220; 440, 219; 438, 219; 437, 218; 434, 218; 433, 217; 431, 217; 430, 216; 428, 216;
             427, 215; 425, 215; 424, 214; 422, 214; 421, 213; 419, 213; 418, 212; 415, 212; 414, 211]
             */
-                List<Point> listApprox = new ArrayList<Point>(approxCurve.toList());
+                //************************************************************** */
+                // start use compareShapes
+                // List<Point> listApprox = new ArrayList<Point>(approxCurve.toList());
                 
-                //System.out.println(temp.size() + " " + listApprox.size()); // 1x86 7
+                // //System.out.println(temp.size() + " " + listApprox.size()); // 1x86 7
 
-                //listMidContour.add(new MatOfPoint(boxPts[0], boxPts[1], boxPts[2], boxPts[3]));
-                // draw the simple contour, too
-                for (int idx = 0; idx< listApprox.size(); idx++) 
-                {
-                    Imgproc.line(
-                        mat,
-                        listApprox.get(idx), // one end of the line
-                        idx+1==listApprox.size() ? listApprox.get(0): listApprox.get(idx+1), // other end - close the shape on the last point
-                        new Scalar(255, 255, 0),
-                        1,
-                        Imgproc.LINE_AA,
-                        0);
-                }
+                // //listMidContour.add(new MatOfPoint(boxPts[0], boxPts[1], boxPts[2], boxPts[3]));
+                // // draw the simple contour, too
+                // for (int idx = 0; idx< listApprox.size(); idx++) 
+                // {
+                //     Imgproc.line(
+                //         mat,
+                //         listApprox.get(idx), // one end of the line
+                //         idx+1==listApprox.size() ? listApprox.get(0): listApprox.get(idx+1), // other end - close the shape on the last point
+                //         new Scalar(255, 255, 0),
+                //         1,
+                //         Imgproc.LINE_AA,
+                //         0);
+                // }
 
-                //System.out.println(moments);
-                //System.out.println(hu + hu.dump());
+                // //System.out.println(moments);
+                // //System.out.println(hu + hu.dump());
 
-                // // example of smoothing values - may help any jitters or maybe useless
-                // double[] huTemp = new double[7];
-                // hu.get(0, 0, huTemp);
-                // //System.out.println(huTemp[0] + ", smooth=" + f.calculate(huTemp[0]));
-                // //-np.sign(hu) * np.log10(np.abs(hu)) log of Hu may be an improvement (np is NumPy; use Math in Java)
+                // // double[] huTemp = new double[7];
+                // // hu.get(0, 0, huTemp);
 
-                // // compute moments and Hu moments.  Not needed since matchShapes() does it for us.
+                // // compute moments and Hu moments for our own compareShapes.  matchShapes() does it for us.
                 // Moments moments;
-                // Mat hu=Mat.zeros(7, 1, CvType.CV_64FC1); // initialize mat - need to quiet the compiler but this is likely overkill
-                // moments = Imgproc.moments(approxCurve);
-                // Imgproc.HuMoments(moments, hu);
-                //System.out.println(hu);
+                // Mat actualHu=Mat.zeros(7, 1, CvType.CV_64FC1); // initialize mat - need to quiet the compiler but this is likely overkill
+                // //moments = Imgproc.moments(approxCurve);
+                // moments = Imgproc.moments(filteredContours.get(contourIndex));
+                // Imgproc.HuMoments(moments, actualHu);
+                // //System.out.println(hu);
+
+                // double compare = compareShapes(idealHu, actualHu, Imgproc.CONTOURS_MATCH_I1);
+                // System.out.print(compare + " ");
+                // compare = compareShapes(idealHu, actualHu, Imgproc.CONTOURS_MATCH_I2);
+                // System.out.print(compare + " ");
+                // compare = compareShapes(idealHu, actualHu, Imgproc.CONTOURS_MATCH_I3);
+                // System.out.println(compare );
+                // end use compareShapes
+                //********************************************* */
 
                 // this matching is rotation invariant so better eliminate incorrect aspect ratio first in filter contours
                 // because, for example, rectangles that are 2:1 are liked as well as those that are 1:2
                 shapeMatchIndex = Imgproc.matchShapes(idealContour, filteredContours.get(contourIndex), Imgproc.CONTOURS_MATCH_I1, 0.0);
-                //System.out.println(shapeMatchIndex); // TODO: display quality of shape on Shuffleboard?
+                //System.out.println(shapeMatchIndex);
+                //System.out.print("my 1 compare " + compare + " opencv compare " + shapeMatchIndex);
+                
+                // TODO: display quality of shape on Shuffleboard?
+
+
                 // also TODO: use the comparison or absolute value of distance sensors to filter bad "targets"
                 // at St Joe 2020, Robot shot at a big green team sign in the bleachers thinking it was a small nearby target
 
@@ -551,6 +569,43 @@ public class TargetSelectionB {
             Main.isDistanceAngleFresh = nextTargetData.isFreshData;
             Main.tapeLock.notify();
         }
+    }
+
+    // essentially a copy of OpenCV matchShapes except the Java interface doesn't have HuMoment inputs
+    // for efficiency don't recalculate the target shape moments
+    // TODO:improvement - do all three metods everytime.  Not much more processing.  Return double[3]
+    double compareShapes(Mat HuShape1, Mat HuShape2, int method){
+        if((HuShape1.rows() != 7) || (HuShape2.rows() != 7)) throw new IllegalArgumentException("HuMoments must be 7x1");
+        if((HuShape1.cols() != 1) || (HuShape2.cols() != 1)) throw new IllegalArgumentException("HuMoments must be 7x1");
+        
+        boolean anyA = false, anyB = false;
+        double[] HuTemp1=new double[7], HuTemp2=new double[7];
+        
+        HuShape1.get(0, 0, HuTemp1);
+        HuShape2.get(0, 0, HuTemp2);
+        
+        double compare = 0.;
+        double eps = 1.e-5;
+
+        for(int idx = 0; idx < 7; idx++){
+            if(HuTemp1[idx] != 0.) anyA = true;
+            if(HuTemp2[idx] != 0.) anyB = true;
+            if( (Math.abs(HuTemp1[idx]) > eps) && (Math.abs(HuTemp2[idx]) > eps) )
+            {
+                double mA = -Math.copySign( Math.log10(Math.abs(HuTemp1[idx]) ), HuTemp1[idx] );
+                double mB = -Math.copySign( Math.log10(Math.abs(HuTemp2[idx]) ), HuTemp2[idx] );
+                if(method == Imgproc.CONTOURS_MATCH_I1 ) compare += Math.abs( (1./mA) - (1./mB) );
+                else
+                if(method == Imgproc.CONTOURS_MATCH_I2) compare += Math.abs( mA - mB );
+                else
+                if(method == Imgproc.CONTOURS_MATCH_I3) compare = Math.max( compare, Math.abs( ( mA - mB ) / mA ) );
+                else throw new IllegalArgumentException("Method must be CV_CONTOURS_MATCH_I1 through 3");   
+            }
+        }
+
+        if (anyA != anyB) compare = Double.MAX_VALUE;
+
+        return compare;
     }
 }
 
@@ -714,3 +769,10 @@ public class TargetSelectionB {
     // mat.put(0, 0, flatMat);
     // //
     // // end example process each pixel with byte
+
+    // // example of smoothing values - may help any jitters or maybe useless
+    // // example is the first Hu moment
+    // double[] huTemp = new double[7];
+    // hu.get(0, 0, huTemp);
+    // //System.out.println(huTemp[0] + ", smooth=" + f.calculate(huTemp[0]));
+    // //-np.sign(hu) * np.log10(np.abs(hu)) log of Hu may be an improvement (np is NumPy; use Math in Java)
