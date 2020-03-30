@@ -503,7 +503,6 @@ public class TargetSelectionB {
             //
             // ****************************************************************************************
 
-            // draw the contour TODO: draw the best one not the last one
             Imgproc.drawContours(mat, filteredContours, contourIndexBest, new Scalar(0, 0, 255), 1);
 
         } // end of processing all contours in this camera frames
