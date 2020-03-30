@@ -5,11 +5,13 @@
     // ctrl - shift - P  is the speed key for the command palette
     //
     //  put this file in the project folder .vscode subfolder
+    //  Note that there is an automatic SAVE ALL FILES!
     "version": "2.0.0",
     "tasks": [
         {
             "label": "Build RPi Vision",
             "type": "shell",
+            "command": "workbench.action.files.saveAll",
             "windows": {
                 "command": ".\\RPiVisionCompile.cmd"
             },
