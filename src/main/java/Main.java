@@ -298,7 +298,7 @@ public final class Main
 // Settable parameters for some outputs listed below
 // Settable parameters for some outputs listed below
 
-    static String version = "RPi Vision 3/29/2020"; // change this everytime
+    static String version = "RPi Vision 3/30/2020"; // change this everytime
 
     static final int MAXIMUM_MESSAGE_LENGTH = 1024; // max length (or more) of UDP message from RPi to roboRIO.  Not normally changed but here for visibility
 
@@ -325,6 +325,7 @@ public final class Main
     static boolean runImageOperator = true;
     static boolean displayTurretContours = true;
     static boolean turretTargetLSD = false;  // compute line segments around a target
+    static boolean turretTargetMatchShape = true;  // perform shape matching to verify found target
     static boolean displayIntakeContours = true;
 
     static boolean displayTurretPixelDistance = false; // calibration info for pixels to inches distance to target

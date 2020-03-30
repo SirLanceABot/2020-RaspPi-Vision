@@ -332,6 +332,9 @@ public class TargetSelectionB {
 //**************************************** */
 //* start match shape
 //**************************************** */
+            if (Main.turretTargetMatchShape) {
+                // TODO: still being developed
+
                 // Use moments to determine shape. Compare moments to moments of known shape.
                 // TODO: pick the best match if good enough match
 
@@ -364,44 +367,42 @@ public class TargetSelectionB {
             */
                 //************************************************************** */
                 // start use compareShapes
-                // List<Point> listApprox = new ArrayList<Point>(approxCurve.toList());
+                List<Point> listApprox = new ArrayList<Point>(approxCurve.toList());
                 
-                // //System.out.println(temp.size() + " " + listApprox.size()); // 1x86 7
+                //System.out.println(temp.size() + " " + listApprox.size()); // 1x86 7
 
-                // //listMidContour.add(new MatOfPoint(boxPts[0], boxPts[1], boxPts[2], boxPts[3]));
-                // // draw the simple contour, too
-                // for (int idx = 0; idx< listApprox.size(); idx++) 
-                // {
-                //     Imgproc.line(
-                //         mat,
-                //         listApprox.get(idx), // one end of the line
-                //         idx+1==listApprox.size() ? listApprox.get(0): listApprox.get(idx+1), // other end - close the shape on the last point
-                //         new Scalar(255, 255, 0),
-                //         1,
-                //         Imgproc.LINE_AA,
-                //         0);
-                // }
+                //listMidContour.add(new MatOfPoint(boxPts[0], boxPts[1], boxPts[2], boxPts[3]));
+                // draw the simple contour, too
+                for (int idx = 0; idx< listApprox.size(); idx++) 
+                {
+                    Imgproc.line(
+                        mat,
+                        listApprox.get(idx), // one end of the line
+                        idx+1==listApprox.size() ? listApprox.get(0): listApprox.get(idx+1), // other end - close the shape on the last point
+                        new Scalar(255, 255, 0),
+                        1,
+                        Imgproc.LINE_AA,
+                        0);
+                }
 
-                // //System.out.println(moments);
-                // //System.out.println(hu + hu.dump());
+                //System.out.println(moments);
+                //System.out.println(hu + hu.dump());
 
-                // // double[] huTemp = new double[7];
-                // // hu.get(0, 0, huTemp);
+                // double[] huTemp = new double[7];
+                // hu.get(0, 0, huTemp);
 
-                // // compute moments and Hu moments for our own compareShapes.  matchShapes() does it for us.
-                // Moments moments;
-                // Mat actualHu=Mat.zeros(7, 1, CvType.CV_64FC1); // initialize mat - need to quiet the compiler but this is likely overkill
-                // //moments = Imgproc.moments(approxCurve);
-                // moments = Imgproc.moments(filteredContours.get(contourIndex));
-                // Imgproc.HuMoments(moments, actualHu);
-                // //System.out.println(hu);
+                // compute moments and Hu moments for our own compareShapes.  matchShapes() does it for us.
+                Moments moments;
+                Mat actualHu=Mat.zeros(7, 1, CvType.CV_64FC1); // initialize mat - need to quiet the compiler but this is likely overkill
+                //moments = Imgproc.moments(approxCurve);
+                moments = Imgproc.moments(filteredContours.get(contourIndex));
+                Imgproc.HuMoments(moments, actualHu);
+                //System.out.println(hu);
 
-                // double compare = compareShapes(idealHu, actualHu, Imgproc.CONTOURS_MATCH_I1);
-                // System.out.print(compare + " ");
-                // compare = compareShapes(idealHu, actualHu, Imgproc.CONTOURS_MATCH_I2);
-                // System.out.print(compare + " ");
-                // compare = compareShapes(idealHu, actualHu, Imgproc.CONTOURS_MATCH_I3);
-                // System.out.println(compare );
+                double[] compare = compareShapes(idealHu, actualHu);
+                compare = compareShapes(idealHu, actualHu);
+                compare = compareShapes(idealHu, actualHu);
+                System.out.println(pId + compare[0] + " " + compare[1] + " " + compare[2]);
                 // end use compareShapes
                 //********************************************* */
 
@@ -416,13 +417,7 @@ public class TargetSelectionB {
 
                 // also TODO: use the comparison or absolute value of distance sensors to filter bad "targets"
                 // at St Joe 2020, Robot shot at a big green team sign in the bleachers thinking it was a small nearby target
-
-                // CONTOURS_MATCH_I1 
-                // I1(A,B)=∑i=1...7∣∣∣1mAi−1mBi∣∣∣ sum of difference of reciprical moments
-                // CONTOURS_MATCH_I2 
-                // I2(A,B)=∑i=1...7∣∣mAi−mBi∣∣ sum of difference of moments
-                // CONTOURS_MATCH_I3 
-                // I3(A,B)=maxi=1...7∣∣mAi−mBi∣∣∣∣mAi∣∣ maximum relative difference
+            }
 //**************************************** */
 //* end match shape
 //**************************************** */
@@ -557,9 +552,12 @@ public class TargetSelectionB {
             //
             // ****************************************************************************************
 
+            // draw the contour TODO: draw the best one not the last one
+            Imgproc.drawContours(mat, filteredContours, contourIndex, new Scalar(0, 0, 255), 1);
+
         } // end of processing all contours in this camera frames
 
-        // update the target information - last contour found wins
+        // update the target information - TODO: last contour found wins until check for best implemented
         synchronized (Main.tapeLock) {
             Main.tapeDistance = nextTargetData.portDistance;
             Main.tapeAngle = nextTargetData.angleToTurn;
@@ -571,39 +569,38 @@ public class TargetSelectionB {
         }
     }
 
-    // essentially a copy of OpenCV matchShapes except the Java interface doesn't have HuMoment inputs
-    // for efficiency don't recalculate the target shape moments
-    // TODO:improvement - do all three metods everytime.  Not much more processing.  Return double[3]
-    double compareShapes(Mat HuShape1, Mat HuShape2, int method){
+    // essentially a copy of OpenCV matchShapes without calculating the Moments
+    // allows efficiency of not recalculating the target shape moments every time
+    // does all 3 comparisons since it is very little more than to do one
+    double[] compareShapes(Mat HuShape1, Mat HuShape2){
         if((HuShape1.rows() != 7) || (HuShape2.rows() != 7)) throw new IllegalArgumentException("HuMoments must be 7x1");
         if((HuShape1.cols() != 1) || (HuShape2.cols() != 1)) throw new IllegalArgumentException("HuMoments must be 7x1");
-        
+
+        double[] compare = {0., 0., 0.};    
         boolean anyA = false, anyB = false;
         double[] HuTemp1=new double[7], HuTemp2=new double[7];
-        
+        double eps = 1.e-5;        
         HuShape1.get(0, 0, HuTemp1);
         HuShape2.get(0, 0, HuTemp2);
-        
-        double compare = 0.;
-        double eps = 1.e-5;
 
         for(int idx = 0; idx < 7; idx++){
             if(HuTemp1[idx] != 0.) anyA = true;
             if(HuTemp2[idx] != 0.) anyB = true;
             if( (Math.abs(HuTemp1[idx]) > eps) && (Math.abs(HuTemp2[idx]) > eps) )
             {
-                double mA = -Math.copySign( Math.log10(Math.abs(HuTemp1[idx]) ), HuTemp1[idx] );
-                double mB = -Math.copySign( Math.log10(Math.abs(HuTemp2[idx]) ), HuTemp2[idx] );
-                if(method == Imgproc.CONTOURS_MATCH_I1 ) compare += Math.abs( (1./mA) - (1./mB) );
-                else
-                if(method == Imgproc.CONTOURS_MATCH_I2) compare += Math.abs( mA - mB );
-                else
-                if(method == Imgproc.CONTOURS_MATCH_I3) compare = Math.max( compare, Math.abs( ( mA - mB ) / mA ) );
-                else throw new IllegalArgumentException("Method must be CV_CONTOURS_MATCH_I1 through 3");   
+                double mA = Math.copySign( Math.log10(Math.abs(HuTemp1[idx]) ), HuTemp1[idx] ); // typically seen with minus sign in front
+                double mB = Math.copySign( Math.log10(Math.abs(HuTemp2[idx]) ), HuTemp2[idx] ); // but don't bother since it's abs here in compare
+                compare[0] += Math.abs( (1./mA) - (1./mB) );
+                compare[1] += Math.abs( mA - mB );
+                compare[2] = Math.max( compare[2], Math.abs( ( mA - mB ) / mA ) );
             }
         }
 
-        if (anyA != anyB) compare = Double.MAX_VALUE;
+        if (anyA != anyB) {
+            compare[0] = Double.MAX_VALUE;
+            compare[1] = Double.MAX_VALUE;
+            compare[2] = Double.MAX_VALUE;
+        }
 
         return compare;
     }
