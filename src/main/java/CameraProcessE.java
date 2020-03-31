@@ -122,7 +122,7 @@ public class CameraProcessE implements Runnable
 		pipeline = new Thread(pipelineProcessE, "4237Epipeline");
 		try 
 		{
-			Thread.sleep(3000); // let things get settled before grabbing images and starting the pipeline process thread
+			Thread.sleep(2000); // let things get settled before grabbing images and starting the pipeline process thread
 		} 
 		catch (InterruptedException e) 
 		{

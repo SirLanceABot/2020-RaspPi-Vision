@@ -324,7 +324,6 @@ public final class Main
     // generated video streams switched on/off here
     static boolean runImageOperator = true;
     static boolean displayTurretContours = true;
-    static boolean turretTargetLSD = false;  // compute line segments around a target
     static boolean turretTargetMatchShape = true;  // perform shape matching to verify found target
     static boolean displayIntakeContours = true;
 
