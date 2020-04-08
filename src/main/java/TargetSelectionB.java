@@ -1,7 +1,8 @@
 import java.lang.invoke.MethodHandles;
-import java.lang.IllegalArgumentException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
@@ -15,6 +16,8 @@ import org.opencv.core.CvType;
 import org.opencv.imgproc.Moments;
 
 import lut.LUT;
+
+import contoursUtils.contours;
 
 /**
  * This class is used to select the target from the camera frame. The user MUST
@@ -44,9 +47,8 @@ public class TargetSelectionB {
     LUT pixelsToInchesTable = new LUT(10); // allocate fixed size array with parameter at least as large as the number
                                            // of data points - minimum of 2 points
 
-    MatOfPoint idealContour = new MatOfPoint();
-    Mat idealHu = Mat.zeros(7, 1, CvType.CV_64FC1); // initialize mat - need to quiet the compiler but this is likely
-                                                    // overkill
+    MatOfPoint idealTurretContour = new MatOfPoint();
+    Mat idealHu = Mat.zeros(7, 1, CvType.CV_64FC1); // initialize mat - need to quiet the compiler but this is likely overkill
 
     TargetSelectionB() {
         // Enter more data points for more accuracy. The equation should model some sort
@@ -55,9 +57,7 @@ public class TargetSelectionB {
         // the target in inches.
         // TODO: Notice the LUT CTOR argument is maximum table size - change it if it
         // needs to be larger
-        pixelsToInchesTable.add(66.0, 38.0); // enter (x, y) coordinates x ascending order, must add at least 2 data
-                                             // points
-        // pixelsToInchesTable.add(510.0, 116.0);
+        pixelsToInchesTable.add(66.0, 38.0); // enter (x, y) coordinates x ascending order, must add at least 2 data points
         pixelsToInchesTable.add(596.0, 238.0);
         System.out.println(pId + " pixelsToInchesTable" + pixelsToInchesTable); // print the whole table
         // Questionable testing data of Pixel-Inches Readings:
@@ -68,27 +68,20 @@ public class TargetSelectionB {
 
         // setup ideal target shape to compare with camera image found contour
         // this can vary greatly with perspective distortion so this might have to be
-        // dynamically generated
-        // based on distance, angles, etc.
+        // dynamically generated based on distance, angles, etc.
 
-        /****
-         * TODO CAUTION CAUTION CAUTION TEST SHAPE FOR RKT'S BASEMENT SCRAP OF
-         * RETROREFLECTIVE TAPE
-         */
-        /****
-         * TODO CAUTION CAUTION CAUTION TEST SHAPE FOR RKT'S BASEMENT SCRAP OF
-         * RETROREFLECTIVE TAPE
-         */
-        /****
-         * TODO CAUTION CAUTION CAUTION TEST SHAPE FOR RKT'S BASEMENT SCRAP OF
-         * RETROREFLECTIVE TAPE
-         */
-        /****
-         * TODO CAUTION CAUTION CAUTION TEST SHAPE FOR RKT'S BASEMENT SCRAP OF
-         * RETROREFLECTIVE TAPE
-         */
-        idealContour.fromArray(new Point(0., 0.), new Point(45., 0.), new Point(45., 20.), new Point(0., 20.));
-        Moments idealMoments = Imgproc.moments(idealContour);
+        idealTurretContour.fromArray( // High Power Port Tape Contour
+            new Point(13.,  3.),   // point 0
+            new Point(68.,  109.),   // point 1
+            new Point(188., 109.),   // point 2
+            new Point(247., 4.),    // point 3
+            new Point(232., 4.),    // point 4
+            new Point(180., 95.),   // point 5
+            new Point(77., 95.),    // point 6
+            new Point(28., 3.)     // point 7
+            );
+
+        Moments idealMoments = Imgproc.moments(idealTurretContour);
         Imgproc.HuMoments(idealMoments, idealHu);
     }
 
@@ -124,7 +117,7 @@ public class TargetSelectionB {
         int contourIndex = -1; // initialize here - using same value to indicate no contours and count
                                // countours
         int contourIndexBest = -1;
-        double shapeMatch = Double.MAX_VALUE; // initialize for best shaped contour
+        double shapeMatch = Double.MAX_VALUE; // initialize for best shaped contour - max is worst possible match
 
         // Check if no contours were found in the camera frame.
         if (filteredContours.isEmpty()) {
@@ -200,9 +193,9 @@ public class TargetSelectionB {
                         Imgproc.LINE_4 // line type
                 );
 
-                double[] compare = { Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE }; // initialize shape
-                                                                                             // comparison quality
-
+                // initialize shape comparison quality
+                 double[] compare =
+                { Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE}; 
                 // **************************************** */
                 // * start match shape
                 // **************************************** */
@@ -229,17 +222,11 @@ public class TargetSelectionB {
                     Imgproc.HuMoments(moments, actualHu);
                     // System.out.println(hu);
 
-                    compare = compareShapes(idealHu, actualHu);
+                    compare = contours.compareShapes(actualHu, idealHu);
 
-                    // System.out.println(pId + compare[0] + " " + compare[1] + " " + compare[2]);
+                    //System.out.println(pId + toString(compare));
                     // end use compareShapes
                     // ********************************************* */
-
-                    // shapeMatch = Imgproc.matchShapes(idealContour,
-                    // filteredContours.get(contourIndex), Imgproc.CONTOURS_MATCH_I1, 0.0);
-                    // System.out.println(shapeMatch);
-                    // System.out.print("my 1 compare " + compare + " opencv compare " +
-                    // shapeMatch);
 
                     // TODO: display quality of shape on Shuffleboard?
 
@@ -255,12 +242,12 @@ public class TargetSelectionB {
                 // ******************************************* */
                 // * save the data for the best contour (so far)
                 // ******************************************* */
-                if (compare[0] <= shapeMatch) { // method 0 (1) used fro matching; would method 1 (2) be better?
+                if (compare[1] <= shapeMatch) { // method 1 used for matching; others better? 0 is terrible
                     // the if(=) case covers if only one contour
                     // or if optional shape matching wasn't run in which case the last contour wins
 
                     // save new best contour
-                    shapeMatch = compare[0];
+                    shapeMatch = compare[1];
                     contourIndexBest = contourIndex;
 
                     // Find the corner points of the bounding rectangle and the image size
@@ -285,10 +272,8 @@ public class TargetSelectionB {
                             + Main.calibrateAngle;
 
                     if (nextTargetData.angleToTurn <= -VERTICAL_CAMERA_ANGLE_OF_VIEW / 2.
-                            || nextTargetData.angleToTurn >= VERTICAL_CAMERA_ANGLE_OF_VIEW / 2.) { // target not
-                                                                                                   // actually "seen"
-                                                                                                   // after the
-                                                                                                   // calibrateAngle
+                            || nextTargetData.angleToTurn >= VERTICAL_CAMERA_ANGLE_OF_VIEW / 2.) { // target not actually "seen"
+                                                                                                   // after the calibrateAngle
                                                                                                    // offset was applied
                         nextTargetData.portDistance = -1.;
                         nextTargetData.angleToTurn = -1.;
@@ -327,46 +312,12 @@ public class TargetSelectionB {
         }
     }
 
-    // essentially a copy of OpenCV matchShapes without calculating the Moments
-    // allows efficiency of not recalculating the target shape moments every time
-    // does all 3 comparisons since it is very little more than to do one
-    double[] compareShapes(Mat HuShape1, Mat HuShape2) {
-        if ((HuShape1.rows() != 7) || (HuShape2.rows() != 7))
-            throw new IllegalArgumentException("HuMoments must be 7x1");
-        if ((HuShape1.cols() != 1) || (HuShape2.cols() != 1))
-            throw new IllegalArgumentException("HuMoments must be 7x1");
-
-        double[] compare = { 0., 0., 0. };
-        boolean anyA = false, anyB = false;
-        double[] HuTemp1 = new double[7], HuTemp2 = new double[7];
-        double eps = 1.e-5;
-        HuShape1.get(0, 0, HuTemp1);
-        HuShape2.get(0, 0, HuTemp2);
-
-        for (int idx = 0; idx < 7; idx++) {
-            if (HuTemp1[idx] != 0.)
-                anyA = true;
-            if (HuTemp2[idx] != 0.)
-                anyB = true;
-            if ((Math.abs(HuTemp1[idx]) > eps) && (Math.abs(HuTemp2[idx]) > eps)) {
-                double mA = Math.copySign(Math.log10(Math.abs(HuTemp1[idx])), HuTemp1[idx]); // typically seen with
-                                                                                             // minus sign in front
-                double mB = Math.copySign(Math.log10(Math.abs(HuTemp2[idx])), HuTemp2[idx]); // but don't bother since
-                                                                                             // it's abs here in compare
-                compare[0] += Math.abs((1. / mA) - (1. / mB));
-                compare[1] += Math.abs(mA - mB);
-                compare[2] = Math.max(compare[2], Math.abs((mA - mB) / mA));
+    String toString(double[] array) {
+        return Arrays.stream(array)
+                .mapToObj(i -> String.format("%5.2f", i))
+                .collect(Collectors.joining(", ", "[", "]"));
+                //.collect(Collectors.joining("|", "|", "|"));
             }
-        }
-
-        if (anyA != anyB) {
-            compare[0] = Double.MAX_VALUE;
-            compare[1] = Double.MAX_VALUE;
-            compare[2] = Double.MAX_VALUE;
-        }
-
-        return compare;
-    }
 }
 
 // Parking lot for some good example code to keep as reference

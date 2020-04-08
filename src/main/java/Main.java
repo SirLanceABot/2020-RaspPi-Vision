@@ -298,7 +298,7 @@ public final class Main
 // Settable parameters for some outputs listed below
 // Settable parameters for some outputs listed below
 
-    static String version = "RPi Vision 3/30/2020"; // change this everytime
+    static String version = "RPi Vision 4/8/2020"; // change this everytime
 
     static final int MAXIMUM_MESSAGE_LENGTH = 1024; // max length (or more) of UDP message from RPi to roboRIO.  Not normally changed but here for visibility
 
@@ -331,14 +331,14 @@ public final class Main
     //static boolean displayTurretHistogram = true; // a small insert for turrent contours - experiment with white balance - suggest using about 3500K then forget it.  Run GRIP after setting.
 
     static boolean debug = false;
-    
+    static boolean logImage = false;
+    static double shapeQualityBad = 7.;  // maximum value before declaring detected target shape is bad - less is better, tighter tolerance
 // Shuffleboard automatic display of intake camera and High Power Port alignment turned on.
 //
 // No Shuffleboard automatic display of other video streams - commented out for contour images in TargetSelection codes
 // and Turret Camera below here in main.  You can always drag and drop the streams within Shuffleboard if you want to see them.
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    static boolean logImage = false;
     public static int team;
     public static boolean server;
     public static List<CameraConfig> cameraConfigs = new ArrayList<>();

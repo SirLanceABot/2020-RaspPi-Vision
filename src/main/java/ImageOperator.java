@@ -141,17 +141,17 @@ public class ImageOperator implements Runnable {
                     ( ((double)mat.width()/VERTICAL_CAMERA_ANGLE_OF_VIEW)*angleToTurn + (double)mat.width()/2.0 );
                     ArrayList<MatOfPoint> listOfHexagonPoints = new ArrayList<MatOfPoint>();
                     listOfHexagonPoints.add(new MatOfPoint
-                                (
-                                new Point(              offset, mat.height()), // bottom
-                                new Point( height*0.5 + offset, mat.height()*0.667), // lower right
-                                new Point( height*0.5 + offset, mat.height()*0.333), // upper right
-                                new Point(              offset, 0.),                 // top
-                                new Point( -height*0.5+ offset, mat.height()*0.333), // upper left
-                                new Point( -height*0.5+ offset, mat.height()*0.667)  // lower left
-                                )
-                            ); 
+                        (
+                        new Point(              offset, mat.height()), // bottom
+                        new Point( height*0.5 + offset, mat.height()*0.667), // lower right
+                        new Point( height*0.5 + offset, mat.height()*0.333), // upper right
+                        new Point(              offset, 0.),                 // top
+                        new Point( -height*0.5+ offset, mat.height()*0.333), // upper left
+                        new Point( -height*0.5+ offset, mat.height()*0.667)  // lower left
+                        )
+                    ); 
 
-                    if(contourIndex > 0) // 0 is the index of the first contour; should be the only one
+                    if( (contourIndex > 0) || (Main.shapeQuality  > Main.shapeQualityBad))  // 0 is the index of the first contour; should be the only one
                     {
                         Imgproc.fillConvexPoly(mat, listOfHexagonPoints.get(0), new Scalar(0, 0, 255), 1, 0);
                         // Imgproc.putText(mat, String.format("%d", contourIndex+1), new Point(offset-3, mat.height() / 2 + 4),
@@ -191,13 +191,13 @@ public class ImageOperator implements Runnable {
                 Imgproc.putText(mat, printDistance, new Point(5, 13),
                     Core.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(255, 255, 255), 2);
 
-                    Imgproc.putText(mat, printDistance, new Point(mat.width() - 37, 13),
+                Imgproc.putText(mat, printDistance, new Point(mat.width() - 37, 13),
                     Core.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(255, 255, 255), 2);
 
-                    Imgproc.putText(mat, "inches", new Point(5, 22),
+                Imgproc.putText(mat, "inches", new Point(5, 22),
                     Core.FONT_HERSHEY_SIMPLEX, .3, new Scalar(255, 255, 255), 1);
 
-                    Imgproc.putText(mat, "inches", new Point(mat.width() - 37, 22),
+                Imgproc.putText(mat, "inches", new Point(mat.width() - 37, 22),
                     Core.FONT_HERSHEY_SIMPLEX, .3, new Scalar(255, 255, 255), 1);
 
                 outputStream.putFrame(mat);
