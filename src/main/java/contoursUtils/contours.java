@@ -9,6 +9,10 @@ public class contours {
 
     // Allows efficiency of not recalculating the target shape moments every time.
     // Does all 3 comparisons since it is very little more than to do one.
+    
+    // The eps has been "relaxed" from OpenCV value 1.e-5 to 1.e-20 here.
+    // 1.e-5 was cutting off small moments that described a significant difference
+    // and calling them identical.  (Issue reported to OpenCV to fix this.)
 
     // Additional comparisons are cosine (theta) angle between two 7-dimension
     // vectors and normalized two ways - maximum value of each pair of elements
