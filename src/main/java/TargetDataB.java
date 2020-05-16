@@ -255,7 +255,7 @@ If the newTargetData is not fresh then reuse the old data or skip that loop.
 
 Vision Process runs relatively fast and often so mostly it sees that newTargetData is not fresh.
 
-Note that newTargetData is marked fresh or not fresh in reasonable, expected, predictable times but TargetData does not behave that
+Note that newTargetData is marked fresh or not fresh in reasonable, expected, predictable times but TargetData may not behave that
 way - read on for the restriction.
 
 When UDPreceive puts data into newTargetData it's fresh; the first time Vision Process gets that data from newTargetData
@@ -263,8 +263,8 @@ into TargetData it's still fresh.  At that time newTargetData is marked not fres
 
 Subsequent checks using isFreshData() on newTargetData from Vision Process see stale data until such time new data is put in by UDPreceive.
 
-Vision Process may get again from newTargetData into TargetData before newTargetDtaa is updated (bu tthere is no need to since the data hasn't
-changed except for the fresh indicator) and the not fresh of newTargetData will be set in the TargetData.
+Vision Process may get again from newTargetData into TargetData before newTargetDtaa is updated and the not fresh of newTargetData will be
+set in the TargetData.
 
 However, TargetData remains marked as fresh as long as the not fresh newTargetData isn't copied into it so if stale newTargetData is not
 copied into TargetData then TargetData remains appearing as fresh.
@@ -274,14 +274,14 @@ Thus if you check newTargetData for fresh and skip copying it if it's not fresh,
 There is no mechanism other than get newTargetData to change the fresh indicator for TargetData.  (But that could be changed.)
 
 The intention is to either:
-   get() from newTargetData into TargetData every Vision Process iteration and then TargetData is marked fresh/not fresh as expected
-      or better yet
-   only check newTargetData for fresh or not fresh and act on that indicator only (see the example in the testing UDP receiver in this project).
+    get() from newTargetData into TargetData every Vision Process iteration and then TargetData is marked fresh/not fresh as expected
+    or
+    only check newTargetData for fresh or not fresh and act on that indicator only.
 
 The methods of TargetDataB are all synchronized so the data cannot be accessed and potentially corrupted by two threads setting and getting at
-the same time.  However, the get methods for angle and distance and others like isFresh are separate and there could be an update between getting
+the same time.  However the get methods for angle and distance and others like isFresh are separate and there could be an update between getting
 the angle and getting the distance thus that data pair would not be atomic in this design if there was only one object that can be accessed and
-updated by more than one thread.  That is why there are two copies of TargetdataB - TargetData and newTargetData so Vision Process controls
+updated by more than one thread.  That is why there are two copies of TargetdataB - TargetData and new TargetData so Vision Process controls
 when the now atomic object of TargetData is updated from newTargetData.
 
 The UdpReceive class has an example of receiving the UDP message, putting it into TargetData and using it.

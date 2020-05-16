@@ -99,6 +99,8 @@ public class ImageOperator implements Runnable {
                 double angleToTurn;
                 int contourIndex;
                 boolean isTargetFound;
+                double shapeQuality;
+
                 // could consider black & white mat to save network bandwidth but it's pretty small even with color
                 mat = Mat.zeros(height, width, CvType.CV_8UC3); // blank color Mat to draw on
 
@@ -114,11 +116,10 @@ public class ImageOperator implements Runnable {
                     angleToTurn = Main.tapeAngle;
                     contourIndex = Main.tapeContours;
                     isTargetFound = Main.isTargetFound;
-                    // Are we using the test shape or the real tape?
-                    // Look in TargetSelectionB for the definition of the shape
-                    System.out.println(pId + " test shape quality " + Main.shapeQuality); // TODO: display quality of shape on Shuffleboard?
+                    shapeQuality = Main.shapeQuality;
                     Main.isDistanceAngleFresh = false; // these data captured to be processed so mark them as used
                 }
+                System.out.println(pId + " shape quality " + shapeQuality); // TODO: display quality of shape on Shuffleboard?
 
                 // Draw the green cross representing the center of the camera frame.
                 Imgproc.drawMarker(mat, new Point(mat.width() / 2.0, mat.height() / 2.0), 

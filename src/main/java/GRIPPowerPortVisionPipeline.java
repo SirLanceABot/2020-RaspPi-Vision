@@ -38,12 +38,12 @@ public class GRIPPowerPortVisionPipeline {
 
 		// Step HSV_Threshold0:
 		Mat hsvThresholdInput = blurOutput;
-		double[] hsvThresholdHue = {63.12949640287769, 98.60068259385666};
+		double[] hsvThresholdHue = {63.12949640287769, 98.60068259385666}; // good
 		double[] hsvThresholdSaturation = {0.0, 255.0};
 		// double[] hsvThresholdValue = {16.052158273381295, 220.1877133105802};
 		//TODO: use unchanged GRIP - redo GRIP if necessary
 		//double[] hsvThresholdValue = {73.0, 255.0}; // Annika measured this at St Joe GRIP and what is here in code worked so leave it be
-		double[] hsvThresholdValue = {27.51798561151079, 255.0};
+		double[] hsvThresholdValue = {27.51798561151079, 255.0}; // good
 		hsvThreshold(hsvThresholdInput, hsvThresholdHue, hsvThresholdSaturation, hsvThresholdValue, hsvThresholdOutput);
 
 		// Step CV_erode0:
@@ -80,7 +80,8 @@ public class GRIPPowerPortVisionPipeline {
 
 		// Step Filter_Contours0:
 		ArrayList<MatOfPoint> filterContoursContours = findContoursOutput;
-		double filterContoursMinArea = 1000.0;
+		//double filterContoursMinArea = 1000.0; // good
+		double filterContoursMinArea = 100.0; // rkt basement
 		double filterContoursMinPerimeter = 0.0;
 		double filterContoursMinWidth = 0.0;
 		double filterContoursMaxWidth = 1000.0;

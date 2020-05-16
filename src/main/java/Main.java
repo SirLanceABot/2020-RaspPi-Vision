@@ -298,7 +298,7 @@ public final class Main
 // Settable parameters for some outputs listed below
 // Settable parameters for some outputs listed below
 
-    static String version = "RPi Vision 4/8/2020"; // change this everytime
+    static String version = "RPi Vision 5/16/2020"; // change this everytime
 
     static final int MAXIMUM_MESSAGE_LENGTH = 1024; // max length (or more) of UDP message from RPi to roboRIO.  Not normally changed but here for visibility
 
@@ -332,7 +332,7 @@ public final class Main
 
     static boolean debug = false;
     static boolean logImage = false;
-    static double shapeQualityBad = 7.;  // maximum value before declaring detected target shape is bad - less is better, tighter tolerance
+    static double shapeQualityBad = 7.;  // maximum value before declaring detected target shape is bad - less is tighter tolerance
 // Shuffleboard automatic display of intake camera and High Power Port alignment turned on.
 //
 // No Shuffleboard automatic display of other video streams - commented out for contour images in TargetSelection codes
@@ -470,7 +470,8 @@ public final class Main
         JsonElement top;
         try
         {
-            top = new JsonParser().parse(Files.newBufferedReader(Paths.get(configFile)));
+            top = JsonParser.parseReader(Files.newBufferedReader(Paths.get(configFile)));
+//            top = new JsonParser().parse(Files.newBufferedReader(Paths.get(configFile)));
         }
         catch (IOException ex)
         {

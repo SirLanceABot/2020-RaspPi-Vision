@@ -17,7 +17,7 @@ import org.opencv.imgproc.Moments;
 
 import lut.LUT;
 
-import contoursUtils.contours;
+import contourUtils.MatchShapes;
 
 /**
  * This class is used to select the target from the camera frame. The user MUST
@@ -69,6 +69,8 @@ public class TargetSelectionB {
         // setup ideal target shape to compare with camera image found contour
         // this can vary greatly with perspective distortion so this might have to be
         // dynamically generated based on distance, angles, etc.
+
+        // Maybe better to use expected typical shape assuming the distortion
 
         idealTurretContour.fromArray( // High Power Port Tape Contour
             new Point(13.,  3.),   // point 0
@@ -206,13 +208,13 @@ public class TargetSelectionB {
                     // Use moments to determine shape. Compare moments to moments of known shape.
 
                     // ************************************************************** */
-                    // start use compareShapes
+                    // start use matchShapes
 
                     // this matching is rotation invariant so better eliminate incorrect aspect
                     // ratio first in filter contours because, for example, rectangles that are
                     // 2:1 are liked as well as those that are 1:2
 
-                    // compute moments and Hu moments for our own compareShapes. matchShapes() does
+                    // compute moments and Hu moments for our own matchShapes. OpenCV matchShapes() does
                     // it for us.
                     Moments moments;
                     Mat actualHu = Mat.zeros(7, 1, CvType.CV_64FC1); // initialize mat - need to quiet the compiler but
@@ -222,10 +224,10 @@ public class TargetSelectionB {
                     Imgproc.HuMoments(moments, actualHu);
                     // System.out.println(hu);
 
-                    compare = contours.compareShapes(actualHu, idealHu);
+                    compare = MatchShapes.matchShapes(actualHu, idealHu);
 
                     //System.out.println(pId + toString(compare));
-                    // end use compareShapes
+                    // end use matchShapes
                     // ********************************************* */
 
                     // TODO: display quality of shape on Shuffleboard?
@@ -242,7 +244,7 @@ public class TargetSelectionB {
                 // ******************************************* */
                 // * save the data for the best contour (so far)
                 // ******************************************* */
-                if (compare[1] <= shapeMatch) { // method 1 used for matching; others better? 0 is terrible
+                if (compare[1] <= shapeMatch) { // method 1 used for matching; others better? method 0 is terrible
                     // the if(=) case covers if only one contour
                     // or if optional shape matching wasn't run in which case the last contour wins
 
@@ -581,181 +583,6 @@ public class TargetSelectionB {
 // for(int i = 0; i<4; i++)
 // {
 // Imgproc.line(mat, boxPts[i], boxPts[(i+1)%4], new Scalar(255, 0, 255));
-// }
-
-// //
-// ****************************************************************************************
-// //
-// // start experimental LSD - the old one used in OpenCV converted to Java
-// //
-// ****************************************************************************************
-// import lsd.LSD;
-// import lsd.Line;
-// static boolean turretTargetLSD = false; // compute line segments around a
-// target
-// if (Main.turretTargetLSD) {
-// try {
-// Mat threshold;
-// // check limits of mat but really it's
-// // gripPowerPortVisionPipeline.cvErode1Output() so it had better be based on
-// mat
-// // exception here 0 <= roi.x && 0 <= roi.width && roi.x + roi.width <= m.cols
-// &&
-// // 0 <= roi.y && 0 <= roi.height && roi.y + roi.height <= m.rows
-// Rect lsdRect = new Rect(
-// new Point(Math.max((int) boundRect.tl().x - 8, 0), Math.max((int)
-// boundRect.tl().y - 8, 0)),
-// new Point(Math.min((int) boundRect.br().x + 8, mat.cols()),
-// Math.min((int) boundRect.br().y + 8, mat.rows())));
-// threshold = gripPowerPortVisionPipeline.cvErode1Output().submat(lsdRect);
-// // System.out.println(threshold.channels() + " " + threshold.total() + " " +
-// // //threshold.toString() +
-// // " " + threshold.cols() + " " + threshold.rows());
-// // int t = threshold.type();
-// // System.out.println(CvType.depth(t) + " " + CvType.CV_8U + " " +
-// // CvType.CV_8S);
-// // example process each pixel with conversion to double
-// //
-// // could stick with the conversion to byte instead of short to save memory
-// but
-// // that means the data are
-// // in Java -128 to 127 signed byte - see example below
-// // Mat temp = new Mat(mat.rows(), mat.cols(), CvType.CV_16SC3);
-// // mat.convertTo(temp, CvType.CV_16SC3);
-// // System.out.println(threshold.dump());
-// byte[] flatMat = new byte[(int) threshold.total()];
-// threshold.get(0, 0, flatMat);
-// double[] flatmatLSD = new double[(int) threshold.total()];
-// for (int idx = 0; idx < threshold.total(); idx++) {
-// flatmatLSD[idx] = flatMat[idx] == 0 ? 0. : 255.;
-// }
-// LSD lsd = new LSD();
-// double[] out = lsd.lsd(flatmatLSD, threshold.cols(), threshold.rows());
-// // System.out.println(lsd.n_out + " " + out.length);
-// HashSet<Line> lines = new HashSet<Line>();
-// for (int i = 0; i < lsd.n_out; i++) {
-// lines.add(new Line(out[7 * i + 0], out[7 * i + 1], out[7 * i + 2], out[7 * i
-// + 3]));
-// }
-// for (Line l : lines) {
-// // System.out.format("{(%f, %f),(%f, %f)}\n",l.x1,l.y1,l.x2,l.y2);
-// Imgproc.line(
-// mat,
-// new Point(l.x1 + lsdRect.tl().x, l.y1 + lsdRect.tl().y),
-// new Point(l.x2 + lsdRect.tl().x, l.y2 + lsdRect.tl().y),
-// new Scalar(255, 255, 255), 1, Imgproc.LINE_AA, 0);
-// }
-// } catch (Exception exception) {
-// exception.printStackTrace();
-// }
-// }
-// //
-// ****************************************************************************************
-// // end experimental LSD - the old one used in OpenCV converted to Java
-// //
-// //
-// ****************************************************************************************
-
-// Mat histImage = new Mat();
-//
-// if(Main.displayTurretHistogram)
-// {
-// //////////////////////////////////////
-// // RGB HISTOGRAM OF IMAGE
-// // May be better to try the HSV histogram
-// //
-// // histogram of image mat before any other drawing on mat
-// //! [Separate the image in 3 places ( B, G and R )]
-// List<Mat> bgrPlanes = new ArrayList<>();
-// // try converts
-// //Imgproc.cvtColor(mat, mat, Imgproc.COLOR_BGR2GRAY);
-// //Imgproc.cvtColor(mat, mat, Imgproc.COLOR_BGR2HLS);
-// Core.split(mat, bgrPlanes);
-// //! [Separate the image in 3 places ( B, G and R )]
-//
-// //! [Establish the number of bins]
-// int histSize = 128;
-// //! [Establish the number of bins]
-//
-// //! [Set the ranges ( for B,G,R) )]
-// float[] range = {0, 256}; //the upper boundary is exclusive
-// MatOfFloat histRange = new MatOfFloat(range);
-// //! [Set the ranges ( for B,G,R) )]
-//
-// //! [Set histogram param]
-// boolean accumulate = false;
-// //! [Set histogram param]
-//
-// //! [Compute the histograms]
-// Mat bHist = new Mat(), gHist = new Mat(), rHist = new Mat();
-//
-// Imgproc.calcHist(bgrPlanes, new MatOfInt(0), new Mat(), bHist, new
-// MatOfInt(histSize), histRange, accumulate);
-// Imgproc.calcHist(bgrPlanes, new MatOfInt(1), new Mat(), gHist, new
-// MatOfInt(histSize), histRange, accumulate);
-// Imgproc.calcHist(bgrPlanes, new MatOfInt(2), new Mat(), rHist, new
-// MatOfInt(histSize), histRange, accumulate);
-//
-// //System.out.println("bHist = " + bHist + "gHist = " + gHist + "rHist = " +
-// rHist);
-// //! [Compute the histograms]
-//
-// //! [Draw the histograms for B, G and R]
-//
-// int histW = 128;
-// int histH = 50;
-// histImage = new Mat( histH, histW, CvType.CV_8UC3, new Scalar( 0,0,0) );
-//
-// int binW = (int) Math.round((double) histW / histSize);
-//
-// //! [Draw the histograms for B, G and R]
-//
-// //! [Normalize the result to ( 0, histImage.rows )]
-// Core.normalize(bHist, bHist, 0, histImage.rows(), Core.NORM_MINMAX);
-// Core.normalize(gHist, gHist, 0, histImage.rows(), Core.NORM_MINMAX);
-// Core.normalize(rHist, rHist, 0, histImage.rows(), Core.NORM_MINMAX);
-// //! [Normalize the result to ( 0, histImage.rows )]
-//
-// //! [Draw for each channel]
-// float[] bHistData = new float[(int) (bHist.total() * bHist.channels())];
-// bHist.get(0, 0, bHistData);
-// float[] gHistData = new float[(int) (gHist.total() * gHist.channels())];
-// gHist.get(0, 0, gHistData);
-// float[] rHistData = new float[(int) (rHist.total() * rHist.channels())];
-// rHist.get(0, 0, rHistData);
-//
-// for( int i = 1; i < histSize; i++ ) {
-// Imgproc.line(histImage, new Point(binW * (i - 1), histH -
-// Math.round(bHistData[i - 1])),
-// new Point(binW * (i), histH - Math.round(bHistData[i])), new Scalar(255, 255,
-// 0), 2, Imgproc.LINE_4);
-// Imgproc.line(histImage, new Point(binW * (i - 1), histH -
-// Math.round(gHistData[i - 1])),
-// new Point(binW * (i), histH - Math.round(gHistData[i])), new Scalar(0, 255,
-// 255), 2, Imgproc.LINE_4);
-// Imgproc.line(histImage, new Point(binW * (i - 1), histH -
-// Math.round(rHistData[i - 1])),
-// new Point(binW * (i), histH - Math.round(rHistData[i])), new Scalar(255, 0,
-// 255), 2, Imgproc.LINE_4);
-// // System.out.print(
-// // binW * (i - 1) + " " +
-// // (histH - Math.round(rHistData[i - 1])) + " ");
-// }
-// //! [Draw for each channel]
-// // end histogram of image mat before any other drawing on mat
-//
-// Mat subMat = new Mat(); // place for small image inserted into large image
-// subMat = mat.submat(0, histImage.rows(), 0, histImage.cols()); // define the
-// // insert area on the main image
-// if( ! histImage.empty() )
-// {
-// Core.addWeighted(subMat, .20, histImage, .80, 0, subMat);
-// }
-
-// //
-// // END RGB HISTOGRAM OF IMAGE - except the presentation of it a couple of
-// lines below
-// //////////////////////////////////////
 // }
 
 // EXAMPLE DUMP OF CONTOURS and APPROXIMATE CONTOURS
