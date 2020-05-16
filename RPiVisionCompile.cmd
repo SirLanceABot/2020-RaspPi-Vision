@@ -6,6 +6,7 @@ popd
 rem echo on
 rem set DEBUG=Y
 call gradlew.bat build
+echo off
 echo 1) On the rPi web dashboard: Make the rPi writable by selecting the "Writable" button
 
 echo 2) In the rPi web dashboard Application tab: Select the "Uploaded Java jar" option for Application
@@ -17,4 +18,5 @@ echo 4) Click Save
 
 echo The application will be started automatically.  Console output can be seen by
 echo enabling console output in the Vision Status tab.
+rem pause
 exit
