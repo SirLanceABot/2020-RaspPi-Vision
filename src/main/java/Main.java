@@ -96,6 +96,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import org.opencv.core.Core;
+import org.opencv.core.Mat;
 
 import edu.wpi.cscore.MjpegServer;
 import edu.wpi.cscore.UsbCamera;
@@ -263,6 +264,7 @@ public final class Main
     static Object tapeLock;
     static boolean isDistanceAngleFresh = false;
     static double calibrateAngle;
+    static Mat targetIcon = new Mat();
 
 // Settable parameters for some outputs listed below the skull
 
@@ -298,7 +300,7 @@ public final class Main
 // Settable parameters for some outputs listed below
 // Settable parameters for some outputs listed below
 
-    static String version = "RPi Vision 5/16/2020"; // change this everytime
+    static String version = "RPi Vision 5/18/2020"; // change this everytime
 
     static final int MAXIMUM_MESSAGE_LENGTH = 1024; // max length (or more) of UDP message from RPi to roboRIO.  Not normally changed but here for visibility
 
@@ -332,7 +334,7 @@ public final class Main
 
     static boolean debug = false;
     static boolean logImage = false;
-    static double shapeQualityBad = 7.;  // maximum value before declaring detected target shape is bad - less is tighter tolerance
+    static double shapeQualityBad = 9.;  // maximum value before declaring detected target shape is bad - less is tighter tolerance
 // Shuffleboard automatic display of intake camera and High Power Port alignment turned on.
 //
 // No Shuffleboard automatic display of other video streams - commented out for contour images in TargetSelection codes
@@ -962,7 +964,7 @@ public final class Main
                     sendMessage.Connect(); // keep trying to connect if it isn't
                     }
  
-                calibrateAngle = calibrate.getDouble(0.0); // get the camera calibration form the Shuffleboard
+                calibrateAngle = calibrate.getDouble(0.0); // get the camera calibration from the Shuffleboard
 
                 RPiThrottle.setString(checkThrottled()); // display on Shuffleboard any throttled message
 

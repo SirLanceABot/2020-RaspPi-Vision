@@ -43,7 +43,7 @@ public class GRIPPowerPortVisionPipeline {
 		// double[] hsvThresholdValue = {16.052158273381295, 220.1877133105802};
 		//TODO: use unchanged GRIP - redo GRIP if necessary
 		//double[] hsvThresholdValue = {73.0, 255.0}; // Annika measured this at St Joe GRIP and what is here in code worked so leave it be
-		double[] hsvThresholdValue = {27.51798561151079, 255.0}; // good
+		double[] hsvThresholdValue = {17.51798561151079, 255.0}; // 27 good; try 17
 		hsvThreshold(hsvThresholdInput, hsvThresholdHue, hsvThresholdSaturation, hsvThresholdValue, hsvThresholdOutput);
 
 		// Step CV_erode0:

@@ -8,6 +8,7 @@ import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
+import org.opencv.core.Size;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
@@ -57,8 +58,8 @@ public class TargetSelectionB {
         // the target in inches.
         // TODO: Notice the LUT CTOR argument is maximum table size - change it if it
         // needs to be larger
-        pixelsToInchesTable.add(66.0, 38.0); // enter (x, y) coordinates x ascending order, must add at least 2 data points
-        pixelsToInchesTable.add(596.0, 238.0);
+        pixelsToInchesTable.add(60.0, 37.0); // enter (x, y) coordinates x ascending order, must add at least 2 data points
+        pixelsToInchesTable.add(615.0, 246.0);
         System.out.println(pId + " pixelsToInchesTable" + pixelsToInchesTable); // print the whole table
         // Questionable testing data of Pixel-Inches Readings:
         // horizontal distance is HD and angled distance is AD
@@ -70,7 +71,7 @@ public class TargetSelectionB {
         // this can vary greatly with perspective distortion so this might have to be
         // dynamically generated based on distance, angles, etc.
 
-        // Maybe better to use expected typical shape assuming the distortion
+        //FIXME: better to use expected typical shape assuming the distortion of perspective
 
         idealTurretContour.fromArray( // High Power Port Tape Contour
             new Point(13.,  3.),   // point 0
@@ -120,6 +121,7 @@ public class TargetSelectionB {
                                // countours
         int contourIndexBest = -1;
         double shapeMatch = Double.MAX_VALUE; // initialize for best shaped contour - max is worst possible match
+        Main.targetIcon = Mat.zeros(24, 24, CvType.CV_8UC3);  // initialize target Icon
 
         // Check if no contours were found in the camera frame.
         if (filteredContours.isEmpty()) {
@@ -226,6 +228,8 @@ public class TargetSelectionB {
 
                     compare = MatchShapes.matchShapes(actualHu, idealHu);
 
+                    Imgproc.putText(mat, String.format("%4.1f", compare[1]), boxPts[0],
+                        Core.FONT_HERSHEY_SIMPLEX, 0.3, new Scalar(255, 255, 255), 1);
                     //System.out.println(pId + toString(compare));
                     // end use matchShapes
                     // ********************************************* */
@@ -244,7 +248,7 @@ public class TargetSelectionB {
                 // ******************************************* */
                 // * save the data for the best contour (so far)
                 // ******************************************* */
-                if (compare[1] <= shapeMatch) { // method 1 used for matching; others better? method 0 is terrible
+                if (compare[1] <= shapeMatch) { // method [1] used for matching; others better? method [0] is terrible
                     // the if(=) case covers if only one contour
                     // or if optional shape matching wasn't run in which case the last contour wins
 
@@ -297,18 +301,29 @@ public class TargetSelectionB {
 
             } // end of looping through all contours
 
-            Imgproc.drawContours(mat, filteredContours, contourIndexBest, new Scalar(0, 0, 255), 1);
-
+            Imgproc.drawContours(mat, filteredContours, contourIndexBest, new Scalar(255, 255, 255), 1);
+            
         } // end of processing all contours in this camera frames
 
-        // update the target information with best contour or the initialized no contour
-        // data
+        // resize bounding bounding box of best contour to 24x24 for target icon
+        Mat targetIconTemp = new Mat();
+        if( contourIndexBest >= 0 ) { // save the contour even if out of range (effectively no target found)
+            Imgproc.resize(mat.submat( new Rect(nextTargetData.boundingBoxPts[0], nextTargetData.boundingBoxPts[2])),
+                targetIconTemp, new Size(24, 24), 0., 0., Imgproc.INTER_LINEAR);
+        }
+        else {
+            Imgproc.resize(mat.submat(mat.height()/2-24, mat.height()/2+24, mat.width()/2-24, mat.width()/2+24), // smash 2 to 1
+                targetIconTemp, new Size(24, 24), 0., 0., Imgproc.INTER_LINEAR);
+        }
+
+        // update the target information with best contour or the initialized no contour data
         synchronized (Main.tapeLock) {
             Main.tapeDistance = nextTargetData.portDistance;
             Main.tapeAngle = nextTargetData.angleToTurn;
             Main.isTargetFound = nextTargetData.isTargetFound;
             Main.tapeContours = contourIndexBest;
             Main.shapeQuality = shapeMatch;
+            targetIconTemp.copyTo(Main.targetIcon);
             Main.isDistanceAngleFresh = nextTargetData.isFreshData;
             Main.tapeLock.notify();
         }
