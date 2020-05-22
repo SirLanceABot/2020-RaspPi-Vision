@@ -182,8 +182,10 @@ public class TargetSelectionB {
                 // }
 
                 // Create a bounding upright rectangle for the contour's points
-                boundRect = Imgproc.boundingRect(new MatOfPoint2f(contour.toArray()));
-  
+                MatOfPoint2f NewMtx = new MatOfPoint2f(contour.toArray());
+                boundRect = Imgproc.boundingRect(NewMtx);
+                NewMtx.release();
+                
                 // Draw a Rect, using lines, that represents the Rect
                 Point boxPts[] = new Point[4];
                 boxPts[0] = boundRect.tl();
