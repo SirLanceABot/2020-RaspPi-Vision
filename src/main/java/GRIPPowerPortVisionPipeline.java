@@ -1,3 +1,7 @@
+// Several changes made that are NOT in the GRIP file as of 5/22/2020
+
+
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,10 +19,12 @@ public class GRIPPowerPortVisionPipeline {
 
 	//Outputs
 	private Mat blurOutput = new Mat();
+	private Mat outHSV = new Mat();
 	private Mat hsvThresholdOutput = new Mat();
 	private Mat cvErode0Output = new Mat();
 	private Mat cvDilateOutput = new Mat();
 	private Mat cvErode1Output = new Mat();
+	private Mat cvCannyOutput = new Mat();
 	private ArrayList<MatOfPoint> findContoursOutput = new ArrayList<MatOfPoint>();
 	private ArrayList<MatOfPoint> filterContoursOutput = new ArrayList<MatOfPoint>();
 
@@ -38,9 +44,9 @@ public class GRIPPowerPortVisionPipeline {
 
 		// Step HSV_Threshold0:
 		Mat hsvThresholdInput = blurOutput;
-		double[] hsvThresholdHue = {63.12949640287769, 98.60068259385666}; // good
-		double[] hsvThresholdSaturation = {0.0, 255.0};
-		// double[] hsvThresholdValue = {16.052158273381295, 220.1877133105802};
+		double[] hsvThresholdHue = {63.12949640287769, 98.60068259385666}; // good, actual in basement 75-85
+		double[] hsvThresholdSaturation = {0.0, 255.0}; // good actual 150-255 mostly 160 to 240 ,255
+		// double[] hsvThresholdValue = {16.052158273381295, 220.1877133105802}; // good actual 22-139
 		//TODO: use unchanged GRIP - redo GRIP if necessary
 		//double[] hsvThresholdValue = {73.0, 255.0}; // Annika measured this at St Joe GRIP and what is here in code worked so leave it be
 		double[] hsvThresholdValue = {17.51798561151079, 255.0}; // 27 good; try 17
@@ -73,8 +79,16 @@ public class GRIPPowerPortVisionPipeline {
 		Scalar cvErode1Bordervalue = new Scalar(-1);
 		cvErode(cvErode1Src, cvErode1Kernel, cvErode1Anchor, cvErode1Iterations, cvErode1Bordertype, cvErode1Bordervalue, cvErode1Output);
 
+		// Step CV_Canny0:
+		Mat cvCannyImage = cvErode1Output;
+		double cvCannyThreshold1 = 0.0;
+		double cvCannyThreshold2 = 0.0;
+		double cvCannyAperturesize = 3.0;
+		boolean cvCannyL2gradient = false;
+		cvCanny(cvCannyImage, cvCannyThreshold1, cvCannyThreshold2, cvCannyAperturesize, cvCannyL2gradient, cvCannyOutput);
+
 		// Step Find_Contours0:
-		Mat findContoursInput = cvErode1Output;
+		Mat findContoursInput = cvCannyOutput;
 		boolean findContoursExternalOnly = true;
 		findContours(findContoursInput, findContoursExternalOnly, findContoursOutput);
 
@@ -102,6 +116,13 @@ public class GRIPPowerPortVisionPipeline {
 	 */
 	public Mat blurOutput() {
 		return blurOutput;
+	}
+/**
+	 * This method is a generated getter for the output of a HSV.
+	 * @return Mat output from HSV.
+	 */
+	public Mat outHSV() {
+		return outHSV;
 	}
 
 	/**
@@ -134,6 +155,14 @@ public class GRIPPowerPortVisionPipeline {
 	 */
 	public Mat cvErode1Output() {
 		return cvErode1Output;
+	}
+
+	/**
+	 * This method is a generated getter for the output of a CV_Canny.
+	 * @return Mat output from CV_Canny.
+	 */
+	public Mat cvCannyOutput() {
+		return cvCannyOutput;
 	}
 
 	/**
@@ -229,8 +258,8 @@ public class GRIPPowerPortVisionPipeline {
 	 */
 	private void hsvThreshold(Mat input, double[] hue, double[] sat, double[] val,
 	    Mat out) {
-		Imgproc.cvtColor(input, out, Imgproc.COLOR_BGR2HSV);
-		Core.inRange(out, new Scalar(hue[0], sat[0], val[0]),
+		Imgproc.cvtColor(input, outHSV, Imgproc.COLOR_BGR2HSV);
+		Core.inRange(outHSV, new Scalar(hue[0], sat[0], val[0]),
 			new Scalar(hue[1], sat[1], val[1]), out);
 	}
 
@@ -280,6 +309,20 @@ public class GRIPPowerPortVisionPipeline {
 			borderValue = new Scalar(-1);
 		}
 		Imgproc.erode(src, dst, kernel, anchor, (int)iterations, borderType, borderValue);
+	}
+
+	/**
+	 * Applies a canny edge detection to the image.
+	 * @param image image to use.
+	 * @param thres1 first threshold for the canny algorithm.
+	 * @param thres2 second threshold for the canny algorithm.
+	 * @param apertureSize aperture size for the canny operation.
+	 * @param gradient if the L2 norm should be used.
+	 * @param edges output of the canny.
+	 */
+	private void cvCanny(Mat image, double thres1, double thres2,
+		double apertureSize, boolean gradient, Mat edges) {
+		Imgproc.Canny(image, edges, thres1, thres2, (int)apertureSize, gradient);
 	}
 
 	/**
@@ -355,6 +398,23 @@ public class GRIPPowerPortVisionPipeline {
 		}
 	}
 
+	public void releaseAll() {
+		blurOutput.release();
+		outHSV.release();
+		hsvThresholdOutput.release();
+		cvErode0Output.release();
+		cvDilateOutput.release();
+		cvErode1Output.release();
+		cvCannyOutput.release();
+		while(!findContoursOutput.isEmpty()) {
+			findContoursOutput.get(0).release();
+			findContoursOutput.remove(0);
+		}
+		while(!filterContoursOutput.isEmpty()) {
+			filterContoursOutput.get(0).release();
+			filterContoursOutput.remove(0);
+		}
+	}
 
 
 

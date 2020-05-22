@@ -109,6 +109,14 @@ public class TargetSelectionB {
         // Let the gripPowerCellIntakeVisionPipeline filter through the camera frame
         gripPowerPortVisionPipeline.process(mat);
 
+        // try this model of a vision pipeline for cyberknight presentation
+        // threshold cv_thresh_binary
+        // dilate
+        // cvtcolor bgr2hsv
+        // inrange scalar 40, 0, 0  to 65, 255, 255
+        // canny dst canny_out 0, 0
+        // findcontours external cv_chain_approx_simple point(0, 0)
+
         // We are cautiously optimistic that GRIP pipeline found the one and only one
         // target object
         // but there might not be one and only one so take evasive action
@@ -167,8 +175,6 @@ public class TargetSelectionB {
                 // convert MatofPoint to an array of those Points and iterate (could do list of Points but no need for this)
                 // for(Point aPoint : aContour.toArray())System.out.print(" " + aPoint); // print each point
 
-                MatOfPoint2f NewMtx = new MatOfPoint2f(contour.toArray());
-
                 // for(int idx = 0; idx < contour.toArray().length; idx++)
                 // {
                 // System.out.println("(" + contour.toArray()[idx].x + ", " +
@@ -176,7 +182,7 @@ public class TargetSelectionB {
                 // }
 
                 // Create a bounding upright rectangle for the contour's points
-                boundRect = Imgproc.boundingRect(NewMtx);
+                boundRect = Imgproc.boundingRect(new MatOfPoint2f(contour.toArray()));
   
                 // Draw a Rect, using lines, that represents the Rect
                 Point boxPts[] = new Point[4];
@@ -195,8 +201,11 @@ public class TargetSelectionB {
                         new Scalar(0, 255, 255), // Scalar object for color
                         1, // Thickness of the line
                         Imgproc.LINE_4 // line type
-                );
-
+                        );
+                while(!listMidContour.isEmpty()) {
+                    listMidContour.get(0).release();
+                    listMidContour.remove(0);
+                }
                 // initialize shape comparison quality
                  double[] compare =
                 { Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE}; 
@@ -299,10 +308,46 @@ public class TargetSelectionB {
                 // * end save the data for the best contour (so far)
                 // *********************************************** */
 
+                // gripPowerPortVisionPipeline.cvCannyOutput().copyTo(mat); // show this to verify appearance of the edge detector
+  
+                // display HSV histograms
+
+                // note that if using canny edge detection as part of the thresholding process,
+                // canny does draw the contour outside of the target so there is the color 
+                // of the backgound around the contour - black which appears as the red (0) in the histogram
+
+                if (Main.displayTurretContours && Main.displayTurretHistogram) {
+                    try {
+                    Hist hist = new Hist();
+                    Mat mask = Mat.zeros(mat.size(), CvType.CV_8UC1); // start with all zeros - skip all pixels
+                    Imgproc.drawContours(mask, filteredContours, contourIndexBest, new Scalar(255), -1); // set the mask with the contour
+                    hist.displayHist(mat, mask); // get the HSV histogram of the contour
+                    mask.release();
+                    // print to verify insode and outside of contour and print the values - the histogram is better
+                    // MatOfPoint2f  NewMtx2 = new MatOfPoint2f( contour.toArray() );
+                    // for (double idxR = boundRect.tl().y; idxR < boundRect.br().y; idxR++)
+                    // for (double idxC = boundRect.tl().x; idxC < boundRect.br().x; idxC++)
+                    // {
+                    //  The function returns +1 , -1 , or 0
+                    //  to indicate if a point is inside, outside, or on the contour, respectively.
+                    //     double inOrOut = Imgproc.pointPolygonTest(NewMtx2, new Point(idxC, idxR), false);
+                    //     if (inOrOut == 1.) {
+                    //     System.out.format("%d, %d, %5.1f  ", (int)idxC, (int)idxR, inOrOut);
+                    //     System.out.format("%4.0f",   gripPowerPortVisionPipeline.outHSV().get((int)idxR, (int)idxC)[0]);
+                    //     System.out.format("%4.0f",   gripPowerPortVisionPipeline.outHSV().get((int)idxR, (int)idxC)[1]);
+                    //     System.out.format("%4.0f\n", gripPowerPortVisionPipeline.outHSV().get((int)idxR, (int)idxC)[2]);
+                    //     }
+                    // }
+                    } catch(Exception e) {e.printStackTrace();}
+                }
             } // end of looping through all contours
 
             Imgproc.drawContours(mat, filteredContours, contourIndexBest, new Scalar(255, 255, 255), 1);
-            
+
+            while(!filteredContours.isEmpty()) {
+                filteredContours.get(0).release();
+                filteredContours.remove(0);
+            }        
         } // end of processing all contours in this camera frames
 
         // resize bounding bounding box of best contour to 24x24 for target icon
@@ -327,6 +372,10 @@ public class TargetSelectionB {
             Main.isDistanceAngleFresh = nextTargetData.isFreshData;
             Main.tapeLock.notify();
         }
+        
+        targetIconTemp.release();
+        idealTurretContour.release();
+        gripPowerPortVisionPipeline.releaseAll();
     }
 
     String toString(double[] array) {
@@ -338,6 +387,17 @@ public class TargetSelectionB {
 }
 
 // Parking lot for some good example code to keep as reference
+
+// convert MAtOfPoint to MatOfPoint2f
+// easy looking:
+// MatOfPoint2f  NewMtx2 = new MatOfPoint2f( contour.toArray() );
+// clunky looking:
+// List<MatOfPoint2f> matrix = new ArrayList<MatOfPoint2f>();
+// for(int i = 0; i < contour.size(i); i++){
+//     MatOfPoint2f myPt = new MatOfPoint2f();
+//     contour.get(i).convertTo(myPt, CvType.CV_32FC2);
+//     matrix.add(myPt);
+// }
 
 // // Enhance Image if useful - not associated with the Hough Lines below
 // // Convert to YUV

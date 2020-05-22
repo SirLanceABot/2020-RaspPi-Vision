@@ -276,7 +276,7 @@ public class PipelineProcessB implements Runnable
 			if (Main.displayTurretContours)
 			{
 				// Display the camera frame in the output stream.
-				Imgproc.putText(mat, "Turret Contours", new Point(20, 30), Core.FONT_HERSHEY_SIMPLEX, 0.5,
+				Imgproc.putText(mat, "Turret Contours", new Point(100, 30), Core.FONT_HERSHEY_SIMPLEX, 0.5,
 						new Scalar(100, 100, 255), 1);
 				outputStream.putFrame(mat);
 			}

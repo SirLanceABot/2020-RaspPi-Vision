@@ -300,7 +300,7 @@ public final class Main
 // Settable parameters for some outputs listed below
 // Settable parameters for some outputs listed below
 
-    static String version = "RPi Vision 5/18/2020"; // change this everytime
+    static String version = "RPi Vision 5/22/2020"; // change this everytime
 
     static final int MAXIMUM_MESSAGE_LENGTH = 1024; // max length (or more) of UDP message from RPi to roboRIO.  Not normally changed but here for visibility
 
@@ -315,7 +315,7 @@ public final class Main
     static String roboRIO = "roborio-4237-frc.local";
     static String Self = "frcvision.local";
 
-    static String roboRIOIP = "10.42.37.2";
+    static String roboRIOIP = "10.42.37.2"; // usually preferred using static IP address of the roboRIO
 
     static String UDPreceiverName = roboRIOIP;
  
@@ -330,7 +330,8 @@ public final class Main
     static boolean displayIntakeContours = true;
 
     static boolean displayTurretPixelDistance = false; // calibration info for pixels to inches distance to target
-    //static boolean displayTurretHistogram = true; // a small insert for turrent contours - experiment with white balance - suggest using about 3500K then forget it.  Run GRIP after setting.
+    static boolean displayTurretHistogram = true; // a small insert for turrent contour
+    // experiment with white balance - suggest using about 3500K then forget it.  Run GRIP after setting.
 
     static boolean debug = false;
     static boolean logImage = false;
