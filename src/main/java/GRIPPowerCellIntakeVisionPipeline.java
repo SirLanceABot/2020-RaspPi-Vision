@@ -248,7 +248,20 @@ public class GRIPPowerCellIntakeVisionPipeline {
 		}
 	}
 
+public void releaseAll() {
 
+	blurOutput.release();
+	hsvThresholdOutput.release();
+	while(!findContoursOutput.isEmpty()) {
+		findContoursOutput.get(0).release();
+		findContoursOutput.remove(0);
+	}
+	while(!filterContoursOutput.isEmpty()) {
+		filterContoursOutput.get(0).release();
+		filterContoursOutput.remove(0);
+	}
+
+}
 
 
 }

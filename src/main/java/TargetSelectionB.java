@@ -23,7 +23,7 @@ import contourUtils.MatchShapes;
 /**
  * This class is used to select the target from the camera frame. The user MUST
  * MODIFY the process() method. The user must create a new
- * gripPowerCellIntakeVisionPipeline class using GRIP, modify the TargetData
+ * gripPowerPortVisionPipeline class using GRIP, modify the TargetData
  * class, and modify this class.
  * 
  * @author FRC Team 4237
@@ -38,7 +38,7 @@ public class TargetSelectionB {
 
     private static final double VERTICAL_CAMERA_ANGLE_OF_VIEW = 35.0;
 
-    // This object is used to run the gripPowerCellIntakeVisionPipeline
+    // This object is used to run the gripPowerPortVisionPipeline
     private GRIPPowerPortVisionPipeline gripPowerPortVisionPipeline = new GRIPPowerPortVisionPipeline();
 
     // This field is used to determine if debugging information should be displayed.
@@ -106,7 +106,7 @@ public class TargetSelectionB {
      */
     public void process(Mat mat, TargetDataB nextTargetData) {
 
-        // Let the gripPowerCellIntakeVisionPipeline filter through the camera frame
+        // Let the ripPowerPortVisionPipeline filter through the camera frame
         gripPowerPortVisionPipeline.process(mat);
 
         // try this model of a vision pipeline for cyberknight presentation
@@ -121,7 +121,7 @@ public class TargetSelectionB {
         // target object
         // but there might not be one and only one so take evasive action
 
-        // The gripPowerCellIntakeVisionPipeline creates an array of contours that must
+        // The gripPowerPortVisionPipeline creates an array of contours that must
         // be searched to find the target.
         ArrayList<MatOfPoint> filteredContours;
         filteredContours = new ArrayList<MatOfPoint>(gripPowerPortVisionPipeline.filterContoursOutput());

@@ -105,6 +105,8 @@ public class TargetSelectionE
 		{
 			System.out.println("Distance: " + distanceTarget);
 		}
+
+		gripPowerCellIntakeVisionPipeline.releaseAll();
 	}
 	
 	 public void detectPowerCells(Mat input) 
