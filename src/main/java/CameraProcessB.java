@@ -134,9 +134,7 @@ public class CameraProcessB implements Runnable
 
 		this.setDebuggingEnabled(Main.debug);
 		
-		//test timer
-		//Timer testTimer = new Timer();
-		//testTimer.start();
+	    // experiment with white balance - suggest using about 3500K then forget it.  Run GRIP after setting.
 
 		int light = 38, dark = 10, currentExposure = dark;
 

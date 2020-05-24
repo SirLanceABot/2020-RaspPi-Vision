@@ -300,7 +300,7 @@ public final class Main
 // Settable parameters for some outputs listed below
 // Settable parameters for some outputs listed below
 
-    static String version = "RPi Vision 5/22/2020"; // change this everytime
+    static String version = "RPi Vision 5/24/2020"; // change this everytime
 
     static final int MAXIMUM_MESSAGE_LENGTH = 1024; // max length (or more) of UDP message from RPi to roboRIO.  Not normally changed but here for visibility
 
@@ -322,20 +322,26 @@ public final class Main
     // static String UDPreceiverName = "0.0.0.0";
     // "0.0.0.0" should be any computer but doesn't work anymore for other computers - they don't see any packets
 
-    // camera streams already available from the FRCVISION server
-    // generated video streams switched on/off here
-    static boolean runImageOperator = true;
-    static boolean displayTurretContours = true;
-    static boolean turretTargetMatchShape = true;  // perform shape matching to verify found target
-    static boolean displayIntakeContours = true;
+    // cameras and contour processing for targeting and generated video streams can be switched on/off here
+   
+    static boolean startTurretCamera = true; // control turrent camera
+    static boolean createTurretContours = true; // control targeting process for turret
+    static boolean displayTurretContours = true; // control display but still use the contours 
+    static boolean turretTargetMatchShape = true; // perform shape matching to verify found target
+    static double shapeQualityBad = 9.;  // maximum value before declaring detected target shape is bad - less is tighter tolerance 
 
-    static boolean displayTurretPixelDistance = false; // calibration info for pixels to inches distance to target
-    static boolean displayTurretHistogram = true; // a small insert for turrent contour
-    // experiment with white balance - suggest using about 3500K then forget it.  Run GRIP after setting.
+    static boolean runImageOperator = true; // control creation and display of the operator turret target icon
 
+    static boolean startIntakeCamera = true; // control intake camera
+    static boolean createIntakeContours = true; // control targeting process for intake
+    static boolean displayIntakeContours = true; // control display but still use the contours
+
+    static boolean displayTurretPixelDistance = false; // print calibration info for pixels to inches distance to target
+    static boolean displayTurretHistogram = true; // a small insert for turret contour HSV values found in the contour
+ 
     static boolean debug = false;
     static boolean logImage = false;
-    static double shapeQualityBad = 9.;  // maximum value before declaring detected target shape is bad - less is tighter tolerance
+   
 // Shuffleboard automatic display of intake camera and High Power Port alignment turned on.
 //
 // No Shuffleboard automatic display of other video streams - commented out for contour images in TargetSelection codes
@@ -797,8 +803,8 @@ public final class Main
             return;
         }
 
-        tabLock = new Object();
-        tapeLock = new Object();
+        tabLock = new Object(); // synchronizing lock between this program and the related Shuffleboard tab
+        tapeLock = new Object(); // synchronizing lock between ImageOperator and TargetSelectionB
        
         // sleep needed on RPi 4 before datagram address resolution and also RPi 3 before mount
         // and maybe for some other unknown reason after a power on boot up of the RPi 4
@@ -841,18 +847,19 @@ public final class Main
         // see if USB Flash Drive mounted and if so, log the images
         mountUSBFlashDrive(); 
 
-        System.out.flush();
+        System.out.flush(); // make sure any buffered messages can be seen at this time
 
         // start cameras
         for (CameraConfig config : cameraConfigs) 
         {
             // assume each camera name appears only once in the list - that is a requirement
-            System.out.println(pId + " Checking for " + config.name + " camera");
-            if (config.name.equalsIgnoreCase("Turret"))
-            {
-                System.out.println(pId + " Starting TurretB camera");
+            System.out.println(pId + " " + config.name + " in list of cameras");
 
-                cameraB = startCamera(config);
+            if (config.name.equalsIgnoreCase("Turret") && startTurretCamera)
+            {
+                System.out.println(pId + " Starting Turret camera as TurretB");
+
+                cameraB = startCamera(config); //start the turret camera
                 VideoSource Bcamera = cameraB;
                 // Widget in Shuffleboard Tab
                 CameraWidget cw = new CameraWidget();
@@ -863,17 +870,17 @@ public final class Main
                 // It can still be displayed manually by dragging from Sources to the Shuffleboard display area
                 // Normally this camera shows only the reflected tape rotated 90 deg - confusing to humans
                 // createCameraShuffleboardWidget(Bcamera, cw);                
-
-                cpB = new CameraProcessB(Bcamera, config);
-                visionThreadB = new Thread(cpB, "4237TurretB Camera");
-                // start thread using the class' run() method (just saying run() won't start a thread - that just runs run() once)
-                visionThreadB.start(); 
+                if( createTurretContours ) {
+                    cpB = new CameraProcessB(Bcamera, config); // start turret targeting contour process
+                    visionThreadB = new Thread(cpB, "4237TurretB Camera");
+                    visionThreadB.start(); 
+                }
             }
-            else if (config.name.equalsIgnoreCase("Intake"))
+            else if (config.name.equalsIgnoreCase("Intake") && startIntakeCamera)
             {
-                System.out.println(pId + " Starting IntakeE camera");
+                System.out.println(pId + " Starting Intake camera as IntakeE");
 
-                cameraE = startCamera(config);
+                cameraE = startCamera(config); // start the intake camera
                 VideoSource Ecamera = cameraE;
                 // Widget in Shuffleboard Tab
                 CameraWidget cw = new CameraWidget();
@@ -881,16 +888,15 @@ public final class Main
                 cw.setLocation(0, 0, 17, 20);
                 cw.setProperties(false, "white", false, "NONE");
                 createCameraShuffleboardWidget(Ecamera, cw);
-
-                // TODO: INTAKE TARGETING TURNED OFF - uncomment these statements to run it.  Targeting still needs a lot of work, though
-                cpE = new CameraProcessE(Ecamera, config);
-                visionThreadE = new Thread(cpE, "4237IntakeECamera");
-                // start thread using the class' run() method (just saying run() won't start a thread - that just runs run() once)
-                visionThreadE.start();
+                if( createIntakeContours ) {
+                    cpE = new CameraProcessE(Ecamera, config); // start intake targeting contour process
+                    visionThreadE = new Thread(cpE, "4237IntakeECamera");
+                    visionThreadE.start();
+                }
             }
             else
             {
-                System.out.println(pId + " Unknown camera in cameraConfigs " + config.name);
+                System.out.println(pId + " Unknown camera in cameraConfigs; camera may be disabled in code or misspelled in config file. " + config.name);
             }
         }
         
@@ -970,6 +976,9 @@ public final class Main
                 RPiThrottle.setString(checkThrottled()); // display on Shuffleboard any throttled message
 
                 //System.out.println("calibrateAngle = " + calibrateAngle);
+
+                // System.out.println(Runtime.getRuntime().freeMemory() + " "
+                //     + Runtime.getRuntime().maxMemory() + " " + Runtime.getRuntime().totalMemory());
  
                 Thread.sleep(5000);
             }
