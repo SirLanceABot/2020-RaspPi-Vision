@@ -197,6 +197,7 @@ public class GRIPPowerCellIntakeVisionPipeline {
 		}
 		int method = Imgproc.CHAIN_APPROX_SIMPLE;
 		Imgproc.findContours(input, contours, hierarchy, mode, method);
+		hierarchy.release();
 	}
 
 
@@ -246,6 +247,7 @@ public class GRIPPowerCellIntakeVisionPipeline {
 			if (ratio < minRatio || ratio > maxRatio) continue;
 			output.add(contour);
 		}
+		hull.release();
 	}
 
 public void releaseAll() {

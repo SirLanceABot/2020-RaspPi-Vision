@@ -60,6 +60,7 @@ public class GRIPPowerPortVisionPipeline {
 		int cvErode0Bordertype = Core.BORDER_CONSTANT;
 		Scalar cvErode0Bordervalue = new Scalar(-1);
 		cvErode(cvErode0Src, cvErode0Kernel, cvErode0Anchor, cvErode0Iterations, cvErode0Bordertype, cvErode0Bordervalue, cvErode0Output);
+		cvErode0Kernel.release();
 
 		// Step CV_dilate0:
 		Mat cvDilateSrc = cvErode0Output;
@@ -69,6 +70,7 @@ public class GRIPPowerPortVisionPipeline {
 		int cvDilateBordertype = Core.BORDER_CONSTANT;
 		Scalar cvDilateBordervalue = new Scalar(-1);
 		cvDilate(cvDilateSrc, cvDilateKernel, cvDilateAnchor, cvDilateIterations, cvDilateBordertype, cvDilateBordervalue, cvDilateOutput);
+		cvDilateKernel.release();
 
 		// Step CV_erode1:
 		Mat cvErode1Src = cvDilateOutput;
@@ -78,6 +80,7 @@ public class GRIPPowerPortVisionPipeline {
 		int cvErode1Bordertype = Core.BORDER_CONSTANT;
 		Scalar cvErode1Bordervalue = new Scalar(-1);
 		cvErode(cvErode1Src, cvErode1Kernel, cvErode1Anchor, cvErode1Iterations, cvErode1Bordertype, cvErode1Bordervalue, cvErode1Output);
+		cvErode1Kernel.release();
 
 		// Step CV_Canny0:
 		Mat cvCannyImage = cvErode1Output;
@@ -345,6 +348,7 @@ public class GRIPPowerPortVisionPipeline {
 		}
 		int method = Imgproc.CHAIN_APPROX_SIMPLE;
 		Imgproc.findContours(input, contours, hierarchy, mode, method);
+		hierarchy.release();
 	}
 
 
@@ -396,6 +400,7 @@ public class GRIPPowerPortVisionPipeline {
 			*/
 			output.add(contour);
 		}
+		//hull.release();
 	}
 
 	public void releaseAll() {
