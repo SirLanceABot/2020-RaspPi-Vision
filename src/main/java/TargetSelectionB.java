@@ -48,8 +48,7 @@ public class TargetSelectionB {
     LUT pixelsToInchesTable = new LUT(10); // allocate fixed size array with parameter at least as large as the number
                                            // of data points - minimum of 2 points
 
-    MatOfPoint idealTurretContour = new MatOfPoint();
-    Mat idealHu = Mat.zeros(7, 1, CvType.CV_64FC1); // initialize mat - need to quiet the compiler but this is likely overkill
+    Mat idealHu = Mat.zeros(7, 1, CvType.CV_64FC1); // initialize mat to quiet the compiler likely overkill but descriptive
 
     TargetSelectionB() {
         // Enter more data points for more accuracy. The equation should model some sort
@@ -70,9 +69,8 @@ public class TargetSelectionB {
         // setup ideal target shape to compare with camera image found contour
         // this can vary greatly with perspective distortion so this might have to be
         // dynamically generated based on distance, angles, etc.
-
         //FIXME: better to use expected typical shape assuming the distortion of perspective
-
+        MatOfPoint idealTurretContour = new MatOfPoint();
         idealTurretContour.fromArray( // High Power Port Tape Contour
             new Point(13.,  3.),   // point 0
             new Point(68.,  109.),   // point 1
@@ -85,6 +83,7 @@ public class TargetSelectionB {
             );
 
         Moments idealMoments = Imgproc.moments(idealTurretContour);
+        idealTurretContour.release();
         Imgproc.HuMoments(idealMoments, idealHu);
     }
 
@@ -376,7 +375,6 @@ public class TargetSelectionB {
         }
         
         targetIconTemp.release();
-        idealTurretContour.release();
         gripPowerPortVisionPipeline.releaseAll();
     }
 
