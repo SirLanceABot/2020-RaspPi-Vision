@@ -11,7 +11,7 @@ Note there are some settable parameters located below the SKULL in the right wid
 The change from the standard FRCVISION example project is:
 
 To get rid of "errors" in the VS Code source presentation, change the .classpath to see the libraries as needed.
-As of the early 2020 release this wasn't necessary.
+As of the early 2020 release this wasn't necessary but the build.gradle needs to have the correct dependencies.
 
 A tasks.json task is added to VS Code to run helpful commands made for the team:
 (Access these commands on the VSC command palette ctrl-shift-P / Tasks: Run Task)
@@ -57,12 +57,14 @@ scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no pi@frcvision.loc
 
 This program below starts execution in Main.java - main.java
 
-Threads are spawned (optionally) for
-    CameraProcessB (TurretB camera)
-    CameraProcessE (IntakeE camera)
+The Bcamera and Ecamera are optionally started to capture camera images and serve them.
+
+Threads are spawned (optionally) for processing and serving
+    CameraProcessB (TurretB camera) to process image contours
+    CameraProcessE (IntakeE camera) to process image contours
     UdpReceive (test receive data if no roboRIO - note that the PowerShell UDP monitor can also be used)
 
-Image processing threads are then spawned for
+Image processing threads are then spawned overlap camera capture with image processing
     PipelineProcessB
     PipelineProcessE
     ImageOperator (show cartoon of the location of the high target)
@@ -253,6 +255,7 @@ public final class Main
     private static UdpReceive testUDPreceive; // test UDP receiver in place of a roboRIO
     private static Thread UDPreceiveThread; // remove these or at least don't start this thread if using the roboRIO - see parameter below skull
 
+    // class data shared among processes so they go here in the common area
     static Object tabLock;
     static ShuffleboardTab cameraTab;
 
@@ -300,7 +303,7 @@ public final class Main
 // Settable parameters for some outputs listed below
 // Settable parameters for some outputs listed below
 
-    static String version = "RPi Vision 5/25/2020"; // change this everytime
+    static String version = "RPi Vision 5/26/2020"; // change this everytime
 
     static final int MAXIMUM_MESSAGE_LENGTH = 1024; // max length (or more) of UDP message from RPi to roboRIO.  Not normally changed but here for visibility
 
@@ -326,7 +329,7 @@ public final class Main
    
     static boolean startTurretCamera = true; // control turrent camera
     static boolean createTurretContours = true; // control targeting process for turret
-    static boolean displayTurretContours = true; // control display but still use the contours 
+    static boolean displayTurretContours = true; // false for match play // control display but still use the contours 
     static boolean turretTargetMatchShape = true; // perform shape matching to verify found target
     static double shapeQualityBad = 9.;  // maximum value before declaring detected target shape is bad - less is tighter tolerance 
 
@@ -334,10 +337,10 @@ public final class Main
 
     static boolean startIntakeCamera = true; // control intake camera
     static boolean createIntakeContours = true; // control targeting process for intake
-    static boolean displayIntakeContours = true; // control display but still use the contours
+    static boolean displayIntakeContours = true; // false for match play // control display but still use the contours
 
-    static boolean displayTurretPixelDistance = false; // print calibration info for pixels to inches distance to target
-    static boolean displayTurretHistogram = true; // a small insert for turret contour HSV values found in the contour
+    static boolean displayTurretPixelDistance = false; // false for match play // print calibration info for pixels to inches distance to target
+    static boolean displayTurretHistogram = true; // false for match play // a small insert for turret contour HSV values found in the contour
  
     static boolean debug = false;
     static boolean logImage = false;
@@ -563,12 +566,12 @@ public final class Main
     {
         System.out.println(pId + " Starting camera '" + config.name + "' on path " + config.path);
 
-        // this
+        // this way
         CameraServer inst = CameraServer.getInstance();
         UsbCamera camera = new UsbCamera(config.name, config.path);
         MjpegServer server = inst.startAutomaticCapture(camera);
 
-        // or this and need port to be passed in
+        // or this way and need port to be passed in
         // UsbCamera camera = new UsbCamera(config.name, config.path);
         // MjpegServer server = new MjpegServer("serve_" + config.name, port);
         // server.setSource(camera);
@@ -681,7 +684,7 @@ public final class Main
     {
         try
         {
-            // execute command to check for throttled
+            // execute command to check for Raspberry Pi throttled
             List<String> command = new ArrayList<String>(); // build my command as a list of strings
             command.add("bash");
             command.add("-c");
@@ -844,8 +847,8 @@ public final class Main
             cameraTab = Shuffleboard.getTab("Camera");
         }
  
-        // see if USB Flash Drive mounted and if so, log the images
-        mountUSBFlashDrive(); 
+        // If requested, see if USB Flash Drive mounted and if so, log the images
+        if (logImage) mountUSBFlashDrive(); 
 
         System.out.flush(); // make sure any buffered messages can be seen at this time
 

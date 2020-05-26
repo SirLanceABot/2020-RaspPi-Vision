@@ -82,6 +82,44 @@ public class TargetSelectionB {
             new Point(28., 3.)     // point 7
             );
 
+            /** from crude hand pointing camera at small model in rkt basement
+             * lower right of target
+               [229, 136;
+                228, 143;
+                235, 158;
+                249, 162;
+                257, 162;
+                256, 157;
+                240, 153;
+                238, 151;
+                236, 141;
+                246, 134;
+                245, 128]
+
+             * lower front of target
+             [494, 131;
+                414, 183;
+                414, 302;
+                487, 351;
+                493, 335;
+                430, 292;
+                429, 210;
+                436, 186;
+                495, 147]
+
+            * lower slightly left of target
+            [151, 249;
+            105, 272;
+            102, 318;
+            138, 337;
+            144, 336;
+            144, 330;
+            112, 311;
+            114, 282;
+            119, 273;
+            152, 258]
+             */
+
         Moments idealMoments = Imgproc.moments(idealTurretContour);
         idealTurretContour.release();
         Imgproc.HuMoments(idealMoments, idealHu);
@@ -344,6 +382,39 @@ public class TargetSelectionB {
             } // end of looping through all contours
 
             Imgproc.drawContours(mat, filteredContours, contourIndexBest, new Scalar(255, 255, 255), 1);
+
+            if ( false ) { // find the simpler version of the contour - fewer points
+                MatOfPoint2f temp = new MatOfPoint2f(filteredContours.get(contourIndexBest).toArray());
+                MatOfPoint2f approxCurve = new MatOfPoint2f();
+                Imgproc.approxPolyDP(
+                    temp, // Mat input curve
+                    approxCurve, // Mat ouptut simpler curve same type as input
+                    0.01*Imgproc.arcLength(temp, true), // double This is the maximum distance between the original curve and its approximation.
+                    true); // If true, the approximated curve is closed (its first and last vertices are connected). Otherwise, it is not closed.
+                    //arcLength is perimeter of closed contour if true or curve length
+                
+                System.out.println(approxCurve.dump());
+                
+                //moments = Imgproc.moments(approxCurve);
+
+                // List<Point> listApprox = new ArrayList<Point>(approxCurve.toList());
+                // System.out.println(temp.size() + " " + listApprox.size()); // 1x86 7
+                // // draw the simple contour
+                // for (int idx = 0; idx< listApprox.size(); idx++)
+                // {
+                // Imgproc.line(
+                //     mat,
+                //     listApprox.get(idx), // one end of the line
+                //     idx+1==listApprox.size() ? listApprox.get(0): listApprox.get(idx+1), // other end - close the shape on the last point
+                //     new Scalar(255, 255, 0),
+                //     1,
+                //     Imgproc.LINE_AA,
+                //     0);
+                // }
+
+                temp.release();
+                approxCurve.release();
+            }
 
             while(!filteredContours.isEmpty()) {
                 filteredContours.get(0).release();
@@ -633,10 +704,11 @@ public class TargetSelectionB {
 // MatOfPoint2f(filteredContours.get(contourIndex).toArray());
 // MatOfPoint2f approxCurve = new MatOfPoint2f();
 // Imgproc.approxPolyDP(
-// temp,
-// approxCurve,
-// 0.01*Imgproc.arcLength(temp, true),
-// true);
+// temp, // Mat input curve
+// approxCurve, // Mat ouptut simpler curve samr type as input
+// 0.01*Imgproc.arcLength(temp, true), // double This is the maximum distance between the original curve and its approximation.
+// true);// If true, the approximated curve is closed (its first and last vertices are connected). Otherwise, it is not closed.
+// arcLength is perimeter of closed contour if true or curve length
 // moments = Imgproc.moments(approxCurve);
 // List<Point> listApprox = new ArrayList<Point>(approxCurve.toList());
 // System.out.println(temp.size() + " " + listApprox.size()); // 1x86 7

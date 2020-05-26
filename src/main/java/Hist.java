@@ -13,14 +13,15 @@ import org.opencv.imgproc.Imgproc;
 class Hist {
 /**
  * 
- * @param mat Assumed to be BGR.  Histogram is overlaid on the input image.
+ * @param mat Assume 3 channels that can be BGR, HSV, etc since any 3 channel data are displayed.
+ *   Histogram is overlaid in the corner of the input image.
  */
     public void displayHist(Mat mat, Mat mask) {
     Mat histImage = new Mat();
 
     //////////////////////////////////////
     // RGB HISTOGRAM OF IMAGE
-    // May be better to try the HSV histogram
+    // Or HSV histogram
     //
     // histogram of image mat before any other drawing on mat
     //! [Separate the image in 3 places ( B, G and R )]
@@ -36,7 +37,7 @@ class Hist {
     //! [Establish the number of bins]
 
     //! [Set the ranges ( for B,G,R) )]
-    float[] range = {0, 256}; //the upper boundary is exclusive
+    float[] range = {0, 256}; // includes lower boundary; the upper boundary is exclusive
     MatOfFloat histRange = new MatOfFloat(range);
     //! [Set the ranges ( for B,G,R) )]
 
@@ -44,7 +45,7 @@ class Hist {
     boolean accumulate = false;
     //! [Set histogram param]
 
-    //! [Compute the histograms]
+    //! [Compute the histograms - one each for the 3 channels]
     Mat bHist = new Mat(), gHist = new Mat(), rHist = new Mat();
 
     Imgproc.calcHist(bgrPlanes, new MatOfInt(0), mask, bHist, new MatOfInt(histSize), histRange, accumulate);
@@ -64,13 +65,13 @@ class Hist {
 
     //! [Draw the histograms for B, G and R]
 
-    //! [Normalize the result to ( 0, histImage.rows )]
+    //! [Normalize the result in each channel to ( 0, histImage.rows/3 )]
     Core.normalize(bHist, bHist, 0, histImage.rows()/3, Core.NORM_MINMAX);
     Core.normalize(gHist, gHist, 0, histImage.rows()/3, Core.NORM_MINMAX);
     Core.normalize(rHist, rHist, 0, histImage.rows()/3, Core.NORM_MINMAX);
     //! [Normalize the result to ( 0, histImage.rows )]
 
-    //! [Draw for each channel]
+    //! [Draw for each channel - each channel has its own space]
     float[] bHistData = new float[(int) (bHist.total() * bHist.channels())];
     bHist.get(0, 0, bHistData);
     float[] gHistData = new float[(int) (gHist.total() * gHist.channels())];

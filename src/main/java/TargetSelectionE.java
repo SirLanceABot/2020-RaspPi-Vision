@@ -132,7 +132,7 @@ public class TargetSelectionE
 
         if (circles.cols() > 0) 
         {
-			// debug output Print all the contours
+			// debug output Print the circle contours
 
 			//System.out.println("Contour Index = " + contourIndex);
 			//System.out.println(contour.dump()); // OpenCV Mat dump one line string of numbers
@@ -142,7 +142,7 @@ public class TargetSelectionE
 			//for(Point aPoint : aContour.toArray())System.out.print(" " + aPoint); // print each point
 			//System.out.println(circles.dump());
 			
-            for (int x=0; x < Math.min(circles.cols(), 5); x++ ) 
+            for (int x=0; x < Math.min(circles.cols(), 5); x++ ) // display 5 circles at the most
             {
                 double circleVec[] = circles.get(0, x);
 

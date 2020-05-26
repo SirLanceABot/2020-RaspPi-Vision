@@ -14,7 +14,7 @@ public class Image
     {
         mat.copyTo(this.mat);
         this.isFreshImage = true;
-        notify();
+        notify(); // fresh image so tell whoever is waiting for it
     }
 
     public synchronized void getImage(Mat mat)
@@ -23,7 +23,7 @@ public class Image
         {
             try
             {
-                wait();
+                wait(); // stale image so wait for a new image
             } 
             catch (Exception e)
             {
