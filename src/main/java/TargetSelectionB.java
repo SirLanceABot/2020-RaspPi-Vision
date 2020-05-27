@@ -47,9 +47,17 @@ public class TargetSelectionB {
     // Pixels to Inches Data Table Lookup
     LUT pixelsToInchesTable = new LUT(10); // allocate fixed size array with parameter at least as large as the number
                                            // of data points - minimum of 2 points
+    // allocate these in common so they can be drawn later
+    // MatOfPoint idealTurretContour = new MatOfPoint();
+    // MatOfPoint belowFrontTurretContour = new MatOfPoint();
+    // MatOfPoint belowSlightlyLeftTurretContour = new MatOfPoint();
+    // MatOfPoint belowRightTurretContour = new MatOfPoint();
 
-    Mat idealHu = Mat.zeros(7, 1, CvType.CV_64FC1); // initialize mat to quiet the compiler likely overkill but descriptive
-
+    Mat idealTurretContourMomentsHu = Mat.zeros(7, 1, CvType.CV_64FC1); // initialize mat to quiet the compiler likely overkill but descriptive
+    Mat belowRightTurretContourMomentsHu = Mat.zeros(7, 1, CvType.CV_64FC1); // initialize mat to quiet the compiler likely overkill but descriptive
+    Mat belowFrontTurretContourMomentsHu = Mat.zeros(7, 1, CvType.CV_64FC1); // initialize mat to quiet the compiler likely overkill but descriptive
+    Mat belowSlightlyLeftTurretContourMomentsHu = Mat.zeros(7, 1, CvType.CV_64FC1); // initialize mat to quiet the compiler likely overkill but descriptive
+    
     TargetSelectionB() {
         // Enter more data points for more accuracy. The equation should model some sort
         // of sinusoidal function.
@@ -70,6 +78,7 @@ public class TargetSelectionB {
         // this can vary greatly with perspective distortion so this might have to be
         // dynamically generated based on distance, angles, etc.
         //FIXME: better to use expected typical shape assuming the distortion of perspective
+
         MatOfPoint idealTurretContour = new MatOfPoint();
         idealTurretContour.fromArray( // High Power Port Tape Contour
             new Point(13.,  3.),   // point 0
@@ -81,48 +90,66 @@ public class TargetSelectionB {
             new Point(77., 95.),    // point 6
             new Point(28., 3.)     // point 7
             );
-
-            /** from crude hand pointing camera at small model in rkt basement
-             * lower right of target
-               [229, 136;
-                228, 143;
-                235, 158;
-                249, 162;
-                257, 162;
-                256, 157;
-                240, 153;
-                238, 151;
-                236, 141;
-                246, 134;
-                245, 128]
-
-             * lower front of target
-             [494, 131;
-                414, 183;
-                414, 302;
-                487, 351;
-                493, 335;
-                430, 292;
-                429, 210;
-                436, 186;
-                495, 147]
-
-            * lower slightly left of target
-            [151, 249;
-            105, 272;
-            102, 318;
-            138, 337;
-            144, 336;
-            144, 330;
-            112, 311;
-            114, 282;
-            119, 273;
-            152, 258]
-             */
-
-        Moments idealMoments = Imgproc.moments(idealTurretContour);
+        Moments idealTurretContourMoments = Imgproc.moments(idealTurretContour);
         idealTurretContour.release();
-        Imgproc.HuMoments(idealMoments, idealHu);
+        Imgproc.HuMoments(idealTurretContourMoments, idealTurretContourMomentsHu);
+
+        // // from crude hand pointing camera at small model in rkt basement
+        // FIXME: release these 4 somewhere.
+        // //  MatOfPoint belowRightTurretContour = new MatOfPoint();
+        // belowRightTurretContour.fromArray(
+        //     new Point(229., 136.),
+        //     new Point(228., 143.),
+        //     new Point(235., 158.),
+        //     new Point(249., 162.),
+        //     new Point(257., 162.),
+        //     new Point(256., 157.),
+        //     new Point(240., 153.),
+        //     new Point(238., 151.),
+        //     new Point(236., 141.),
+        //     new Point(246., 134.),
+        //     new Point(245., 128.)
+        //     );
+        // //Core.flip(belowRightTurretContour, belowRightTurretContour, 0);
+        // System.out.println(belowRightTurretContour);
+
+        // Moments belowRightTurretContourMoments = Imgproc.moments(belowRightTurretContour);
+        // //belowRightTurretContour.release();
+        // Imgproc.HuMoments(belowRightTurretContourMoments, belowRightTurretContourMomentsHu);
+
+        // //MatOfPoint belowFrontTurretContour = new MatOfPoint();
+        // belowFrontTurretContour.fromArray(
+        //     new Point(494., 131.),
+        //     new Point(414., 183.),
+        //     new Point(414., 302.),
+        //     new Point(487., 351.),
+        //     new Point(493., 335.),
+        //     new Point(430., 292.),
+        //     new Point(429., 210.),
+        //     new Point(436., 186.),
+        //     new Point(495., 147.)
+        //     );
+        // Moments belowFrontTurretContourMoments = Imgproc.moments(belowFrontTurretContour);
+        // //belowFrontTurretContour.release();
+        // Imgproc.HuMoments(belowFrontTurretContourMoments, belowFrontTurretContourMomentsHu);
+
+        // //MatOfPoint belowSlightlyLeftTurretContour = new MatOfPoint();
+        // belowSlightlyLeftTurretContour.fromArray(
+        //     new Point(151., 249.),
+        //     new Point(105., 272.),
+        //     new Point(102., 318.),
+        //     new Point(138., 337.),
+        //     new Point(144., 336.),
+        //     new Point(144., 330.),
+        //     new Point(112., 311.),
+        //     new Point(114., 282.),
+        //     new Point(119., 273.),
+        //     new Point(152., 258.)
+        //     );
+
+        // Moments belowSlightlyLeftTurretContourMoments = Imgproc.moments(belowSlightlyLeftTurretContour);
+        // //belowSlightlyLeftTurretContour.release();
+        // Imgproc.HuMoments(belowSlightlyLeftTurretContourMoments, belowSlightlyLeftTurretContourMomentsHu);
     }
 
     /**
@@ -246,8 +273,14 @@ public class TargetSelectionB {
                     listMidContour.remove(0);
                 }
                 // initialize shape comparison quality
-                 double[] compare =
+                double[] compare =
                 { Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE}; 
+                // double[] compareR =
+                // { Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE}; 
+                // double[] compareF =
+                // { Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE}; 
+                // double[] compareL =
+                // { Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE}; 
                 // **************************************** */
                 // * start match shape
                 // **************************************** */
@@ -274,10 +307,15 @@ public class TargetSelectionB {
                     Imgproc.HuMoments(moments, actualHu);
                     // System.out.println(hu);
 
-                    compare = MatchShapes.matchShapes(actualHu, idealHu);
+                    compare = MatchShapes.matchShapes(actualHu, idealTurretContourMomentsHu);
+                    // test out comparison with 3 other shapes expected due to perspective distortion
+                    // compareR = MatchShapes.matchShapes(actualHu, belowRightTurretContourMomentsHu); 
+                    // compareF = MatchShapes.matchShapes(actualHu, belowFrontTurretContourMomentsHu);
+                    // compareL = MatchShapes.matchShapes(actualHu, belowSlightlyLeftTurretContourMomentsHu); 
 
-                    Imgproc.putText(mat, String.format("%4.1f", compare[1]), boxPts[0],
-                        Core.FONT_HERSHEY_SIMPLEX, 0.3, new Scalar(255, 255, 255), 1);
+                    //Imgproc.putText(mat, String.format("%4.1f %4.1f %4.1f %4.1f", compare[1], compareL[1], compareF[1], compareR[1]),
+                    Imgproc.putText(mat, String.format("%4.1f", compare[1]),
+                    boxPts[0], Core.FONT_HERSHEY_SIMPLEX, 0.3, new Scalar(255, 255, 255), 1);
                     //System.out.println(pId + toString(compare));
                     // end use matchShapes
                     // ********************************************* */
@@ -381,40 +419,47 @@ public class TargetSelectionB {
                 }
             } // end of looping through all contours
 
+            // if (false ) {
+            // drawShape(idealTurretContour, mat);
+            // drawShape(belowFrontTurretContour, mat);
+            // drawShape(belowSlightlyLeftTurretContour, mat);
+            // drawShape(belowRightTurretContour, mat);
+            // }
+
             Imgproc.drawContours(mat, filteredContours, contourIndexBest, new Scalar(255, 255, 255), 1);
 
-            if ( false ) { // find the simpler version of the contour - fewer points
-                MatOfPoint2f temp = new MatOfPoint2f(filteredContours.get(contourIndexBest).toArray());
-                MatOfPoint2f approxCurve = new MatOfPoint2f();
-                Imgproc.approxPolyDP(
-                    temp, // Mat input curve
-                    approxCurve, // Mat ouptut simpler curve same type as input
-                    0.01*Imgproc.arcLength(temp, true), // double This is the maximum distance between the original curve and its approximation.
-                    true); // If true, the approximated curve is closed (its first and last vertices are connected). Otherwise, it is not closed.
-                    //arcLength is perimeter of closed contour if true or curve length
+            // if ( false ) { // find the simpler version of the contour - fewer points
+            //     MatOfPoint2f temp = new MatOfPoint2f(filteredContours.get(contourIndexBest).toArray());
+            //     MatOfPoint2f approxCurve = new MatOfPoint2f();
+            //     Imgproc.approxPolyDP(
+            //         temp, // Mat input curve
+            //         approxCurve, // Mat ouptut simpler curve same type as input
+            //         0.01*Imgproc.arcLength(temp, true), // double This is the maximum distance between the original curve and its approximation.
+            //         true); // If true, the approximated curve is closed (its first and last vertices are connected). Otherwise, it is not closed.
+            //         //arcLength is perimeter of closed contour if true or curve length
                 
-                System.out.println(approxCurve.dump());
+            //     System.out.println(approxCurve.dump());
                 
-                //moments = Imgproc.moments(approxCurve);
+            //     //moments = Imgproc.moments(approxCurve);
 
-                // List<Point> listApprox = new ArrayList<Point>(approxCurve.toList());
-                // System.out.println(temp.size() + " " + listApprox.size()); // 1x86 7
-                // // draw the simple contour
-                // for (int idx = 0; idx< listApprox.size(); idx++)
-                // {
-                // Imgproc.line(
-                //     mat,
-                //     listApprox.get(idx), // one end of the line
-                //     idx+1==listApprox.size() ? listApprox.get(0): listApprox.get(idx+1), // other end - close the shape on the last point
-                //     new Scalar(255, 255, 0),
-                //     1,
-                //     Imgproc.LINE_AA,
-                //     0);
-                // }
+            //     // List<Point> listApprox = new ArrayList<Point>(approxCurve.toList());
+            //     // System.out.println(temp.size() + " " + listApprox.size()); // 1x86 7
+            //     // // draw the simple contour
+            //     // for (int idx = 0; idx< listApprox.size(); idx++)
+            //     // {
+            //     // Imgproc.line(
+            //     //     mat,
+            //     //     listApprox.get(idx), // one end of the line
+            //     //     idx+1==listApprox.size() ? listApprox.get(0): listApprox.get(idx+1), // other end - close the shape on the last point
+            //     //     new Scalar(255, 255, 0),
+            //     //     1,
+            //     //     Imgproc.LINE_AA,
+            //     //     0);
+            //     // }
 
-                temp.release();
-                approxCurve.release();
-            }
+            //     temp.release();
+            //     approxCurve.release();
+            // }
 
             while(!filteredContours.isEmpty()) {
                 filteredContours.get(0).release();
@@ -447,6 +492,14 @@ public class TargetSelectionB {
         
         targetIconTemp.release();
         gripPowerPortVisionPipeline.releaseAll();
+    }
+
+    void drawShape(MatOfPoint shape, Mat dst) { 
+        for (int idxR =0; idxR < shape.rows(); idxR++) {
+            int c =  (int)shape.get( idxR,0) [0];
+            int r =  (int)shape.get( idxR,0) [1];
+            Imgproc.drawMarker(dst, new Point(c, r), new Scalar(255, 0, 255), Imgproc.MARKER_STAR, 1);// magenta
+        }
     }
 
     String toString(double[] array) {
