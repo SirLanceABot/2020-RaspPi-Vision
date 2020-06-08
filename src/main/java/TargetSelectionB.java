@@ -455,7 +455,7 @@ public class TargetSelectionB {
                 Hist hist = new Hist();
                 Mat mask = Mat.zeros(mat.size(), CvType.CV_8UC1); // start mask with all zeros (skip all pixels)
                 Imgproc.drawContours(mask, filteredContours, contourIndexBest, new Scalar(255), -1); // set the mask with the contour
-                hist.displayHist(gripPowerPortVisionPipeline.outHSV(), mat, mask); // get the HSV histogram of the contour
+                hist.displayHist(gripPowerPortVisionPipeline.outHSV(), mat, mask, new String[]{"H", "S", "V"}); // get the HSV histogram of the contour
                 mask.release();
                 // print to verify inside and outside of contour and print the values - the histogram is better
                 // MatOfPoint2f  NewMtx2 = new MatOfPoint2f( contour.toArray() );

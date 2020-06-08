@@ -16,7 +16,7 @@ class Hist {
  * @param mat Assume 3 channels that can be BGR, HSV, etc since any 3 channel data are displayed.
  *   Histogram is overlaid in the corner of the input image.
  */
-    public void displayHist(Mat mat, Mat dst, Mat mask) {
+    public void displayHist(Mat mat, Mat dst, Mat mask, String[] label) {
     Mat histImage = new Mat();
 
     //////////////////////////////////////
@@ -79,6 +79,10 @@ class Hist {
     float[] rHistData = new float[(int) (rHist.total() * rHist.channels())];
     rHist.get(0, 0, rHistData);
 
+    Imgproc.putText(histImage, label[0], new Point(10, histH/3), Core.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(255, 255, 255), 1);
+    Imgproc.putText(histImage, label[1], new Point(10, histH*2/3), Core.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(255, 255, 255), 1);
+    Imgproc.putText(histImage, label[2], new Point(10, histH), Core.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(255, 255, 255), 1);
+    
     for( int i = 1; i < histSize; i++ ) {
     Imgproc.line(histImage.submat(0, histH/3, 0, histW), new Point(binW * (i - 1), histH/3 - Math.round(bHistData[i - 1])),
     new Point(binW * (i), histH/3 - Math.round(bHistData[i])), new Scalar(255, 0, 0), 2, Imgproc.LINE_4);
