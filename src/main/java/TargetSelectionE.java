@@ -78,7 +78,7 @@ public class TargetSelectionE
 
 				// Display a message if no contours are found.
 				Imgproc.putText(mat, "No Contours", new Point(20, 20), Core.FONT_HERSHEY_SIMPLEX, 0.25,
-						new Scalar(0, 0, 0), 1);
+						new Scalar(255, 255, 255), 1);
 			}
 
 		}

@@ -11,6 +11,7 @@ import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Size;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
+import org.opencv.core.RotatedRect;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.core.CvType;
@@ -51,14 +52,15 @@ public class TargetSelectionB {
     // MatOfPoint idealTurretContour = new MatOfPoint();
     // MatOfPoint belowFrontTurretContour = new MatOfPoint();
     // MatOfPoint belowSlightlyLeftTurretContour = new MatOfPoint();
-    // MatOfPoint belowRightTurretContour = new MatOfPoint();
+    MatOfPoint belowRightTurretContour = new MatOfPoint();
 
     Mat idealTurretContourMomentsHu = Mat.zeros(7, 1, CvType.CV_64FC1); // initialize mat to quiet the compiler likely overkill but descriptive
     Mat belowRightTurretContourMomentsHu = Mat.zeros(7, 1, CvType.CV_64FC1); // initialize mat to quiet the compiler likely overkill but descriptive
-    Mat belowFrontTurretContourMomentsHu = Mat.zeros(7, 1, CvType.CV_64FC1); // initialize mat to quiet the compiler likely overkill but descriptive
-    Mat belowSlightlyLeftTurretContourMomentsHu = Mat.zeros(7, 1, CvType.CV_64FC1); // initialize mat to quiet the compiler likely overkill but descriptive
+   // Mat belowFrontTurretContourMomentsHu = Mat.zeros(7, 1, CvType.CV_64FC1); // initialize mat to quiet the compiler likely overkill but descriptive
+    //Mat belowSlightlyLeftTurretContourMomentsHu = Mat.zeros(7, 1, CvType.CV_64FC1); // initialize mat to quiet the compiler likely overkill but descriptive
     
     TargetSelectionB() {
+
         // Enter more data points for more accuracy. The equation should model some sort
         // of sinusoidal function.
         // The x coordinate is pixels and the y coordinate is the horizontal distance to
@@ -74,13 +76,13 @@ public class TargetSelectionB {
         // (30-60, HD = 38 and AD = 72)
         // (0, HD = 232 and AD = 240)
 
-        // setup ideal target shape to compare with camera image found contour
+        // setup ideal target shape to compare with camera image found contouackr
         // this can vary greatly with perspective distortion so this might have to be
         // dynamically generated based on distance, angles, etc.
         //FIXME: better to use expected typical shape assuming the distortion of perspective
 
         MatOfPoint idealTurretContour = new MatOfPoint();
-        idealTurretContour.fromArray( // High Power Port Tape Contour
+        idealTurretContour.fromArray( // High Power Port Tape Contour - 2D drawing - no perspective warp
             new Point(13.,  3.),   // point 0
             new Point(68.,  109.),   // point 1
             new Point(188., 109.),   // point 2
@@ -94,28 +96,28 @@ public class TargetSelectionB {
         idealTurretContour.release();
         Imgproc.HuMoments(idealTurretContourMoments, idealTurretContourMomentsHu);
 
-        // // from crude hand pointing camera at small model in rkt basement
-        // FIXME: release these 4 somewhere.
-        // //  MatOfPoint belowRightTurretContour = new MatOfPoint();
-        // belowRightTurretContour.fromArray(
-        //     new Point(229., 136.),
-        //     new Point(228., 143.),
-        //     new Point(235., 158.),
-        //     new Point(249., 162.),
-        //     new Point(257., 162.),
-        //     new Point(256., 157.),
-        //     new Point(240., 153.),
-        //     new Point(238., 151.),
-        //     new Point(236., 141.),
-        //     new Point(246., 134.),
-        //     new Point(245., 128.)
-        //     );
-        // //Core.flip(belowRightTurretContour, belowRightTurretContour, 0);
-        // System.out.println(belowRightTurretContour);
+        // from crude hand pointing camera at small model in rkt basement
 
-        // Moments belowRightTurretContourMoments = Imgproc.moments(belowRightTurretContour);
-        // //belowRightTurretContour.release();
-        // Imgproc.HuMoments(belowRightTurretContourMoments, belowRightTurretContourMomentsHu);
+        //MatOfPoint belowRightTurretContour = new MatOfPoint();
+        belowRightTurretContour.fromArray(
+            new Point(229., 136.),
+            new Point(228., 143.),
+            new Point(235., 158.),
+            new Point(251., 162.),
+            new Point(266., 164.),//bottom right
+            new Point(261., 157.),//
+            new Point(240., 153.),
+            new Point(238., 151.),
+            new Point(236., 141.),
+            new Point(246., 134.),
+            new Point(245., 128.)
+            );
+        //Core.flip(belowRightTurretContour, belowRightTurretContour, 0);
+        //System.out.println(belowRightTurretContour);
+
+        Moments belowRightTurretContourMoments = Imgproc.moments(belowRightTurretContour);
+        //belowRightTurretContour.release();
+        Imgproc.HuMoments(belowRightTurretContourMoments, belowRightTurretContourMomentsHu);
 
         // //MatOfPoint belowFrontTurretContour = new MatOfPoint();
         // belowFrontTurretContour.fromArray(
@@ -170,10 +172,10 @@ public class TargetSelectionB {
      */
     public void process(Mat mat, TargetDataB nextTargetData) {
 
-        // Let the ripPowerPortVisionPipeline filter through the camera frame
+        // Let the GRIPPowerPortVisionPipeline filter through the camera frame
         gripPowerPortVisionPipeline.process(mat);
-
-        // try this model of a vision pipeline for cyberknight presentation
+ //gripPowerPortVisionPipeline.cvMorph0Output().copyTo(mat);
+        // try this model of a vision pipeline from a cyberknight presentation
         // threshold cv_thresh_binary
         // dilate
         // cvtcolor bgr2hsv
@@ -181,9 +183,17 @@ public class TargetSelectionB {
         // canny dst canny_out 0, 0
         // findcontours external cv_chain_approx_simple point(0, 0)
 
+        // In several experiments, edge detecting (Canny, Sobel, Gradient, etc) didn't seem to help.
+        // Canny was neutral, Sobel hurt with the parameters I used, and Gradient made fat contours
+        // The best contours that were the right size were setting the HSV very close to what is needed.
+        // Unfortunately setting HSV close for near objects makes far (dim) objects disappear.
+        // Need some sort of adaptive setting to minimize the dark border around the contour.
+        // That extra thickness of the object doesn't hurt anything except shape analyses using
+        // the Hu moments.  The thickness of the object can significantly effect the moments
+        // especially when the object is far away and very small.
+
         // We are cautiously optimistic that GRIP pipeline found the one and only one
-        // target object
-        // but there might not be one and only one so take evasive action
+        // target object but there might not be one and only one so take evasive action
 
         // The gripPowerPortVisionPipeline creates an array of contours that must
         // be searched to find the target.
@@ -197,12 +207,11 @@ public class TargetSelectionB {
 
         // Check if no contours were found in the camera frame.
         if (filteredContours.isEmpty()) {
+            System.out.println(pId + " No Contours");
             if (debuggingEnabled) {
-                System.out.println(pId + " No Contours");
-
                 // Display a message if no contours are found.
                 Imgproc.putText(mat, "No Contours", new Point(20, 20), Core.FONT_HERSHEY_SIMPLEX, 0.25,
-                        new Scalar(0, 0, 0), 1);
+                        new Scalar(255, 255, 255), 1);
             }
 
             nextTargetData.portDistance = -1.;
@@ -218,8 +227,6 @@ public class TargetSelectionB {
             Rect boundRect = null; // upright rectangle
    
             if (debuggingEnabled) {
-                System.out.println(pId + " " + filteredContours.size() + " contours");
-
                 // Draw all contours at once (negative index).
                 // Positive thickness means not filled, negative thickness means filled.
                 Imgproc.drawContours(mat, filteredContours, -1, new Scalar(255, 0, 0), 1);
@@ -244,6 +251,30 @@ public class TargetSelectionB {
                 // System.out.println("(" + contour.toArray()[idx].x + ", " +
                 // contour.toArray()[idx].y + ")");
                 // }
+
+                { // create angled bounding rectangle - could use angle to double check position
+                RotatedRect rotatedRect;
+                MatOfPoint2f NewMtx = new MatOfPoint2f(contour.toArray());
+                rotatedRect = Imgproc.minAreaRect(NewMtx);
+                NewMtx.release();
+                Point[] boxPts = new Point[4];
+                rotatedRect.points(boxPts);
+
+                List<MatOfPoint> listMidContour = new ArrayList<MatOfPoint>();
+                listMidContour.add(new MatOfPoint(boxPts[0], boxPts[1], boxPts[2], boxPts[3]));
+
+                Imgproc.polylines(mat, // Matrix obj of the image
+                        listMidContour, // java.util.List<MatOfPoint> pts
+                        true, // isClosed
+                        new Scalar(0, 255, 255), // Scalar object for color
+                        1, // Thickness of the line
+                        Imgproc.LINE_4 // line type
+                        );
+                while(!listMidContour.isEmpty()) {
+                    listMidContour.get(0).release();
+                    listMidContour.remove(0);
+                }
+                }
 
                 // Create a bounding upright rectangle for the contour's points
                 MatOfPoint2f NewMtx = new MatOfPoint2f(contour.toArray());
@@ -272,11 +303,12 @@ public class TargetSelectionB {
                     listMidContour.get(0).release();
                     listMidContour.remove(0);
                 }
+                
                 // initialize shape comparison quality
                 double[] compare =
                 { Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE}; 
-                // double[] compareR =
-                // { Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE}; 
+                double[] compareR =
+                { Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE}; 
                 // double[] compareF =
                 // { Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE}; 
                 // double[] compareL =
@@ -299,47 +331,65 @@ public class TargetSelectionB {
 
                     // compute moments and Hu moments for our own matchShapes. OpenCV matchShapes() does
                     // it for us.
+ 
                     Moments moments;
                     Mat actualHu = Mat.zeros(7, 1, CvType.CV_64FC1); // initialize mat - need to quiet the compiler but
-                                                                     // this is likely overkill
+                                                                     // zeros is likely overkill
 
                     moments = Imgproc.moments(filteredContours.get(contourIndex));
                     Imgproc.HuMoments(moments, actualHu);
-                    // System.out.println(hu);
+                    //System.out.println(belowRightTurretContourMomentsHu);
+                    // Hu moment #7 opposite signs indicates mirror image - didn't seem to work here, though.
+                    // if ( Math.signum(actualHu.get(6, 0)[0])
+                    //          != Math.signum(idealTurretContourMomentsHu.get(6, 0)[0]) ) {
+                    //     System.out.println("ideal Hu moments 7 differ");
+                    // }
+                    
+                    // if ( Math.signum(actualHu.get(6, 0)[0])
+                    //          != Math.signum(belowRightTurretContourMomentsHu.get(6, 0)[0]) ) {
+                    //     System.out.println("below right Hu moments 7 differ");
+                    // }
 
                     compare = MatchShapes.matchShapes(actualHu, idealTurretContourMomentsHu);
                     // test out comparison with 3 other shapes expected due to perspective distortion
-                    // compareR = MatchShapes.matchShapes(actualHu, belowRightTurretContourMomentsHu); 
+                    compareR = MatchShapes.matchShapes(actualHu, belowRightTurretContourMomentsHu); 
                     // compareF = MatchShapes.matchShapes(actualHu, belowFrontTurretContourMomentsHu);
-                    // compareL = MatchShapes.matchShapes(actualHu, belowSlightlyLeftTurretContourMomentsHu); 
-
-                    //Imgproc.putText(mat, String.format("%4.1f %4.1f %4.1f %4.1f", compare[1], compareL[1], compareF[1], compareR[1]),
-                    Imgproc.putText(mat, String.format("%4.1f", compare[1]),
-                    boxPts[0], Core.FONT_HERSHEY_SIMPLEX, 0.3, new Scalar(255, 255, 255), 1);
+                    // compareL = MatchShapes.matchShapes(actualHu, belowSlightlyLeftTurretContourMomentsHu);
+                    Imgproc.putText(mat,
+                        String.format("%3.0f%s%3.0f", compare[1], compareR[1] >= 10. ? " " : "       ", compareR[1]),
+                        boxPts[0],
+                        Core.FONT_HERSHEY_SIMPLEX, 0.3,
+                        new Scalar(255, 255, 255), 1);
+                    }
                     //System.out.println(pId + toString(compare));
                     // end use matchShapes
                     // ********************************************* */
 
                     // TODO: display quality of shape on Shuffleboard?
 
-                    // also TODO: use the comparison or absolute value of distance sensors to filter
-                    // bad "targets"
+                    // also TODO: use the comparison or absolute value of distance sensors to filter bad "targets"
                     // at St Joe 2020, Robot shot at a big green team sign in the bleachers thinking
                     // it was a small nearby target
-                }
+
                 // **************************************** */
                 // * end match shape
                 // **************************************** */
 
                 // ******************************************* */
                 // * save the data for the best contour (so far)
+                // *
+                // * If the compare variable isn't calculated above (it's an option set in Main),
+                // * then the initialized values are used causing all the contours to be "checked"
+                // * and the last one wins so there had better be only one countour, if
+                // * shape checking is disabled.
                 // ******************************************* */
-                if (compare[1] <= shapeMatch) { // method [1] used for matching; others better? method [0] is terrible
+
+                if (compare[1] <= shapeMatch || compareR[1] <= shapeMatch) { // method [1] used for matching; others better? method [0] is terrible
                     // the if(=) case covers if only one contour
                     // or if optional shape matching wasn't run in which case the last contour wins
 
-                    // save new best contour
-                    shapeMatch = compare[1];
+                    // save new best contour\
+                    shapeMatch = Math.min(compare[1], compareR[1]);
                     contourIndexBest = contourIndex;
 
                     // Find the corner points of the bounding rectangle and the image size
@@ -386,37 +436,10 @@ public class TargetSelectionB {
                 // *********************************************** */
 
                 // gripPowerPortVisionPipeline.cvCannyOutput().copyTo(mat); // show this to verify appearance of the edge detector
-  
-                // display HSV histograms
-
                 // note that if using canny edge detection as part of the thresholding process,
                 // canny does draw the contour outside of the target so there is the color 
                 // of the backgound around the contour - black which appears as the red (0) in the histogram
 
-                if (Main.displayTurretContours && Main.displayTurretHistogram) {
-                    try {
-                    Hist hist = new Hist();
-                    Mat mask = Mat.zeros(mat.size(), CvType.CV_8UC1); // start with all zeros - skip all pixels
-                    Imgproc.drawContours(mask, filteredContours, contourIndexBest, new Scalar(255), -1); // set the mask with the contour
-                    hist.displayHist(mat, mask); // get the HSV histogram of the contour
-                    mask.release();
-                    // print to verify insode and outside of contour and print the values - the histogram is better
-                    // MatOfPoint2f  NewMtx2 = new MatOfPoint2f( contour.toArray() );
-                    // for (double idxR = boundRect.tl().y; idxR < boundRect.br().y; idxR++)
-                    // for (double idxC = boundRect.tl().x; idxC < boundRect.br().x; idxC++)
-                    // {
-                    //  The function returns +1 , -1 , or 0
-                    //  to indicate if a point is inside, outside, or on the contour, respectively.
-                    //     double inOrOut = Imgproc.pointPolygonTest(NewMtx2, new Point(idxC, idxR), false);
-                    //     if (inOrOut == 1.) {
-                    //     System.out.format("%d, %d, %5.1f  ", (int)idxC, (int)idxR, inOrOut);
-                    //     System.out.format("%4.0f",   gripPowerPortVisionPipeline.outHSV().get((int)idxR, (int)idxC)[0]);
-                    //     System.out.format("%4.0f",   gripPowerPortVisionPipeline.outHSV().get((int)idxR, (int)idxC)[1]);
-                    //     System.out.format("%4.0f\n", gripPowerPortVisionPipeline.outHSV().get((int)idxR, (int)idxC)[2]);
-                    //     }
-                    // }
-                    } catch(Exception e) {e.printStackTrace();}
-                }
             } // end of looping through all contours
 
             // if (false ) {
@@ -425,7 +448,34 @@ public class TargetSelectionB {
             // drawShape(belowSlightlyLeftTurretContour, mat);
             // drawShape(belowRightTurretContour, mat);
             // }
+  
+            // display HSV histograms of the best contour - could do all the "best" contours in above loop
+            if (Main.displayTurretContours && Main.displayTurretHistogram) {
+                try {
+                Hist hist = new Hist();
+                Mat mask = Mat.zeros(mat.size(), CvType.CV_8UC1); // start mask with all zeros (skip all pixels)
+                Imgproc.drawContours(mask, filteredContours, contourIndexBest, new Scalar(255), -1); // set the mask with the contour
+                hist.displayHist(gripPowerPortVisionPipeline.outHSV(), mat, mask); // get the HSV histogram of the contour
+                mask.release();
+                // print to verify inside and outside of contour and print the values - the histogram is better
+                // MatOfPoint2f  NewMtx2 = new MatOfPoint2f( contour.toArray() );
+                // for (double idxR = boundRect.tl().y; idxR < boundRect.br().y; idxR++)
+                // for (double idxC = boundRect.tl().x; idxC < boundRect.br().x; idxC++)
+                // {
+                //  The function returns +1 , -1 , or 0
+                //  to indicate if a point is inside, outside, or on the contour, respectively.
+                //     double inOrOut = Imgproc.pointPolygonTest(NewMtx2, new Point(idxC, idxR), false);
+                //     if (inOrOut >= 0.) {
+                //     System.out.format("%d, %d, %5.1f  ", (int)idxC, (int)idxR, inOrOut);
+                //     System.out.format("%4.0f",   gripPowerPortVisionPipeline.outHSV().get((int)idxR, (int)idxC)[0]);
+                //     System.out.format("%4.0f",   gripPowerPortVisionPipeline.outHSV().get((int)idxR, (int)idxC)[1]);
+                //     System.out.format("%4.0f\n", gripPowerPortVisionPipeline.outHSV().get((int)idxR, (int)idxC)[2]);
+                //     }
+                // }
+                } catch(Exception e) {e.printStackTrace();}
+            }
 
+            // draw the final best contour to outline the target found
             Imgproc.drawContours(mat, filteredContours, contourIndexBest, new Scalar(255, 255, 255), 1);
 
             // if ( false ) { // find the simpler version of the contour - fewer points
@@ -467,14 +517,17 @@ public class TargetSelectionB {
             }        
         } // end of processing all contours in this camera frames
 
-        // resize bounding bounding box of best contour to 24x24 for target icon
-        Mat targetIconTemp = new Mat();
-        if( contourIndexBest >= 0 ) { // save the contour even if out of range (effectively no target found)
+        
+        Mat targetIconTemp = new Mat(); // to resize bounding bounding box of best contour to 24x24 for target icon
+                                        // allocate this temp variable to keep processing out of the "synchronized"
+
+        if( contourIndexBest >= 0 ) { // contours found path      
+            // save the contour even if out of range (effectively no target found)
             Imgproc.resize(mat.submat( new Rect(nextTargetData.boundingBoxPts[0], nextTargetData.boundingBoxPts[2])),
                 targetIconTemp, new Size(24, 24), 0., 0., Imgproc.INTER_LINEAR);
         }
-        else {
-            Imgproc.resize(mat.submat(mat.height()/2-24, mat.height()/2+24, mat.width()/2-24, mat.width()/2+24), // smash 2 to 1
+        else { // no contours found path
+            Imgproc.resize(mat.submat(mat.height()/2-24, mat.height()/2+24, mat.width()/2-24, mat.width()/2+24), // grab the image center
                 targetIconTemp, new Size(24, 24), 0., 0., Imgproc.INTER_LINEAR);
         }
 
@@ -494,12 +547,24 @@ public class TargetSelectionB {
         gripPowerPortVisionPipeline.releaseAll();
     }
 
-    void drawShape(MatOfPoint shape, Mat dst) { 
-        for (int idxR =0; idxR < shape.rows(); idxR++) {
-            int c =  (int)shape.get( idxR,0) [0];
-            int r =  (int)shape.get( idxR,0) [1];
-            Imgproc.drawMarker(dst, new Point(c, r), new Scalar(255, 0, 255), Imgproc.MARKER_STAR, 1);// magenta
-        }
+    void drawShape(MatOfPoint shape, Mat dst) {
+        //System.out.println(shape.dump() + " " + dst.rows()); 
+
+        List<MatOfPoint> temp = new ArrayList<MatOfPoint>();
+        temp.add(shape);
+        Imgproc.polylines(dst, // Matrix obj of the image
+        temp, // java.util.List<MatOfPoint> pts
+        true, // isClosed
+        new Scalar(255, 255, 255), // Scalar object for color
+        1, // Thickness of the line
+        Imgproc.LINE_4 // line type
+        );
+
+        // for (int idxR =0; idxR < shape.rows(); idxR++) {
+        //     int c =  (int)shape.get( idxR,0) [0];
+        //     int r =  (int)shape.get( idxR,0) [1];
+        //     Imgproc.drawMarker(dst, new Point(c, r), new Scalar(255, 0, 255), Imgproc.MARKER_STAR, 8);// magenta
+        // }
     }
 
     String toString(double[] array) {
@@ -551,7 +616,8 @@ public class TargetSelectionB {
 // One way to sharpen an image. Not needed for line detection. Not necessarily
 // the best sharpener.
 // Maybe an OpenCV filter2D edge detector with an appropriate kernel would give
-// good results
+// good results #define sharpen mat3(0, -1, 0, -1, 5, -1, 0, -1, 0)
+// Imgproc.filter2D(picture0Gray, picture0GrayFilter1, picture0Gray.depth(), filter1);
 // https://en.wikipedia.org/wiki/Kernel_(image_processing)
 // // sharpen image
 // blur is low pass filter

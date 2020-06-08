@@ -16,7 +16,7 @@ class Hist {
  * @param mat Assume 3 channels that can be BGR, HSV, etc since any 3 channel data are displayed.
  *   Histogram is overlaid in the corner of the input image.
  */
-    public void displayHist(Mat mat, Mat mask) {
+    public void displayHist(Mat mat, Mat dst, Mat mask) {
     Mat histImage = new Mat();
 
     //////////////////////////////////////
@@ -30,7 +30,7 @@ class Hist {
     //Imgproc.cvtColor(mat, mat, Imgproc.COLOR_BGR2GRAY);
     //Imgproc.cvtColor(mat, mat, Imgproc.COLOR_BGR2HLS);
     Core.split(mat, bgrPlanes);
-    //! [Separate the image in 3 places ( B, G and R )]
+    //! [Separate the image in 3 planes ( B, G and R or H, S, V, or any 3 planes)]
 
     //! [Establish the number of bins]
     int histSize = 128;
@@ -103,7 +103,7 @@ class Hist {
     // end histogram of image mat before any other drawing on mat
 
     Mat subMat = new Mat(); // place for small image inserted into large image
-    subMat = mat.submat(0, histImage.rows(), 0, histImage.cols()); // define the
+    subMat = dst.submat(0, histImage.rows(), 0, histImage.cols()); // define the
     // insert area on the main image
     if( ! histImage.empty() )
     {

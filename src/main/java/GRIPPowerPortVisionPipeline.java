@@ -1,4 +1,4 @@
-// Several changes made that are NOT in the GRIP file as of 5/22/2020
+// Many changes made that are NOT in the GRIP file as of 5/22/2020
 
 
 
@@ -21,10 +21,13 @@ public class GRIPPowerPortVisionPipeline {
 	private Mat blurOutput = new Mat();
 	private Mat outHSV = new Mat();
 	private Mat hsvThresholdOutput = new Mat();
-	private Mat cvErode0Output = new Mat();
-	private Mat cvDilateOutput = new Mat();
-	private Mat cvErode1Output = new Mat();
-	private Mat cvCannyOutput = new Mat();
+	// private Mat cvErode0Output = new Mat();
+	// private Mat cvDilateOutput = new Mat();
+	// private Mat cvErode1Output = new Mat();
+	private Mat cvMorph0Output = new Mat();
+	private Mat cvMorph1Output = new Mat();
+	// private Mat cvMorph2Output = new Mat();
+	// private Mat cvCannyOutput = new Mat();
 	private ArrayList<MatOfPoint> findContoursOutput = new ArrayList<MatOfPoint>();
 	private ArrayList<MatOfPoint> filterContoursOutput = new ArrayList<MatOfPoint>();
 
@@ -45,53 +48,88 @@ public class GRIPPowerPortVisionPipeline {
 		// Step HSV_Threshold0:
 		Mat hsvThresholdInput = blurOutput;
 		double[] hsvThresholdHue = {63.12949640287769, 98.60068259385666}; // good, actual in basement 75-85
-		double[] hsvThresholdSaturation = {0.0, 255.0}; // good actual 150-255 mostly 160 to 240 ,255
-		// double[] hsvThresholdValue = {16.052158273381295, 220.1877133105802}; // good actual 22-139
-		//TODO: use unchanged GRIP - redo GRIP if necessary
+		double[] hsvThresholdSaturation = {160, 255.0}; // good actual 150-255 mostly 160 to 240 ,255
+		//double[] hsvThresholdValue = {16.052158273381295, 220.1877133105802}; // good actual 22-139
 		//double[] hsvThresholdValue = {73.0, 255.0}; // Annika measured this at St Joe GRIP and what is here in code worked so leave it be
-		double[] hsvThresholdValue = {17.51798561151079, 255.0}; // 27 good; try 17
+		double[] hsvThresholdValue = {17.51798561151079, 255.0}; // 17 needed at great distance in rkt basement
 		hsvThreshold(hsvThresholdInput, hsvThresholdHue, hsvThresholdSaturation, hsvThresholdValue, hsvThresholdOutput);
 
-		// Step CV_erode0:
-		Mat cvErode0Src = hsvThresholdOutput;
-		Mat cvErode0Kernel = new Mat();
-		Point cvErode0Anchor = new Point(-1, -1);
-		double cvErode0Iterations = 2.0;
-		int cvErode0Bordertype = Core.BORDER_CONSTANT;
-		Scalar cvErode0Bordervalue = new Scalar(-1);
-		cvErode(cvErode0Src, cvErode0Kernel, cvErode0Anchor, cvErode0Iterations, cvErode0Bordertype, cvErode0Bordervalue, cvErode0Output);
-		cvErode0Kernel.release();
+		// Step CV_morph0:
+		int cvMorph0op = Imgproc.MORPH_CLOSE; // close - dilate then erode
+		Mat cvMorph0Src = hsvThresholdOutput;
+		Mat cvMorph0Kernel = new Mat();
+		Point cvMorph0Anchor = new Point(-1, -1);
+		double cvMorph0Iterations = 2.0;
+		int cvMorph0Bordertype = Core.BORDER_CONSTANT;
+		Scalar cvMorph0Bordervalue = new Scalar(-1);
+		cvMorph(cvMorph0Src, cvMorph0Kernel, cvMorph0op, cvMorph0Anchor, cvMorph0Iterations, cvMorph0Bordertype,
+				cvMorph0Bordervalue, cvMorph0Output);
+		cvMorph0Kernel.release();
 
-		// Step CV_dilate0:
-		Mat cvDilateSrc = cvErode0Output;
-		Mat cvDilateKernel = new Mat();
-		Point cvDilateAnchor = new Point(-1, -1);
-		double cvDilateIterations = 4.0;
-		int cvDilateBordertype = Core.BORDER_CONSTANT;
-		Scalar cvDilateBordervalue = new Scalar(-1);
-		cvDilate(cvDilateSrc, cvDilateKernel, cvDilateAnchor, cvDilateIterations, cvDilateBordertype, cvDilateBordervalue, cvDilateOutput);
-		cvDilateKernel.release();
+		// Step CV_morph1:
+		int cvMorph1op = Imgproc.MORPH_OPEN; // Open - erode then dilate
+		Mat cvMorph1Src = cvMorph0Output;
+		Mat cvMorph1Kernel = new Mat();
+		Point cvMorph1Anchor = new Point(-1, -1);
+		double cvMorph1Iterations = 2.0;
+		int cvMorph1Bordertype = Core.BORDER_CONSTANT;
+		Scalar cvMorph1Bordervalue = new Scalar(-1);
+		cvMorph(cvMorph1Src, cvMorph1Kernel, cvMorph1op, cvMorph1Anchor, cvMorph1Iterations, cvMorph1Bordertype,
+				cvMorph1Bordervalue, cvMorph1Output);
+		cvMorph1Kernel.release();
 
-		// Step CV_erode1:
-		Mat cvErode1Src = cvDilateOutput;
-		Mat cvErode1Kernel = new Mat();
-		Point cvErode1Anchor = new Point(-1, -1);
-		double cvErode1Iterations = 2.0;
-		int cvErode1Bordertype = Core.BORDER_CONSTANT;
-		Scalar cvErode1Bordervalue = new Scalar(-1);
-		cvErode(cvErode1Src, cvErode1Kernel, cvErode1Anchor, cvErode1Iterations, cvErode1Bordertype, cvErode1Bordervalue, cvErode1Output);
-		cvErode1Kernel.release();
+		// // Step CV_erode0:
+		// Mat cvErode0Src = hsvThresholdOutput;
+		// Mat cvErode0Kernel = new Mat();
+		// Point cvErode0Anchor = new Point(-1, -1);
+		// double cvErode0Iterations = 2.0;
+		// int cvErode0Bordertype = Core.BORDER_CONSTANT;
+		// Scalar cvErode0Bordervalue = new Scalar(-1);
+		// cvErode(cvErode0Src, cvErode0Kernel, cvErode0Anchor, cvErode0Iterations, cvErode0Bordertype, cvErode0Bordervalue, cvErode0Output);
+		// cvErode0Kernel.release();
 
-		// Step CV_Canny0:
-		Mat cvCannyImage = cvErode1Output;
-		double cvCannyThreshold1 = 0.0;
-		double cvCannyThreshold2 = 0.0;
-		double cvCannyAperturesize = 3.0;
-		boolean cvCannyL2gradient = false;
-		cvCanny(cvCannyImage, cvCannyThreshold1, cvCannyThreshold2, cvCannyAperturesize, cvCannyL2gradient, cvCannyOutput);
+		// // Step CV_dilate0:
+		// Mat cvDilateSrc = cvErode0Output;
+		// Mat cvDilateKernel = new Mat();
+		// Point cvDilateAnchor = new Point(-1, -1);
+		// double cvDilateIterations = 4.0;
+		// int cvDilateBordertype = Core.BORDER_CONSTANT;
+		// Scalar cvDilateBordervalue = new Scalar(-1);
+		// cvDilate(cvDilateSrc, cvDilateKernel, cvDilateAnchor, cvDilateIterations, cvDilateBordertype, cvDilateBordervalue, cvDilateOutput);
+		// cvDilateKernel.release();
+
+		// // Step CV_erode1:
+		// Mat cvErode1Src = cvDilateOutput;
+		// Mat cvErode1Kernel = new Mat();
+		// Point cvErode1Anchor = new Point(-1, -1);
+		// double cvErode1Iterations = 2.0;
+		// int cvErode1Bordertype = Core.BORDER_CONSTANT;
+		// Scalar cvErode1Bordervalue = new Scalar(-1);
+		// cvErode(cvErode1Src, cvErode1Kernel, cvErode1Anchor, cvErode1Iterations, cvErode1Bordertype, cvErode1Bordervalue, cvErode1Output);
+		// cvErode1Kernel.release();
+
+		// // Step CV_Canny0:
+		// Mat cvCannyImage = cvMorph1Output;
+		// double cvCannyThreshold1 = 0.0;
+		// double cvCannyThreshold2 = 0.0;
+		// double cvCannyAperturesize = 3.0;
+		// boolean cvCannyL2gradient = false;
+		// cvCanny(cvCannyImage, cvCannyThreshold1, cvCannyThreshold2, cvCannyAperturesize, cvCannyL2gradient, cvCannyOutput);
+
+		// // Step CV_Morph2:
+		// int cvMorph2op = Imgproc.MORPH_GRADIENT; // dilate - erode
+		// Mat cvMorph2Src = cvMorph1Output;
+		// Mat cvMorph2Kernel = new Mat();
+		// Point cvMorph2Anchor = new Point(-1, -1);
+		// double cvMorph2Iterations = 2.0;
+		// int cvMorph2Bordertype = Core.BORDER_CONSTANT;
+		// Scalar cvMorph2Bordervalue = new Scalar(-1);
+		// cvMorph(cvMorph2Src, cvMorph2Kernel, cvMorph2op, cvMorph2Anchor, cvMorph2Iterations, cvMorph2Bordertype,
+		// 		cvMorph2Bordervalue, cvMorph2Output);
+		// cvMorph2Kernel.release();
 
 		// Step Find_Contours0:
-		Mat findContoursInput = cvCannyOutput;
+		Mat findContoursInput = cvMorph1Output;
 		boolean findContoursExternalOnly = true;
 		findContours(findContoursInput, findContoursExternalOnly, findContoursOutput);
 
@@ -110,7 +148,6 @@ public class GRIPPowerPortVisionPipeline {
 		double filterContoursMinRatio = 0.0;
 		double filterContoursMaxRatio = 1000.0;
 		filterContours(filterContoursContours, filterContoursMinArea, filterContoursMinPerimeter, filterContoursMinWidth, filterContoursMaxWidth, filterContoursMinHeight, filterContoursMaxHeight, filterContoursSolidity, filterContoursMaxVertices, filterContoursMinVertices, filterContoursMinRatio, filterContoursMaxRatio, filterContoursOutput);
-
 	}
 
 	/**
@@ -136,37 +173,61 @@ public class GRIPPowerPortVisionPipeline {
 		return hsvThresholdOutput;
 	}
 
+	// /**
+	//  * This method is a generated getter for the output of a CV_erode.
+	//  * @return Mat output from CV_erode.
+	//  */
+	// public Mat cvErode0Output() {
+	// 	return cvErode0Output;
+	// }
+
+	// /**
+	//  * This method is a generated getter for the output of a CV_dilate.
+	//  * @return Mat output from CV_dilate.
+	//  */
+	// public Mat cvDilateOutput() {
+	// 	return cvDilateOutput;
+	// }
+
+	// /**
+	//  * This method is a generated getter for the output of a CV_erode.
+	//  * @return Mat output from CV_erode.
+	//  */
+	// public Mat cvErode1Output() {
+	// 	return cvErode1Output;
+	// }
+
 	/**
-	 * This method is a generated getter for the output of a CV_erode.
-	 * @return Mat output from CV_erode.
+	 * This method is a generated getter for the output of a CV_morph0.
+	 * @return Mat output from CV_morph0.
 	 */
-	public Mat cvErode0Output() {
-		return cvErode0Output;
+	public Mat cvMorph0Output() {
+		return cvMorph0Output;
 	}
 
 	/**
-	 * This method is a generated getter for the output of a CV_dilate.
-	 * @return Mat output from CV_dilate.
+	 * This method is a generated getter for the output of a CV_morph1.
+	 * @return Mat output from CV_morph1.
 	 */
-	public Mat cvDilateOutput() {
-		return cvDilateOutput;
+	public Mat cvMorph1Output() {
+		return cvMorph1Output;
 	}
 
-	/**
-	 * This method is a generated getter for the output of a CV_erode.
-	 * @return Mat output from CV_erode.
-	 */
-	public Mat cvErode1Output() {
-		return cvErode1Output;
-	}
+	// /**
+	//  * This method is a generated getter for the output of a CV_morph2.
+	//  * @return Mat output from CV_morph2.
+	//  */
+	// public Mat cvMorph2Output() {
+	// 	return cvMorph2Output;
+	// }
 
-	/**
-	 * This method is a generated getter for the output of a CV_Canny.
-	 * @return Mat output from CV_Canny.
-	 */
-	public Mat cvCannyOutput() {
-		return cvCannyOutput;
-	}
+	// /**
+	//  * This method is a generated getter for the output of a CV_Canny.
+	//  * @return Mat output from CV_Canny.
+	//  */
+	// public Mat cvCannyOutput() {
+	// 	return cvCannyOutput;
+	// }
 
 	/**
 	 * This method is a generated getter for the output of a Find_Contours.
@@ -266,41 +327,89 @@ public class GRIPPowerPortVisionPipeline {
 			new Scalar(hue[1], sat[1], val[1]), out);
 	}
 
-	/**
-	 * Expands area of higher value in an image.
-	 * @param src the Image to dilate.
-	 * @param kernel the kernel for dilation.
-	 * @param anchor the center of the kernel.
-	 * @param iterations the number of times to perform the dilation.
-	 * @param borderType pixel extrapolation method.
-	 * @param borderValue value to be used for a constant border.
-	 * @param dst Output Image.
-	 */
-	private void cvDilate(Mat src, Mat kernel, Point anchor, double iterations,
-	int borderType, Scalar borderValue, Mat dst) {
-		if (kernel == null) {
-			kernel = new Mat();
-		}
-		if (anchor == null) {
-			anchor = new Point(-1,-1);
-		}
-		if (borderValue == null){
-			borderValue = new Scalar(-1);
-		}
-		Imgproc.dilate(src, dst, kernel, anchor, (int)iterations, borderType, borderValue);
-	}
+	// /**
+	//  * Expands area of higher value in an image.
+	//  * @param src the Image to dilate.
+	//  * @param kernel the kernel for dilation.
+	//  * @param anchor the center of the kernel.
+	//  * @param iterations the number of times to perform the dilation.
+	//  * @param borderType pixel extrapolation method.
+	//  * @param borderValue value to be used for a constant border.
+	//  * @param dst Output Image.
+	//  */
+	// private void cvDilate(Mat src, Mat kernel, Point anchor, double iterations,
+	// int borderType, Scalar borderValue, Mat dst) {
+	// 	if (kernel == null) {
+	// 		kernel = new Mat();
+	// 	}
+	// 	if (anchor == null) {
+	// 		anchor = new Point(-1,-1);
+	// 	}
+	// 	if (borderValue == null){
+	// 		borderValue = new Scalar(-1);
+	// 	}
+	// 	Imgproc.dilate(src, dst, kernel, anchor, (int)iterations, borderType, borderValue);
+	// }
 
-	/**
-	 * Expands area of lower value in an image.
+	// /**
+	//  * Contracts area of lower value in an image.
+	//  * @param src the Image to erode.
+	//  * @param kernel the kernel for erosion.
+	//  * @param anchor the center of the kernel.
+	//  * @param iterations the number of times to perform the erosion.
+	//  * @param borderType pixel extrapolation method.
+	//  * @param borderValue value to be used for a constant border.
+	//  * @param dst Output Image.
+	//  */
+	// private void cvErode(Mat src, Mat kernel, Point anchor, double iterations,
+	// 	int borderType, Scalar borderValue, Mat dst) {
+	// 	if (kernel == null) {
+	// 		kernel = new Mat();
+	// 	}
+	// 	if (anchor == null) {
+	// 		anchor = new Point(-1,-1);
+	// 	}
+	// 	if (borderValue == null) {
+	// 		borderValue = new Scalar(-1);
+	// 	}
+	// 	Imgproc.erode(src, dst, kernel, anchor, (int)iterations, borderType, borderValue);
+	// }
+
+	
+	/* Morphological	
+	C++: void morphologyEx(InputArray src, OutputArray dst, int op, InputArray kernel, Point anchor=Point(-1,-1), int iterations=1, int borderType=BORDER_CONSTANT, const Scalar& borderValue=morphologyDefaultBorderValue() )
+	
+	Parameters:	
+	src – Source image. The number of channels can be arbitrary. The depth should be one of CV_8U, CV_16U, CV_16S, CV_32F or CV_64F.
+	dst – Destination image of the same size and type as src .
+	element – Structuring element.
+	op –
+	Type of a morphological operation that can be one of the following:
+	
+	MORPH_OPEN - an opening operation
+	MORPH_CLOSE - a closing operation
+	MORPH_GRADIENT - a morphological gradient is diate minus erode
+	MORPH_TOPHAT - top hat
+	MORPH_BLACKHAT - black hat
+	MORPH_HITMISS - hit and miss
+	iterations – Number of times erosion and dilation are applied.
+	borderType – Pixel extrapolation method. See borderInterpolate() for details.
+	borderValue – Border value in case of a constant border. The default value has a special meaning. See createMorphologyFilter() for details.
+	The function can perform advanced morphological transformations using an erosion and dilation as basic operations.
+	*/
+	
+    /**
+	 * Multi-usage morphology depending on the op selected
 	 * @param src the Image to erode.
 	 * @param kernel the kernel for erosion.
+	 * @param op the morphological operation to be performed
 	 * @param anchor the center of the kernel.
 	 * @param iterations the number of times to perform the erosion.
 	 * @param borderType pixel extrapolation method.
 	 * @param borderValue value to be used for a constant border.
 	 * @param dst Output Image.
 	 */
-	private void cvErode(Mat src, Mat kernel, Point anchor, double iterations,
+	private void cvMorph(Mat src, Mat kernel, int op, Point anchor, double iterations,
 		int borderType, Scalar borderValue, Mat dst) {
 		if (kernel == null) {
 			kernel = new Mat();
@@ -311,22 +420,22 @@ public class GRIPPowerPortVisionPipeline {
 		if (borderValue == null) {
 			borderValue = new Scalar(-1);
 		}
-		Imgproc.erode(src, dst, kernel, anchor, (int)iterations, borderType, borderValue);
+		Imgproc.morphologyEx(src, dst, op, kernel, anchor, (int)iterations, borderType, borderValue);
 	}
 
-	/**
-	 * Applies a canny edge detection to the image.
-	 * @param image image to use.
-	 * @param thres1 first threshold for the canny algorithm.
-	 * @param thres2 second threshold for the canny algorithm.
-	 * @param apertureSize aperture size for the canny operation.
-	 * @param gradient if the L2 norm should be used.
-	 * @param edges output of the canny.
-	 */
-	private void cvCanny(Mat image, double thres1, double thres2,
-		double apertureSize, boolean gradient, Mat edges) {
-		Imgproc.Canny(image, edges, thres1, thres2, (int)apertureSize, gradient);
-	}
+	// /**
+	//  * Applies a canny edge detection to the image.
+	//  * @param image image to use.
+	//  * @param thres1 first threshold for the canny algorithm.
+	//  * @param thres2 second threshold for the canny algorithm.
+	//  * @param apertureSize aperture size for the canny operation.
+	//  * @param gradient if the L2 norm should be used.
+	//  * @param edges output of the canny.
+	//  */
+	// private void cvCanny(Mat image, double thres1, double thres2,
+	// 	double apertureSize, boolean gradient, Mat edges) {
+	// 	Imgproc.Canny(image, edges, thres1, thres2, (int)apertureSize, gradient);
+	// }
 
 	/**
 	 * Sets the values of pixels in a binary image to their distance to the nearest black pixel.
@@ -407,10 +516,13 @@ public class GRIPPowerPortVisionPipeline {
 		blurOutput.release();
 		outHSV.release();
 		hsvThresholdOutput.release();
-		cvErode0Output.release();
-		cvDilateOutput.release();
-		cvErode1Output.release();
-		cvCannyOutput.release();
+		// cvErode0Output.release();
+		// cvDilateOutput.release();
+		// cvErode1Output.release();
+		cvMorph0Output.release();
+		cvMorph1Output.release();
+		// cvMorph2Output.release();
+		// cvCannyOutput.release();
 		while(!findContoursOutput.isEmpty()) {
 			findContoursOutput.get(0).release();
 			findContoursOutput.remove(0);
