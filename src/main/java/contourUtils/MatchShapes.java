@@ -40,6 +40,7 @@ public class MatchShapes {
     // [Data Transformations]
 
     public static double[] matchShapes(Mat HuShape1, Mat HuShape2) {
+        //Mat [ 7*1*CV_64FC1, isCont=true, isSubmat=false, nativeObj=0xffffffffb3f02c98, dataAddr=0xffffffffb3f02c00 ]
         if ((HuShape1.rows() != 7) || (HuShape2.rows() != 7))
             throw new IllegalArgumentException("HuMoments must be 7x1");
         if ((HuShape1.cols() != 1) || (HuShape2.cols() != 1))
