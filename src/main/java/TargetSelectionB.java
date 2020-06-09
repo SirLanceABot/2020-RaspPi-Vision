@@ -174,7 +174,9 @@ public class TargetSelectionB {
 
         // Let the GRIPPowerPortVisionPipeline filter through the camera frame
         gripPowerPortVisionPipeline.process(mat);
- //gripPowerPortVisionPipeline.cvMorph0Output().copyTo(mat);
+
+        //gripPowerPortVisionPipeline.cvMorph0Output().copyTo(mat);
+
         // try this model of a vision pipeline from a cyberknight presentation
         // threshold cv_thresh_binary
         // dilate
@@ -264,12 +266,19 @@ public class TargetSelectionB {
                 listMidContour.add(new MatOfPoint(boxPts[0], boxPts[1], boxPts[2], boxPts[3]));
 
                 Imgproc.polylines(mat, // Matrix obj of the image
-                        listMidContour, // java.util.List<MatOfPoint> pts
-                        true, // isClosed
-                        new Scalar(0, 255, 255), // Scalar object for color
-                        1, // Thickness of the line
-                        Imgproc.LINE_4 // line type
-                        );
+                    listMidContour, // java.util.List<MatOfPoint> pts
+                    true, // isClosed
+                    new Scalar(0, 255, 255), // Scalar object for color
+                    1, // Thickness of the line
+                    Imgproc.LINE_4 // line type
+                    );
+                
+                Imgproc.putText(mat,
+                    String.format("%4.0f", rotatedRect.angle),
+                    boxPts[0],
+                    Core.FONT_HERSHEY_SIMPLEX, 0.3,
+                    new Scalar(255, 255, 255), 1);
+
                 while(!listMidContour.isEmpty()) {
                     listMidContour.get(0).release();
                     listMidContour.remove(0);
